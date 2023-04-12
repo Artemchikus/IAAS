@@ -2,7 +2,7 @@ GET http://localhost:3000/account
 
 ###
 GET http://localhost:3000/account/1
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiRXhwaXJlc0F0IjoxNjgxMzE0MzIwfQ.7-plAs56G1sIvzSn4XDAiPprvwAXJJbzqLPn2pOMU3A
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiRXhwaXJlc0F0IjoxNjgxMzI3NjM4fQ.n1cfOmWtnqFNaJxh_1aYM5zmsR02XIA5_9ioGe65XuY
 
 ###
 DELETE http://localhost:3000/account/5
@@ -29,4 +29,4 @@ content-type: application/json
 ###
 
 GET http://localhost:3000/refreshToken
-x-refresh-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiRXhwaXJlc0F0IjoxNjgxMzk5MjA4fQ.FadxLcCwHbha3DIT0kzoP8iMjqoSeaK5h8gnpZhyRfU
+x-refresh-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiRXhwaXJlc0F0IjoxNjgxNDEyMjI2fQ.e3zvZHlnSt2Jm4GC_KzMWYmJ-a32Skaoh4IYoHCxkmY

@@ -41,14 +41,12 @@ func (a *Account) Validate() error {
 }
 
 func (a *Account) BeforeCreate() error {
-	if len(a.Password) >= 8 {
-		enc, err := encryptSrting(a.Password)
-		if err != nil {
-			return err
-		}
-
-		a.EncryptedPassword = enc
+	enc, err := encryptSrting(a.Password)
+	if err != nil {
+		return err
 	}
+
+	a.EncryptedPassword = enc
 	return nil
 }
 

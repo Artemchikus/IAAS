@@ -41,13 +41,13 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 
 		secret, err := s.store.Secret().GetByType("jwt")
 		if err != nil {
-			s.error(w, r, http.StatusInternalServerError, err)
+			s.error(w, r, http.StatusInternalServerError, errInternalServerError)
 			return
 		}
 
 		userID, err := getId(r)
 		if err != nil {
-			s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
+			s.error(w, r, http.StatusBadRequest, errBadRequest)
 			return
 		}
 		account, err := s.store.Account().FindByID(userID)

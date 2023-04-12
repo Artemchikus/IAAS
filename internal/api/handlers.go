@@ -12,38 +12,45 @@ import (
 	jwt "github.com/golang-jwt/jwt/v4"
 )
 
-func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) error {
+func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	req := new(LoginRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return err
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
 	}
 
 	acc, err := s.store.Account().FindByEmail(req.Email)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusUnauthorized, errIncorrectEmailOrPassword)
+		return
 	}
 
 	if !acc.ValidatePassword(req.Password) {
-		return errIncorrectEmailOrPassword
+		s.error(w, r, http.StatusUnauthorized, errIncorrectEmailOrPassword)
+		return
 	}
 
 	secret, err := s.store.Secret().GetByType("jwt")
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	jwtToken, err := createJWT(acc, secret.Value)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	refreshToken, err := createRefreshToken(acc, secret.Value)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	if err := s.store.Account().UpdateRefreshToken(acc.RefreshToken, refreshToken, time.Now()); err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	resp := &LoginResponse{
@@ -51,13 +58,14 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) error {
 		Refresh: refreshToken,
 	}
 
-	return wirteJSON(w, http.StatusOK, resp)
+	s.respond(w, r, http.StatusOK, resp)
 }
 
-func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) error {
+func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
 	accounts, err := s.store.Account().GetAll()
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	resp := make(GetAllAccountsResponse, 0)
@@ -71,17 +79,19 @@ func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) er
 		resp = append(resp, &r)
 	}
 
-	return wirteJSON(w, http.StatusOK, resp)
+	s.respond(w, r, http.StatusOK, resp)
 }
 
-func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) error {
+func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
 	id, err := getId(r)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
 	}
 	account, err := s.store.Account().FindByID(id)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusNotFound, errWorngId)
+		return
 	}
 
 	resp := GetAccountResponse{
@@ -90,26 +100,40 @@ func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) er
 		Email: account.Email,
 	}
 
-	return wirteJSON(w, http.StatusOK, resp)
+	s.respond(w, r, http.StatusOK, resp)
 }
 
-func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 	req := new(CreateAccountRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		return err
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
 	}
 
 	account, err := models.NewAccount(req.Name, req.Email, req.Password)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	if _, err := s.store.Account().FindByEmail(account.Email); err == nil {
-		return errEmailAlreadyExists
+		s.error(w, r, http.StatusConflict, errEmailAlreadyExists)
+		return
+	}
+
+	if err := account.Validate(); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := account.BeforeCreate(); err != nil {
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	if err := s.store.Account().Create(account); err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	resp := CreateAccountResponse{
@@ -118,54 +142,62 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) err
 		Name:  account.Name,
 	}
 
-	return wirteJSON(w, http.StatusOK, resp)
+	s.respond(w, r, http.StatusOK, resp)
 }
 
-func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
 	id, err := getId(r)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
 	}
 	if err := s.store.Account().Delete(id); err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	resp := DeleteAccountResponse{
 		Deleted: id,
 	}
 
-	return wirteJSON(w, http.StatusOK, resp)
+	s.respond(w, r, http.StatusOK, resp)
 }
 
-func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) error {
+func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 	refreshTokenStr := r.Header.Get("x-refresh-token")
 
 	secret, err := s.store.Secret().GetByType("jwt")
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	acc, err := getAccFromRefreshToken(s.store, refreshTokenStr, secret.Value)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusUnauthorized, errIncorrectRefreshToken)
+		return
 	}
 
 	if acc.RefreshToken != refreshTokenStr {
-		return errNotAutheticated
+		s.error(w, r, http.StatusUnauthorized, errIncorrectRefreshToken)
+		return
 	}
 
 	jwtToken, err := createJWT(acc, secret.Value)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	refreshToken, err := createRefreshToken(acc, secret.Value)
 	if err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	if err := s.store.Account().UpdateRefreshToken(acc.RefreshToken, refreshToken, time.Now()); err != nil {
-		return err
+		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		return
 	}
 
 	resp := &RefreshTokenResponse{
@@ -173,8 +205,9 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) erro
 		JWT:     jwtToken,
 	}
 
-	return wirteJSON(w, http.StatusOK, resp)
+	s.respond(w, r, http.StatusOK, resp)
 }
+
 func createJWT(account *models.Account, secret string) (string, error) {
 	claims := &jwt.MapClaims{
 		"ExpiresAt":    time.Now().Add(time.Minute * 30).Unix(),
@@ -214,7 +247,7 @@ func getAccFromRefreshToken(s store.Storage, tokenStr, secret string) (*models.A
 
 	acc, err := s.Account().FindByEmail(email)
 	if err != nil {
-		return nil, errors.New("not authenticated")
+		return nil, err
 	}
 
 	return acc, nil

@@ -17,8 +17,6 @@ const (
 	ctxKeyRequestID ctxKey = iota
 )
 
-type apiFunc func(http.ResponseWriter, *http.Request) error
-
 type server struct {
 	router *mux.Router
 	store  store.Storage
@@ -63,39 +61,21 @@ func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 	}
 }
 
-func wirteJSON(w http.ResponseWriter, status int, data any) error {
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(status)
-	return json.NewEncoder(w).Encode(data)
-}
-
 func (s *server) configureRouter() {
 	s.router.Use(s.setRequestID)
 	s.router.Use(s.logRequest)
 
-	s.router.HandleFunc("/login", makeHTTPHandleFunc(s.handleLogin)).Methods("POST")
-	s.router.HandleFunc("/account", makeHTTPHandleFunc(s.handleGetAllAccounts)).Methods("GET")
-	s.router.HandleFunc("/account", makeHTTPHandleFunc(s.handleCreateAccount)).Methods("POST")
-	s.router.HandleFunc("/refreshToken", makeHTTPHandleFunc(s.handleRefreshToken)).Methods("GET")
+	s.router.HandleFunc("/login", s.handleLogin).Methods("POST")
+	s.router.HandleFunc("/account", s.handleGetAllAccounts).Methods("GET")
+	s.router.HandleFunc("/account", s.handleCreateAccount).Methods("POST")
+	s.router.HandleFunc("/refreshToken", s.handleRefreshToken).Methods("GET")
 
 	private := s.router.PathPrefix("/account/{id}").Subrouter()
 
 	private.Use(s.authenticateAccount)
 
-	private.HandleFunc("", makeHTTPHandleFunc(s.handleGetAccountByID)).Methods("GET")
-	private.HandleFunc("", makeHTTPHandleFunc(s.handleDeleteAccount)).Methods("DELETE")
-}
-
-func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f(w, r); err != nil {
-			resp := ErrorResponse{
-				Error: err.Error(),
-			}
-
-			wirteJSON(w, http.StatusInternalServerError, resp)
-		}
-	}
+	private.HandleFunc("", s.handleGetAccountByID).Methods("GET")
+	private.HandleFunc("", s.handleDeleteAccount).Methods("DELETE")
 }
 
 func getId(r *http.Request) (int, error) {

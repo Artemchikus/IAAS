@@ -12,14 +12,6 @@ type AccountRepository struct {
 }
 
 func (r *AccountRepository) Create(account *models.Account) error {
-	if err := account.Validate(); err != nil {
-		return err
-	}
-
-	if err := account.BeforeCreate(); err != nil {
-		return err
-	}
-
 	query := `
 	INSERT INTO account 
 	(name, email, encrypted_password, created_at, updated_at, refresh_token)  
