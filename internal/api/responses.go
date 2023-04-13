@@ -4,6 +4,7 @@ type CreateAccountResponse struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	Role  string `json:"role"`
 }
 
 type LoginResponse struct {
@@ -20,6 +21,7 @@ type GetAccountResponse struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	Role  string `json:"role"`
 }
 
 type GetAllAccountsResponse []*GetAccountResponse

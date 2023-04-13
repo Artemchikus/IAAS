@@ -17,14 +17,15 @@ func (r *AccountRepository) Create(ctx context.Context, account *models.Account)
 
 	query := `
 	INSERT INTO account 
-	(name, email, encrypted_password, created_at, updated_at, refresh_token)  
-	values ($1, $2, $3, $4, $5, $6) RETURNING *`
+	(name, email, encrypted_password, role, created_at, updated_at, refresh_token)  
+	values ($1, $2, $3, $4, $5, $6, $7) RETURNING *`
 
 	row, err := r.store.db.Query(
 		query,
 		account.Name,
 		account.Email,
 		account.EncryptedPassword,
+		account.Role,
 		account.CreatedAt,
 		account.UpdatedAt,
 		account.RefreshToken)
@@ -92,10 +93,18 @@ func (r *AccountRepository) FindByID(ctx context.Context, id int) (*models.Accou
 	return nil, store.ErrRecordNotFound
 }
 
-func (r *AccountRepository) Init(ctx context.Context) error {
+func (r *AccountRepository) Init(ctx context.Context, admin *models.Account) error {
 	defer r.logging(ctx, "INIT")()
 
-	return r.createAccountTable(ctx)
+	if err := r.createAccountTable(ctx); err != nil {
+		return err
+	}
+
+	if err := r.createAdmin(ctx, admin); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *AccountRepository) GetAll(ctx context.Context) ([]*models.Account, error) {
@@ -131,6 +140,7 @@ func scanIntoAccount(rows *sql.Rows) (*models.Account, error) {
 		&account.Name,
 		&account.Email,
 		&account.EncryptedPassword,
+		&account.Role,
 		&account.CreatedAt,
 		&account.UpdatedAt,
 		&account.RefreshToken); err != nil {
@@ -169,6 +179,7 @@ func (r *AccountRepository) createAccountTable(ctx context.Context) error {
 		name VARCHAR(50) NOT NULL,
 		email VARCHAR(50) NOT NULL UNIQUE,
 		encrypted_password VARCHAR(100) NOT NULL,
+		role VARCHAR(50) NOT NULL,
 		created_at TIMESTAMP NOT NULL,
 		updated_at TIMESTAMP NOT NULL,
 		refresh_token VARCHAR(255)
@@ -177,6 +188,40 @@ func (r *AccountRepository) createAccountTable(ctx context.Context) error {
 	_, err := r.store.db.Exec(query)
 
 	return err
+}
+
+func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Account) error {
+	defer r.logging(ctx, "CREATE admin")()
+
+	admin, err := models.NewAccount(admin.Name, admin.Email, admin.Password)
+	if err != nil {
+		return err
+	}
+
+	if _, err := r.store.Account().FindByEmail(ctx, admin.Email); err == nil {
+		r.store.logger.With(
+			"table", "account",
+			"request_id", ctx.Value(models.CtxKeyRequestID),
+		).Info("initial admin already exists")
+
+		return nil
+	}
+
+	if err := admin.Validate(); err != nil {
+		return err
+	}
+
+	if err := admin.BeforeCreate(); err != nil {
+		return err
+	}
+
+	admin.Role = "admin"
+
+	if err := r.store.Account().Create(ctx, admin); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *AccountRepository) logging(ctx context.Context, query string) func() {

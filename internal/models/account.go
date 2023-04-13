@@ -21,6 +21,7 @@ type Account struct {
 	EncryptedPassword string    `json:"encrypted_password"`
 	Password          string    `json:"password,omitempty"`
 	RefreshToken      string    `json:"refresh_token"`
+	Role              string    `json:"role"`
 }
 
 func NewAccount(name, email, password string) (*Account, error) {
@@ -30,6 +31,7 @@ func NewAccount(name, email, password string) (*Account, error) {
 		Email:     email,
 		UpdatedAt: time.Now(),
 		Password:  password,
+		Role:      "user",
 	}, nil
 }
 

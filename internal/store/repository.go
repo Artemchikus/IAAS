@@ -12,7 +12,7 @@ type AccountRepository interface {
 	Update(context.Context, *models.Account) error
 	FindByID(context.Context, int) (*models.Account, error)
 	FindByEmail(context.Context, string) (*models.Account, error)
-	Init(context.Context) error
+	Init(context.Context, *models.Account) error
 	GetAll(context.Context) ([]*models.Account, error)
 	UpdateRefreshToken(context.Context, string, string, time.Time) error
 }

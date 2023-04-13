@@ -75,6 +75,7 @@ func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
 			ID:    acc.ID,
 			Email: acc.Email,
 			Name:  acc.Name,
+			Role:  acc.Role,
 		}
 		resp = append(resp, &r)
 	}
@@ -98,6 +99,7 @@ func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
 		ID:    account.ID,
 		Name:  account.Name,
 		Email: account.Email,
+		Role:  account.Role,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)
@@ -140,6 +142,7 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 		ID:    account.ID,
 		Email: account.Email,
 		Name:  account.Name,
+		Role:  account.Role,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)
@@ -210,8 +213,9 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 
 func createJWT(account *models.Account, secret string) (string, error) {
 	claims := &jwt.MapClaims{
-		"ExpiresAt":    time.Now().Add(time.Minute * 30).Unix(),
+		"ExpiresAt":    time.Now().Add(time.Minute).Unix(),
 		"AccountEmail": account.Email,
+		"AccountRole":  account.Role,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))

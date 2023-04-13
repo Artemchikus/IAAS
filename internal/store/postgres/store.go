@@ -63,15 +63,15 @@ func (s *Store) Secret() store.SecretRepository {
 }
 
 func (s *Store) initialize(ctx context.Context, store *Store, config *config.ApiConfig) error {
-	if err := store.Account().Init(ctx); err != nil {
+	if err := store.Account().Init(ctx, config.Admin); err != nil {
 		return err
 	}
 
-	s.logger.With(
+	sugar := s.logger.With(
 		"request_id", ctx.Value(models.CtxKeyRequestID),
 	)
 
-	s.logger.Infof("table account is initialized")
+	sugar.Infof("table account is initialized")
 
 	jwtSecret := &models.Secret{
 		Type:  "jwt",
@@ -81,7 +81,7 @@ func (s *Store) initialize(ctx context.Context, store *Store, config *config.Api
 	if err := store.Secret().Init(ctx, jwtSecret); err != nil {
 		return err
 	}
-	s.logger.Infof("table secret is initialized")
+	sugar.Infof("table secret is initialized")
 
 	return nil
 }

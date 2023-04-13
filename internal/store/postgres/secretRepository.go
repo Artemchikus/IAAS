@@ -72,25 +72,30 @@ func scanIntoSecret(rows *sql.Rows) (*models.Secret, error) {
 
 func (r *SecretRepository) storeSecret(ctx context.Context, secret *models.Secret) error {
 	defer r.logging(ctx, "INSERT secret")()
+
+	_, err := r.store.secretRepository.GetByType(ctx, secret.Type)
+	if err == nil {
+		r.store.logger.With(
+			"table", "secret",
+			"request_id", ctx.Value(models.CtxKeyRequestID),
+		).Info("initital secret already exists")
+		return nil
+	}
+
 	query := `
 	INSERT INTO secret 
 	(value, type, created_at, updated_at)
-	SELECT $1, $2, $3, $4
-	WHERE
-    NOT EXISTS (
-        SELECT type FROM secret WHERE type = $5
-    );`
+	values ($1, $2, $3, $4)`
 
 	secret.CreatedAt = time.Now()
 	secret.UpdatedAt = time.Now()
 
-	_, err := r.store.db.Query(
+	_, err = r.store.db.Query(
 		query,
 		secret.Value,
 		secret.Type,
 		secret.CreatedAt,
 		secret.UpdatedAt,
-		secret.Type,
 	)
 	if err != nil {
 		return err
