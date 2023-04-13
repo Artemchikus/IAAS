@@ -25,7 +25,7 @@ type GetAccountResponse struct {
 type GetAllAccountsResponse []*GetAccountResponse
 
 type DeleteAccountResponse struct {
-	Deleted int `json:"deleted"`
+	DeletedID int `json:"deleted_id"`
 }
 
 type ErrorResponse struct {

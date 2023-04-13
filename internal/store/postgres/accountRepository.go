@@ -3,6 +3,7 @@ package postgres
 import (
 	"IAAS/internal/models"
 	"IAAS/internal/store"
+	"context"
 	"database/sql"
 	"time"
 )
@@ -11,8 +12,8 @@ type AccountRepository struct {
 	store *Store
 }
 
-func (r *AccountRepository) Create(account *models.Account) error {
-	defer r.logging("CREATE", &account.ID)()
+func (r *AccountRepository) Create(ctx context.Context, account *models.Account) error {
+	defer r.logging(ctx, "CREATE")()
 
 	query := `
 	INSERT INTO account 
@@ -43,8 +44,8 @@ func (r *AccountRepository) Create(account *models.Account) error {
 	return nil
 }
 
-func (r *AccountRepository) Delete(id int) error {
-	defer r.logging("DELETE", &id)()
+func (r *AccountRepository) Delete(ctx context.Context, id int) error {
+	defer r.logging(ctx, "DELETE")()
 
 	row, err := r.store.db.Query("DELETE FROM account WHERE id = $1", id)
 	if err != nil {
@@ -55,13 +56,12 @@ func (r *AccountRepository) Delete(id int) error {
 	return nil
 }
 
-func (r *AccountRepository) Update(a *models.Account) error {
+func (r *AccountRepository) Update(ctx context.Context, a *models.Account) error {
 	return nil
 }
 
-func (r *AccountRepository) FindByEmail(email string) (*models.Account, error) {
-	id := 1
-	defer r.logging("FIND BY email", &id)()
+func (r *AccountRepository) FindByEmail(ctx context.Context, email string) (*models.Account, error) {
+	defer r.logging(ctx, "FIND BY email")()
 
 	rows, err := r.store.db.Query("SELECT * FROM account WHERE email = $1", email)
 	if err != nil {
@@ -76,8 +76,8 @@ func (r *AccountRepository) FindByEmail(email string) (*models.Account, error) {
 	return nil, store.ErrRecordNotFound
 }
 
-func (r *AccountRepository) FindByID(id int) (*models.Account, error) {
-	defer r.logging("FIND BY id", &id)()
+func (r *AccountRepository) FindByID(ctx context.Context, id int) (*models.Account, error) {
+	defer r.logging(ctx, "FIND BY id")()
 
 	rows, err := r.store.db.Query("SELECT * FROM account WHERE id = $1", id)
 	if err != nil {
@@ -92,16 +92,14 @@ func (r *AccountRepository) FindByID(id int) (*models.Account, error) {
 	return nil, store.ErrRecordNotFound
 }
 
-func (r *AccountRepository) Init() error {
-	id := 1
-	defer r.logging("INIT", &id)()
+func (r *AccountRepository) Init(ctx context.Context) error {
+	defer r.logging(ctx, "INIT")()
 
-	return r.createAccountTable()
+	return r.createAccountTable(ctx)
 }
 
-func (r *AccountRepository) GetAll() ([]*models.Account, error) {
-	id := 1
-	defer r.logging("GET ALL", &id)()
+func (r *AccountRepository) GetAll(ctx context.Context) ([]*models.Account, error) {
+	defer r.logging(ctx, "GET ALL")()
 
 	rows, err := r.store.db.Query("SELECT * FROM account")
 	if err != nil {
@@ -142,9 +140,8 @@ func scanIntoAccount(rows *sql.Rows) (*models.Account, error) {
 	return account, nil
 }
 
-func (r *AccountRepository) UpdateRefreshToken(old, new string, time time.Time) error {
-	id := 1
-	defer r.logging("UPDATE refresh_token", &id)()
+func (r *AccountRepository) UpdateRefreshToken(ctx context.Context, old, new string, time time.Time) error {
+	defer r.logging(ctx, "UPDATE refresh_token")()
 
 	query := `UPDATE account
 	SET refresh_token = $1,
@@ -164,9 +161,8 @@ func (r *AccountRepository) UpdateRefreshToken(old, new string, time time.Time) 
 	return nil
 }
 
-func (r *AccountRepository) createAccountTable() error {
-	id := 1
-	defer r.logging("CREATE TABLE", &id)()
+func (r *AccountRepository) createAccountTable(ctx context.Context) error {
+	defer r.logging(ctx, "CREATE TABLE")()
 
 	query := `CREATE TABLE IF NOT EXISTS account (
 		id SERIAL NOT NULL PRIMARY KEY,
@@ -183,8 +179,11 @@ func (r *AccountRepository) createAccountTable() error {
 	return err
 }
 
-func (r *AccountRepository) logging(query string, id *int) func() {
-	sugar := r.store.logger.With("table", "account")
+func (r *AccountRepository) logging(ctx context.Context, query string) func() {
+	sugar := r.store.logger.With(
+		"table", "account",
+		"request_id", ctx.Value(models.CtxKeyRequestID),
+	)
 	start := time.Now()
 	sugar.Infof("started query %s", query)
 

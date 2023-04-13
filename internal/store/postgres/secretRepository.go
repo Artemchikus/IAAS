@@ -3,6 +3,7 @@ package postgres
 import (
 	"IAAS/internal/models"
 	"IAAS/internal/store"
+	"context"
 	"database/sql"
 	"time"
 )
@@ -11,9 +12,9 @@ type SecretRepository struct {
 	store *Store
 }
 
-func (r *SecretRepository) GetByType(t string) (*models.Secret, error) {
-	id := 1
-	defer r.logging("GET BY type", &id)()
+func (r *SecretRepository) GetByType(ctx context.Context, t string) (*models.Secret, error) {
+	defer r.logging(ctx, "GET BY type")()
+
 	rows, err := r.store.db.Query("SELECT * FROM secret WHERE type = $1", t)
 	if err != nil {
 		return nil, err
@@ -27,21 +28,21 @@ func (r *SecretRepository) GetByType(t string) (*models.Secret, error) {
 	return nil, store.ErrRecordNotFound
 }
 
-func (r *SecretRepository) Init(secret *models.Secret) error {
-	id := 1
-	defer r.logging("INIT", &id)()
-	if err := r.createSecretTable(); err != nil {
+func (r *SecretRepository) Init(ctx context.Context, secret *models.Secret) error {
+	defer r.logging(ctx, "INIT")()
+
+	if err := r.createSecretTable(ctx); err != nil {
 		return err
 	}
-	if err := r.storeSecret(secret); err != nil {
+	if err := r.storeSecret(ctx, secret); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *SecretRepository) createSecretTable() error {
-	id := 1
-	defer r.logging("CREATE TABLE", &id)()
+func (r *SecretRepository) createSecretTable(ctx context.Context) error {
+	defer r.logging(ctx, "CREATE TABLE")()
+
 	query := `CREATE TABLE IF NOT EXISTS secret (
 		id SERIAL NOT NULL PRIMARY KEY,
 		type VARCHAR(50) NOT NULL UNIQUE,
@@ -69,9 +70,8 @@ func scanIntoSecret(rows *sql.Rows) (*models.Secret, error) {
 	return secret, nil
 }
 
-func (r *SecretRepository) storeSecret(secret *models.Secret) error {
-	id := 1
-	defer r.logging("INSERT secret", &id)()
+func (r *SecretRepository) storeSecret(ctx context.Context, secret *models.Secret) error {
+	defer r.logging(ctx, "INSERT secret")()
 	query := `
 	INSERT INTO secret 
 	(value, type, created_at, updated_at)
@@ -99,8 +99,11 @@ func (r *SecretRepository) storeSecret(secret *models.Secret) error {
 	return nil
 }
 
-func (r *SecretRepository) logging(query string, id *int) func() {
-	sugar := r.store.logger.With("table", "secret")
+func (r *SecretRepository) logging(ctx context.Context, query string) func() {
+	sugar := r.store.logger.With(
+		"table", "secret",
+		"request_id", ctx.Value(models.CtxKeyRequestID),
+	)
 	start := time.Now()
 	sugar.Infof("started query %s", query)
 

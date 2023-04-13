@@ -5,7 +5,8 @@ GET http://localhost:3000/account/1
 x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiRXhwaXJlc0F0IjoxNjgxMzI3NjM4fQ.n1cfOmWtnqFNaJxh_1aYM5zmsR02XIA5_9ioGe65XuY
 
 ###
-DELETE http://localhost:3000/account/5
+DELETE http://localhost:3000/account/1
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiRXhwaXJlc0F0IjoxNjgxMzgxNDgzfQ.FkMwro0v5iMmG30n4fXIwyWtjd6A8efXMQrLqrs1t5g
 
 ###
 POST http://localhost:3000/account

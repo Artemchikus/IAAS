@@ -11,12 +11,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type ctxKey int8
-
-const (
-	ctxKeyRequestID ctxKey = iota
-)
-
 type server struct {
 	router *mux.Router
 	store  store.Storage
@@ -47,8 +41,12 @@ func newServer(store store.Storage) *server {
 }
 
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
+	s.logger.Errorf("error: %v", err)
+
+	incErr := incapsulateError(code, err)
+
 	resp := ErrorResponse{
-		Error: err.Error(),
+		Error: incErr.Error(),
 	}
 	s.respond(w, r, code, resp)
 }
@@ -85,4 +83,38 @@ func getId(r *http.Request) (int, error) {
 		return id, err
 	}
 	return id, nil
+}
+
+func incapsulateError(code int, err error) error {
+	switch code {
+	case http.StatusUnauthorized:
+		if err == errIncorrectEmailOrPassword {
+			return err
+		}
+
+		if err == errIncorrectRefreshToken {
+			return err
+		}
+
+		return errNotAutheticated
+
+	case http.StatusBadRequest:
+		return errBadRequest
+
+	case http.StatusInternalServerError:
+		if err == store.ErrRecordNotFound {
+			return err
+		}
+		return errInternalServerError
+	case http.StatusNotFound:
+		return err
+
+	case http.StatusConflict:
+		return errEmailAlreadyExists
+
+	case http.StatusUnprocessableEntity:
+		return err
+
+	}
+	return err
 }

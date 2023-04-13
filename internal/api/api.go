@@ -2,7 +2,9 @@ package api
 
 import (
 	"IAAS/internal/config"
+	"IAAS/internal/models"
 	"IAAS/internal/store/postgres"
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
@@ -17,7 +19,9 @@ func Start(config *config.ApiConfig) error {
 
 	defer db.Close()
 
-	store := postgres.New(db, config)
+	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "initial-request")
+
+	store := postgres.New(ctx, db, config)
 
 	srv := newServer(store)
 

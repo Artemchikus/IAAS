@@ -3,6 +3,7 @@ package api
 import (
 	"IAAS/internal/models"
 	"IAAS/internal/store"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,13 +15,13 @@ import (
 func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	req := new(LoginRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
-	acc, err := s.store.Account().FindByEmail(req.Email)
+	acc, err := s.store.Account().FindByEmail(r.Context(), req.Email)
 	if err != nil {
-		s.error(w, r, http.StatusUnauthorized, errIncorrectEmailOrPassword)
+		s.error(w, r, http.StatusUnauthorized, err)
 		return
 	}
 
@@ -29,26 +30,26 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secret, err := s.store.Secret().GetByType("jwt")
+	secret, err := s.store.Secret().GetByType(r.Context(), "jwt")
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
 	jwtToken, err := createJWT(acc, secret.Value)
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
 	refreshToken, err := createRefreshToken(acc, secret.Value)
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	if err := s.store.Account().UpdateRefreshToken(acc.RefreshToken, refreshToken, time.Now()); err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now()); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -61,9 +62,9 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
-	accounts, err := s.store.Account().GetAll()
+	accounts, err := s.store.Account().GetAll(r.Context())
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -84,12 +85,12 @@ func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
 	id, err := getId(r)
 	if err != nil {
-		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
-	account, err := s.store.Account().FindByID(id)
+	account, err := s.store.Account().FindByID(r.Context(), id)
 	if err != nil {
-		s.error(w, r, http.StatusNotFound, errWorngId)
+		s.error(w, r, http.StatusNotFound, err)
 		return
 	}
 
@@ -105,33 +106,33 @@ func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 	req := new(CreateAccountRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
 	account, err := models.NewAccount(req.Name, req.Email, req.Password)
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	if _, err := s.store.Account().FindByEmail(account.Email); err == nil {
-		s.error(w, r, http.StatusConflict, errEmailAlreadyExists)
+	if _, err := s.store.Account().FindByEmail(r.Context(), account.Email); err == nil {
+		s.error(w, r, http.StatusConflict, err)
 		return
 	}
 
 	if err := account.Validate(); err != nil {
-		s.error(w, r, http.StatusBadRequest, err)
+		s.error(w, r, http.StatusUnprocessableEntity, err)
 		return
 	}
 
 	if err := account.BeforeCreate(); err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	if err := s.store.Account().Create(account); err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+	if err := s.store.Account().Create(r.Context(), account); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -147,16 +148,16 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
 	id, err := getId(r)
 	if err != nil {
-		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
-	if err := s.store.Account().Delete(id); err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+	if err := s.store.Account().Delete(r.Context(), id); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
 		return
 	}
 
 	resp := DeleteAccountResponse{
-		Deleted: id,
+		DeletedID: id,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)
@@ -165,15 +166,15 @@ func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 	refreshTokenStr := r.Header.Get("x-refresh-token")
 
-	secret, err := s.store.Secret().GetByType("jwt")
+	secret, err := s.store.Secret().GetByType(r.Context(), "jwt")
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	acc, err := getAccFromRefreshToken(s.store, refreshTokenStr, secret.Value)
+	acc, err := getAccFromRefreshToken(r.Context(), s.store, refreshTokenStr, secret.Value)
 	if err != nil {
-		s.error(w, r, http.StatusUnauthorized, errIncorrectRefreshToken)
+		s.error(w, r, http.StatusUnauthorized, err)
 		return
 	}
 
@@ -184,18 +185,18 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	jwtToken, err := createJWT(acc, secret.Value)
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
 	refreshToken, err := createRefreshToken(acc, secret.Value)
 	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
-	if err := s.store.Account().UpdateRefreshToken(acc.RefreshToken, refreshToken, time.Now()); err != nil {
-		s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now()); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -225,7 +226,7 @@ func createRefreshToken(account *models.Account, secret string) (string, error) 
 	return token.SignedString([]byte(secret))
 }
 
-func getAccFromRefreshToken(s store.Storage, tokenStr, secret string) (*models.Account, error) {
+func getAccFromRefreshToken(ctx context.Context, s store.Storage, tokenStr, secret string) (*models.Account, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -244,7 +245,7 @@ func getAccFromRefreshToken(s store.Storage, tokenStr, secret string) (*models.A
 	claims := token.Claims.(jwt.MapClaims)
 	email := claims["AccountEmail"].(string)
 
-	acc, err := s.Account().FindByEmail(email)
+	acc, err := s.Account().FindByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}

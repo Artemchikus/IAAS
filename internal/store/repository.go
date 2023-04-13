@@ -2,21 +2,22 @@ package store
 
 import (
 	"IAAS/internal/models"
+	"context"
 	"time"
 )
 
 type AccountRepository interface {
-	Create( *models.Account) error
-	Delete(int) error
-	Update(*models.Account) error
-	FindByID(int) (*models.Account, error)
-	FindByEmail(string) (*models.Account, error)
-	Init() error
-	GetAll() ([]*models.Account, error)
-	UpdateRefreshToken(string, string, time.Time) error
+	Create(context.Context, *models.Account) error
+	Delete(context.Context, int) error
+	Update(context.Context, *models.Account) error
+	FindByID(context.Context, int) (*models.Account, error)
+	FindByEmail(context.Context, string) (*models.Account, error)
+	Init(context.Context) error
+	GetAll(context.Context) ([]*models.Account, error)
+	UpdateRefreshToken(context.Context, string, string, time.Time) error
 }
 
 type SecretRepository interface {
-	GetByType(string) (*models.Secret, error)
-	Init(*models.Secret) error
+	GetByType(context.Context, string) (*models.Secret, error)
+	Init(context.Context, *models.Secret) error
 }

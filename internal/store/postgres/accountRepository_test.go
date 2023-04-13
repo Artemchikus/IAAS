@@ -5,6 +5,7 @@ import (
 	"IAAS/internal/models"
 	"IAAS/internal/store"
 	"IAAS/internal/store/postgres"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -19,9 +20,13 @@ func TestAccountRepository_Create(t *testing.T) {
 	config := config.NewConfig()
 	config.JwtKey = "secretkey"
 
-	s := postgres.New(db, config)
+	initCtx := context.WithValue(context.Background(), models.CtxKeyRequestID, "test-initial-request")
+	s := postgres.New(initCtx, db, config)
+
+	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
+
 	u := models.TestAccount(t)
-	assert.NoError(t, s.Account().Create(u))
+	assert.NoError(t, s.Account().Create(ctx, u))
 	assert.NotNil(t, u)
 }
 
@@ -32,13 +37,17 @@ func TestAccountRepository_FindByEmail(t *testing.T) {
 	config := config.NewConfig()
 	config.JwtKey = "secretkey"
 
-	s := postgres.New(db, config)
+	initCtx := context.WithValue(context.Background(), models.CtxKeyRequestID, "test-initial-request")
+	s := postgres.New(initCtx, db, config)
+
+	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
+
 	u := models.TestAccount(t)
-	_, err := s.Account().FindByEmail(u.Email)
+	_, err := s.Account().FindByEmail(ctx, u.Email)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	s.Account().Create(u)
-	u, err = s.Account().FindByEmail(u.Email)
+	s.Account().Create(ctx, u)
+	u, err = s.Account().FindByEmail(ctx, u.Email)
 	assert.NoError(t, err)
 	assert.NotNil(t, u)
 }
@@ -50,13 +59,17 @@ func TestAccountRepository_FindByID(t *testing.T) {
 	config := config.NewConfig()
 	config.JwtKey = "secretkey"
 
-	s := postgres.New(db, config)
+	initCtx := context.WithValue(context.Background(), models.CtxKeyRequestID, "test-initial-request")
+	s := postgres.New(initCtx, db, config)
+
+	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
+
 	u1 := models.TestAccount(t)
-	_, err := s.Account().FindByID(1)
+	_, err := s.Account().FindByID(ctx, 1)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	s.Account().Create(u1)
-	u2, err := s.Account().FindByID(1)
+	s.Account().Create(ctx, u1)
+	u2, err := s.Account().FindByID(ctx, 1)
 	assert.NoError(t, err)
 	assert.NotNil(t, u2)
 }
@@ -67,13 +80,17 @@ func TestAccountRepository_Update(t *testing.T) {
 	config := config.NewConfig()
 	config.JwtKey = "secretkey"
 
-	s := postgres.New(db, config)
+	initCtx := context.WithValue(context.Background(), models.CtxKeyRequestID, "test-initial-request")
+	s := postgres.New(initCtx, db, config)
+
+	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
+
 	u1 := models.TestAccount(t)
-	_, err := s.Account().FindByID(1)
+	_, err := s.Account().FindByID(ctx, 1)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	s.Account().Create(u1)
-	u2, err := s.Account().FindByID(1)
+	s.Account().Create(ctx, u1)
+	u2, err := s.Account().FindByID(ctx, 1)
 	assert.NoError(t, err)
 	assert.NotNil(t, u2)
 }
@@ -85,13 +102,17 @@ func TestAccountRepository_GetAll(t *testing.T) {
 	config := config.NewConfig()
 	config.JwtKey = "secretkey"
 
-	s := postgres.New(db, config)
-	_, err := s.Account().GetAll()
+	initCtx := context.WithValue(context.Background(), models.CtxKeyRequestID, "test-initial-request")
+	s := postgres.New(initCtx, db, config)
+
+	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
+
+	_, err := s.Account().GetAll(ctx)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
 	u1 := models.TestAccount(t)
-	s.Account().Create(u1)
-	acs, err := s.Account().GetAll()
+	s.Account().Create(ctx, u1)
+	acs, err := s.Account().GetAll(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, acs)
 }

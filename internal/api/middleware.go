@@ -1,6 +1,7 @@
 package api
 
 import (
+	"IAAS/internal/models"
 	"context"
 	"net/http"
 	"time"
@@ -12,7 +13,7 @@ func (s *server) setRequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := uuid.New().String()
 		w.Header().Set("X-Request-ID", id)
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyRequestID, id)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), models.CtxKeyRequestID, id)))
 	})
 }
 
@@ -20,7 +21,7 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sugar := s.logger.With(
 			"remoute_addr", r.RemoteAddr,
-			"request_id", r.Context().Value(ctxKeyRequestID),
+			"request_id", r.Context().Value(models.CtxKeyRequestID),
 		)
 		sugar.Infof("started %s %s", r.Method, r.RequestURI)
 
@@ -39,25 +40,25 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenStr := r.Header.Get("x-jwt-token")
 
-		secret, err := s.store.Secret().GetByType("jwt")
+		secret, err := s.store.Secret().GetByType(r.Context(), "jwt")
 		if err != nil {
-			s.error(w, r, http.StatusInternalServerError, errInternalServerError)
+			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
 
 		userID, err := getId(r)
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, errBadRequest)
+			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
-		account, err := s.store.Account().FindByID(userID)
+		account, err := s.store.Account().FindByID(r.Context(), userID)
 		if err != nil {
-			s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
+			s.error(w, r, http.StatusUnauthorized, err)
 			return
 		}
 
 		if err := account.ValidateJWTToken(tokenStr, secret.Value); err != nil {
-			s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
+			s.error(w, r, http.StatusUnauthorized, err)
 			return
 		}
 

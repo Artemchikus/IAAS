@@ -4,6 +4,7 @@ import (
 	"IAAS/internal/config"
 	"IAAS/internal/models"
 	"IAAS/internal/store"
+	"context"
 	"database/sql"
 	"log"
 
@@ -18,7 +19,7 @@ type Store struct {
 	logger            *zap.SugaredLogger
 }
 
-func New(db *sql.DB, config *config.ApiConfig) *Store {
+func New(ctx context.Context, db *sql.DB, config *config.ApiConfig) *Store {
 	zapLog, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)
@@ -31,7 +32,7 @@ func New(db *sql.DB, config *config.ApiConfig) *Store {
 		logger: sugar,
 	}
 
-	if err := store.initialize(store, config); err != nil {
+	if err := store.initialize(ctx, store, config); err != nil {
 		log.Fatal(err)
 	}
 	return store
@@ -61,10 +62,15 @@ func (s *Store) Secret() store.SecretRepository {
 	return s.secretRepository
 }
 
-func (s *Store) initialize(store *Store, config *config.ApiConfig) error {
-	if err := store.Account().Init(); err != nil {
+func (s *Store) initialize(ctx context.Context, store *Store, config *config.ApiConfig) error {
+	if err := store.Account().Init(ctx); err != nil {
 		return err
 	}
+
+	s.logger.With(
+		"request_id", ctx.Value(models.CtxKeyRequestID),
+	)
+
 	s.logger.Infof("table account is initialized")
 
 	jwtSecret := &models.Secret{
@@ -72,7 +78,7 @@ func (s *Store) initialize(store *Store, config *config.ApiConfig) error {
 		Value: config.JwtKey,
 	}
 
-	if err := store.Secret().Init(jwtSecret); err != nil {
+	if err := store.Secret().Init(ctx, jwtSecret); err != nil {
 		return err
 	}
 	s.logger.Infof("table secret is initialized")
