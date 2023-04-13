@@ -1,4 +1,5 @@
-GET http://localhost:3000/account
+GET http://localhost:3000/account/2/admin/all
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgxMzg5NTczfQ.Vkwdp2qH29NoQjgbiOGvBcN0sDyVVrt03Xb1t4PaSe8
 
 ###
 GET http://localhost:3000/account/1

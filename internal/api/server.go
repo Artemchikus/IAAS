@@ -64,16 +64,21 @@ func (s *server) configureRouter() {
 	s.router.Use(s.logRequest)
 
 	s.router.HandleFunc("/login", s.handleLogin).Methods("POST")
-	s.router.HandleFunc("/account", s.handleGetAllAccounts).Methods("GET")
 	s.router.HandleFunc("/account", s.handleCreateAccount).Methods("POST")
 	s.router.HandleFunc("/refreshToken", s.handleRefreshToken).Methods("GET")
 
-	private := s.router.PathPrefix("/account/{id}").Subrouter()
+	private := s.router.PathPrefix("/account").Subrouter()
 
 	private.Use(s.authenticateAccount)
 
-	private.HandleFunc("", s.handleGetAccountByID).Methods("GET")
-	private.HandleFunc("", s.handleDeleteAccount).Methods("DELETE")
+	private.HandleFunc("/{id}", s.handleGetAccountByID).Methods("GET")
+	private.HandleFunc("/{id}", s.handleDeleteAccount).Methods("DELETE")
+
+	admin := private.PathPrefix("/{id}/admin").Subrouter()
+
+	admin.Use(s.isAdmin)
+	admin.HandleFunc("/all", s.handleGetAllAccounts).Methods("GET")
+
 }
 
 func getId(r *http.Request) (int, error) {

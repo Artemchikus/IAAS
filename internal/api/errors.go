@@ -11,4 +11,5 @@ var (
 	errInternalServerError      = errors.New("internal server error")
 	errTokenExpired             = errors.New("token expired")
 	errUnexpectedSigningMethod  = errors.New("unexpected signature method")
+	errNoAdmin                  = errors.New("admin rights required")
 )

@@ -62,6 +62,17 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 			return
 		}
 
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), models.CtxKeyAccount, account)))
+	})
+}
+
+func (s *server) isAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Context().Value(models.CtxKeyAccount).(*models.Account).Role != "admin" {
+			s.error(w, r, http.StatusUnauthorized, errNoAdmin)
+			return
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
