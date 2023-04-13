@@ -6,7 +6,7 @@ import (
 )
 
 type AccountRepository interface {
-	Create(*models.Account) error
+	Create( *models.Account) error
 	Delete(int) error
 	Update(*models.Account) error
 	FindByID(int) (*models.Account, error)

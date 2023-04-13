@@ -12,6 +12,8 @@ type AccountRepository struct {
 }
 
 func (r *AccountRepository) Create(account *models.Account) error {
+	defer r.logging("CREATE", &account.ID)()
+
 	query := `
 	INSERT INTO account 
 	(name, email, encrypted_password, created_at, updated_at, refresh_token)  
@@ -42,6 +44,8 @@ func (r *AccountRepository) Create(account *models.Account) error {
 }
 
 func (r *AccountRepository) Delete(id int) error {
+	defer r.logging("DELETE", &id)()
+
 	row, err := r.store.db.Query("DELETE FROM account WHERE id = $1", id)
 	if err != nil {
 		return store.ErrRecordNotFound
@@ -56,6 +60,9 @@ func (r *AccountRepository) Update(a *models.Account) error {
 }
 
 func (r *AccountRepository) FindByEmail(email string) (*models.Account, error) {
+	id := 1
+	defer r.logging("FIND BY email", &id)()
+
 	rows, err := r.store.db.Query("SELECT * FROM account WHERE email = $1", email)
 	if err != nil {
 		return nil, store.ErrRecordNotFound
@@ -70,6 +77,8 @@ func (r *AccountRepository) FindByEmail(email string) (*models.Account, error) {
 }
 
 func (r *AccountRepository) FindByID(id int) (*models.Account, error) {
+	defer r.logging("FIND BY id", &id)()
+
 	rows, err := r.store.db.Query("SELECT * FROM account WHERE id = $1", id)
 	if err != nil {
 		return nil, store.ErrRecordNotFound
@@ -84,10 +93,16 @@ func (r *AccountRepository) FindByID(id int) (*models.Account, error) {
 }
 
 func (r *AccountRepository) Init() error {
+	id := 1
+	defer r.logging("INIT", &id)()
+
 	return r.createAccountTable()
 }
 
 func (r *AccountRepository) GetAll() ([]*models.Account, error) {
+	id := 1
+	defer r.logging("GET ALL", &id)()
+
 	rows, err := r.store.db.Query("SELECT * FROM account")
 	if err != nil {
 		return nil, store.ErrRecordNotFound
@@ -128,6 +143,9 @@ func scanIntoAccount(rows *sql.Rows) (*models.Account, error) {
 }
 
 func (r *AccountRepository) UpdateRefreshToken(old, new string, time time.Time) error {
+	id := 1
+	defer r.logging("UPDATE refresh_token", &id)()
+
 	query := `UPDATE account
 	SET refresh_token = $1,
 		updated_at = $2
@@ -147,6 +165,9 @@ func (r *AccountRepository) UpdateRefreshToken(old, new string, time time.Time) 
 }
 
 func (r *AccountRepository) createAccountTable() error {
+	id := 1
+	defer r.logging("CREATE TABLE", &id)()
+
 	query := `CREATE TABLE IF NOT EXISTS account (
 		id SERIAL NOT NULL PRIMARY KEY,
 		name VARCHAR(50) NOT NULL,
@@ -160,4 +181,16 @@ func (r *AccountRepository) createAccountTable() error {
 	_, err := r.store.db.Exec(query)
 
 	return err
+}
+
+func (r *AccountRepository) logging(query string, id *int) func() {
+	sugar := r.store.logger.With("table", "account")
+	start := time.Now()
+	sugar.Infof("started query %s", query)
+
+	return func() {
+		sugar.Infof("complited query %s in %v",
+			query,
+			time.Since(start))
+	}
 }

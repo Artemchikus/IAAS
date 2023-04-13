@@ -4,7 +4,6 @@ import (
 	"IAAS/internal/models"
 	"IAAS/internal/store"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -239,7 +238,7 @@ func getAccFromRefreshToken(s store.Storage, tokenStr, secret string) (*models.A
 	}
 
 	if !token.Valid {
-		return nil, errors.New("not authenticated")
+		return nil, errNotAutheticated
 	}
 
 	claims := token.Claims.(jwt.MapClaims)

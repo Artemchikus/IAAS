@@ -12,6 +12,8 @@ type SecretRepository struct {
 }
 
 func (r *SecretRepository) GetByType(t string) (*models.Secret, error) {
+	id := 1
+	defer r.logging("GET BY type", &id)()
 	rows, err := r.store.db.Query("SELECT * FROM secret WHERE type = $1", t)
 	if err != nil {
 		return nil, err
@@ -26,6 +28,8 @@ func (r *SecretRepository) GetByType(t string) (*models.Secret, error) {
 }
 
 func (r *SecretRepository) Init(secret *models.Secret) error {
+	id := 1
+	defer r.logging("INIT", &id)()
 	if err := r.createSecretTable(); err != nil {
 		return err
 	}
@@ -36,6 +40,8 @@ func (r *SecretRepository) Init(secret *models.Secret) error {
 }
 
 func (r *SecretRepository) createSecretTable() error {
+	id := 1
+	defer r.logging("CREATE TABLE", &id)()
 	query := `CREATE TABLE IF NOT EXISTS secret (
 		id SERIAL NOT NULL PRIMARY KEY,
 		type VARCHAR(50) NOT NULL UNIQUE,
@@ -64,6 +70,8 @@ func scanIntoSecret(rows *sql.Rows) (*models.Secret, error) {
 }
 
 func (r *SecretRepository) storeSecret(secret *models.Secret) error {
+	id := 1
+	defer r.logging("INSERT secret", &id)()
 	query := `
 	INSERT INTO secret 
 	(value, type, created_at, updated_at)
@@ -89,4 +97,16 @@ func (r *SecretRepository) storeSecret(secret *models.Secret) error {
 	}
 
 	return nil
+}
+
+func (r *SecretRepository) logging(query string, id *int) func() {
+	sugar := r.store.logger.With("table", "secret")
+	start := time.Now()
+	sugar.Infof("started query %s", query)
+
+	return func() {
+		sugar.Infof("complited query %s in %v",
+			query,
+			time.Since(start))
+	}
 }

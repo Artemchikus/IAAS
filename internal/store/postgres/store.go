@@ -8,19 +8,30 @@ import (
 	"log"
 
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 type Store struct {
 	db                *sql.DB
 	accountRepository *AccountRepository
 	secretRepository  *SecretRepository
+	logger            *zap.SugaredLogger
 }
 
 func New(db *sql.DB, config *config.ApiConfig) *Store {
-	store := &Store{
-		db: db,
+	zapLog, err := zap.NewProduction()
+	if err != nil {
+		log.Fatal(err)
 	}
-	if err := initialize(store, config); err != nil {
+	defer zapLog.Sync()
+	sugar := zapLog.Sugar()
+
+	store := &Store{
+		db:     db,
+		logger: sugar,
+	}
+
+	if err := store.initialize(store, config); err != nil {
 		log.Fatal(err)
 	}
 	return store
@@ -50,11 +61,11 @@ func (s *Store) Secret() store.SecretRepository {
 	return s.secretRepository
 }
 
-func initialize(store *Store, config *config.ApiConfig) error {
+func (s *Store) initialize(store *Store, config *config.ApiConfig) error {
 	if err := store.Account().Init(); err != nil {
 		return err
 	}
-	log.Println("account initialized")
+	s.logger.Infof("table account is initialized")
 
 	jwtSecret := &models.Secret{
 		Type:  "jwt",
@@ -64,7 +75,7 @@ func initialize(store *Store, config *config.ApiConfig) error {
 	if err := store.Secret().Init(jwtSecret); err != nil {
 		return err
 	}
-	log.Println("secret initialized")
+	s.logger.Infof("table secret is initialized")
 
 	return nil
 }
