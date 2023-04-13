@@ -53,7 +53,7 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 		}
 		account, err := s.store.Account().FindByID(r.Context(), userID)
 		if err != nil {
-			s.error(w, r, http.StatusUnauthorized, err)
+			s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
 			return
 		}
 

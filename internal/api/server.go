@@ -88,15 +88,7 @@ func getId(r *http.Request) (int, error) {
 func incapsulateError(code int, err error) error {
 	switch code {
 	case http.StatusUnauthorized:
-		if err == errIncorrectEmailOrPassword {
-			return err
-		}
-
-		if err == errIncorrectRefreshToken {
-			return err
-		}
-
-		return errNotAutheticated
+		return err
 
 	case http.StatusBadRequest:
 		return errBadRequest

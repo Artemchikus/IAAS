@@ -9,4 +9,6 @@ var (
 	errIncorrectRefreshToken    = errors.New("incorrect refresh token")
 	errBadRequest               = errors.New("bad request")
 	errInternalServerError      = errors.New("internal server error")
+	errTokenExpired             = errors.New("token expired")
+	errUnexpectedSigningMethod  = errors.New("unexpected signature method")
 )

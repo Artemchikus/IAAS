@@ -59,7 +59,7 @@ func (a *Account) ValidatePassword(password string) bool {
 func (a *Account) ValidateJWTToken(tokenStr, secret string) error {
 	token, err := parseToken(tokenStr, secret)
 	if err != nil {
-		return err
+		return errors.New("incorrect token")
 	}
 
 	if !token.Valid {
@@ -67,6 +67,10 @@ func (a *Account) ValidateJWTToken(tokenStr, secret string) error {
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
+	if float64(time.Now().Unix()) >= claims["ExpiresAt"].(float64) {
+		return errors.New("token expired")
+	}
+
 	if a.Email != claims["AccountEmail"] {
 		return errors.New("not authenticated")
 	}

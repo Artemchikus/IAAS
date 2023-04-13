@@ -5,7 +5,6 @@ import (
 	"IAAS/internal/store"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -21,7 +20,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	acc, err := s.store.Account().FindByEmail(r.Context(), req.Email)
 	if err != nil {
-		s.error(w, r, http.StatusUnauthorized, err)
+		s.error(w, r, http.StatusUnauthorized, errIncorrectEmailOrPassword)
 		return
 	}
 
@@ -213,7 +212,7 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 
 func createJWT(account *models.Account, secret string) (string, error) {
 	claims := &jwt.MapClaims{
-		"ExpiresAt":    time.Now().Add(time.Minute).Unix(),
+		"ExpiresAt":    time.Now().Add(time.Minute * 30).Unix(),
 		"AccountEmail": account.Email,
 		"AccountRole":  account.Role,
 	}
@@ -233,13 +232,13 @@ func createRefreshToken(account *models.Account, secret string) (string, error) 
 func getAccFromRefreshToken(ctx context.Context, s store.Storage, tokenStr, secret string) (*models.Account, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, errUnexpectedSigningMethod
 		}
 
 		return []byte(secret), nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, errIncorrectRefreshToken
 	}
 
 	if !token.Valid {
@@ -247,11 +246,15 @@ func getAccFromRefreshToken(ctx context.Context, s store.Storage, tokenStr, secr
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
+	if float64(time.Now().Unix()) >= claims["ExpiresAt"].(float64) {
+		return nil, errTokenExpired
+	}
+
 	email := claims["AccountEmail"].(string)
 
 	acc, err := s.Account().FindByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return nil, errIncorrectRefreshToken
 	}
 
 	return acc, nil
