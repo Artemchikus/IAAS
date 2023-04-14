@@ -77,7 +77,6 @@ func (r *SecretRepository) storeSecret(ctx context.Context, secret *models.Secre
 	if err == nil {
 		r.store.logger.With(
 			"table", "secret",
-			"request_id", ctx.Value(models.CtxKeyRequestID),
 		).Info("initital secret already exists")
 		return nil
 	}
@@ -107,7 +106,6 @@ func (r *SecretRepository) storeSecret(ctx context.Context, secret *models.Secre
 func (r *SecretRepository) logging(ctx context.Context, query string) func() {
 	sugar := r.store.logger.With(
 		"table", "secret",
-		"request_id", ctx.Value(models.CtxKeyRequestID),
 	)
 	start := time.Now()
 	sugar.Infof("started query %s", query)

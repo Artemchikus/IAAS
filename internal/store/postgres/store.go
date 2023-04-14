@@ -80,11 +80,11 @@ func (s *Store) initialize(ctx context.Context, store *Store, config *config.Api
 		return err
 	}
 
-	sugar := s.logger.With(
+	s.logger = s.logger.With(
 		"request_id", ctx.Value(models.CtxKeyRequestID),
 	)
 
-	sugar.Infof("table account is initialized")
+	s.logger.Infof("table account is initialized")
 
 	jwtSecret := &models.Secret{
 		Type:  "jwt",
@@ -94,12 +94,12 @@ func (s *Store) initialize(ctx context.Context, store *Store, config *config.Api
 	if err := store.Secret().Init(ctx, jwtSecret); err != nil {
 		return err
 	}
-	sugar.Infof("table secret is initialized")
+	s.logger.Infof("table secret is initialized")
 
 	if err := store.Cluster().Init(ctx, config.Clusters); err != nil {
 		return err
 	}
-	sugar.Infof("table cluster is initialized")
+	s.logger.Infof("table cluster is initialized")
 
 	return nil
 }

@@ -15,5 +15,6 @@ func NewConfig() *ApiConfig {
 	return &ApiConfig{
 		BindAddr: ":8080",
 		LogLevel: "debug",
+		Admin:    new(models.Account),
 	}
 }

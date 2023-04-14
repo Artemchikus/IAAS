@@ -176,7 +176,6 @@ func (r *ClusterRepository) addCluster(ctx context.Context, cluster *models.Clus
 	if _, err := r.store.Cluster().FindByLocation(ctx, cluster.Location); err == nil {
 		r.store.logger.With(
 			"table", "cluster",
-			"request_id", ctx.Value(models.CtxKeyRequestID),
 		).Infof("cluster for location: %v already exists", cluster.Location)
 
 		return nil
@@ -202,7 +201,6 @@ func (r *ClusterRepository) addCluster(ctx context.Context, cluster *models.Clus
 func (r *ClusterRepository) logging(ctx context.Context, query string) func() {
 	sugar := r.store.logger.With(
 		"table", "cluster",
-		"request_id", ctx.Value(models.CtxKeyRequestID),
 	)
 	start := time.Now()
 	sugar.Infof("started query %s", query)

@@ -204,7 +204,6 @@ func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Accou
 	if _, err := r.store.Account().FindByEmail(ctx, adm.Email); err == nil {
 		r.store.logger.With(
 			"table", "account",
-			"request_id", ctx.Value(models.CtxKeyRequestID),
 		).Info("initial admin already exists")
 
 		return nil
@@ -230,7 +229,6 @@ func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Accou
 func (r *AccountRepository) logging(ctx context.Context, query string) func() {
 	sugar := r.store.logger.With(
 		"table", "account",
-		"request_id", ctx.Value(models.CtxKeyRequestID),
 	)
 	start := time.Now()
 	sugar.Infof("started query %s", query)
