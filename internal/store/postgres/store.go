@@ -16,6 +16,7 @@ type Store struct {
 	db                *sql.DB
 	accountRepository *AccountRepository
 	secretRepository  *SecretRepository
+	clusterRepository *ClusterRepository
 	logger            *zap.SugaredLogger
 }
 
@@ -62,6 +63,18 @@ func (s *Store) Secret() store.SecretRepository {
 	return s.secretRepository
 }
 
+func (s *Store) Cluster() store.ClusterRepository {
+	if s.clusterRepository != nil {
+		return s.clusterRepository
+	}
+
+	s.clusterRepository = &ClusterRepository{
+		store: s,
+	}
+
+	return s.clusterRepository
+}
+
 func (s *Store) initialize(ctx context.Context, store *Store, config *config.ApiConfig) error {
 	if err := store.Account().Init(ctx, config.Admin); err != nil {
 		return err
@@ -82,6 +95,11 @@ func (s *Store) initialize(ctx context.Context, store *Store, config *config.Api
 		return err
 	}
 	sugar.Infof("table secret is initialized")
+
+	if err := store.Cluster().Init(ctx, config.Clusters); err != nil {
+		return err
+	}
+	sugar.Infof("table cluster is initialized")
 
 	return nil
 }

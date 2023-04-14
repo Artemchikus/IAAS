@@ -1,6 +1,7 @@
 package api
 
 import (
+	"IAAS/internal/business/openstack"
 	"IAAS/internal/config"
 	"IAAS/internal/models"
 	"IAAS/internal/store/postgres"
@@ -16,14 +17,15 @@ func Start(config *config.ApiConfig) error {
 	if err != nil {
 		return err
 	}
-
 	defer db.Close()
 
 	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "initial-request")
 
 	store := postgres.New(ctx, db, config)
 
-	srv := newServer(store)
+	fetcher := openstack.New(ctx, config)
+
+	srv := newServer(store, fetcher)
 
 	addr := config.BindAddr
 

@@ -5,6 +5,7 @@ import (
 	"IAAS/internal/store"
 	"context"
 	"database/sql"
+	"log"
 	"time"
 )
 
@@ -193,12 +194,14 @@ func (r *AccountRepository) createAccountTable(ctx context.Context) error {
 func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Account) error {
 	defer r.logging(ctx, "CREATE admin")()
 
-	admin, err := models.NewAccount(admin.Name, admin.Email, admin.Password)
+	adm, err := models.NewAccount(admin.Name, admin.Email, admin.Password)
 	if err != nil {
 		return err
 	}
 
-	if _, err := r.store.Account().FindByEmail(ctx, admin.Email); err == nil {
+	log.Println(adm.Email)
+
+	if _, err := r.store.Account().FindByEmail(ctx, adm.Email); err == nil {
 		r.store.logger.With(
 			"table", "account",
 			"request_id", ctx.Value(models.CtxKeyRequestID),

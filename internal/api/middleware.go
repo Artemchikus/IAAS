@@ -40,7 +40,7 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenStr := r.Header.Get("x-jwt-token")
 
-		secret, err := s.store.Secret().GetByType(r.Context(), "jwt")
+		secret, err := s.store.Secret().FindByType(r.Context(), "jwt")
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return

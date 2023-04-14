@@ -12,7 +12,7 @@ type SecretRepository struct {
 	store *Store
 }
 
-func (r *SecretRepository) GetByType(ctx context.Context, t string) (*models.Secret, error) {
+func (r *SecretRepository) FindByType(ctx context.Context, t string) (*models.Secret, error) {
 	defer r.logging(ctx, "GET BY type")()
 
 	rows, err := r.store.db.Query("SELECT * FROM secret WHERE type = $1", t)
@@ -73,7 +73,7 @@ func scanIntoSecret(rows *sql.Rows) (*models.Secret, error) {
 func (r *SecretRepository) storeSecret(ctx context.Context, secret *models.Secret) error {
 	defer r.logging(ctx, "INSERT secret")()
 
-	_, err := r.store.secretRepository.GetByType(ctx, secret.Type)
+	_, err := r.store.secretRepository.FindByType(ctx, secret.Type)
 	if err == nil {
 		r.store.logger.With(
 			"table", "secret",

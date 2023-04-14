@@ -29,7 +29,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secret, err := s.store.Secret().GetByType(r.Context(), "jwt")
+	secret, err := s.store.Secret().FindByType(r.Context(), "jwt")
 	if err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return
@@ -168,7 +168,7 @@ func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 	refreshTokenStr := r.Header.Get("x-refresh-token")
 
-	secret, err := s.store.Secret().GetByType(r.Context(), "jwt")
+	secret, err := s.store.Secret().FindByType(r.Context(), "jwt")
 	if err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return

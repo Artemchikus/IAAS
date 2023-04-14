@@ -25,3 +25,7 @@ rebuildtestpq:
 	@docker stop some-test-postgres
 	@docker rm some-test-postgres
 	@docker run --name some-test-postgres -e POSTGRES_PASSWORD=iaas -e POSTGRES_DB=iaas-test -p 5433:5432 -d postgres
+
+testcover:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out

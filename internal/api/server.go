@@ -1,6 +1,7 @@
 package api
 
 import (
+	"IAAS/internal/business"
 	"IAAS/internal/store"
 	"encoding/json"
 	"log"
@@ -12,16 +13,17 @@ import (
 )
 
 type server struct {
-	router *mux.Router
-	store  store.Storage
-	logger *zap.SugaredLogger
+	router  *mux.Router
+	store   store.Storage
+	logger  *zap.SugaredLogger
+	fetcher business.Fetcher
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.router.ServeHTTP(w, r)
 }
 
-func newServer(store store.Storage) *server {
+func newServer(store store.Storage, fetcher business.Fetcher) *server {
 	zapLog, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)
@@ -30,9 +32,10 @@ func newServer(store store.Storage) *server {
 	sugar := zapLog.Sugar()
 
 	s := &server{
-		logger: sugar,
-		router: mux.NewRouter(),
-		store:  store,
+		logger:  sugar,
+		router:  mux.NewRouter(),
+		store:   store,
+		fetcher: fetcher,
 	}
 
 	s.configureRouter()
