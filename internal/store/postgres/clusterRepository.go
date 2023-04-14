@@ -5,6 +5,7 @@ import (
 	"IAAS/internal/store"
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 )
 
@@ -167,6 +168,10 @@ func (r *ClusterRepository) createClusterTable(ctx context.Context) error {
 
 func (r *ClusterRepository) addCluster(ctx context.Context, cluster *models.Cluster) error {
 	defer r.logging(ctx, "CREATE cluster for location: "+cluster.Location)()
+
+	if cluster.Admin == nil {
+		return errors.New("admin for cluster not set")
+	}
 
 	clusterAdmin, err := models.NewAccount(cluster.Admin.Name, cluster.Admin.Email, cluster.Admin.Password)
 	if err != nil {
