@@ -21,3 +21,9 @@ type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type CreateClusterRequest struct {
+	Location string                `json:"location"`
+	Url      string                `json:"url"`
+	Admin    *CreateAccountRequest `json:"admin"`
+}

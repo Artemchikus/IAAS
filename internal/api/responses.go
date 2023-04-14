@@ -33,3 +33,22 @@ type DeleteAccountResponse struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+
+type CreateClusterResponse struct {
+	ID        int    `json:"id"`
+	Location  string `json:"location"`
+	AdminName string `json:"admin_name"`
+	URL       string `json:"url"`
+}
+
+type DeleteClusterResponse struct {
+	DeletedID int `json:"deleted_id"`
+}
+
+type GetClusterResponse struct {
+	ID       int    `json:"id"`
+	Location string `json:"location"`
+	URL      string `json:"url"`
+}
+
+type GetAllClustersResponse []*GetClusterResponse

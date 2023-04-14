@@ -46,12 +46,15 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 			return
 		}
 
-		userID, err := getId(r)
+		vars, err := getVars(r)
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
-		account, err := s.store.Account().FindByID(r.Context(), userID)
+
+		accId := vars["account_id"]
+
+		account, err := s.store.Account().FindByID(r.Context(), accId)
 		if err != nil {
 			s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
 			return

@@ -1,4 +1,4 @@
-GET http://localhost:3000/account/2/admin/all
+GET http://localhost:3000/account/1/admin/account
 x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgxMzg5NTczfQ.Vkwdp2qH29NoQjgbiOGvBcN0sDyVVrt03Xb1t4PaSe8
 
 ###
@@ -41,3 +41,34 @@ content-type: application/json
     "email": "admin@example.com",
     "password": "administrator"
 }
+
+###
+GET http://localhost:3000/account/1/cluster
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE0NzYwMzZ9.aVT8mCRFwJN2uLYGKaD0U4OxcLM9y10nS7lj9lkMJfw
+
+###
+POST http://localhost:3000/account/1/admin/cluster
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE0NzYwMzZ9.aVT8mCRFwJN2uLYGKaD0U4OxcLM9y10nS7lj9lkMJfw
+content-type: application/json
+
+{
+    "location": "Australia/Sidney",
+    "url": "http://192.168.122.23",
+    "admin": {
+        "name": "cluster_admin",
+        "email": "cluster_admin@example.com",
+        "password": "administrator"
+    }
+}
+
+###
+DELETE  http://localhost:3000/account/1/admin/cluster/4
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE0NzYwMzZ9.aVT8mCRFwJN2uLYGKaD0U4OxcLM9y10nS7lj9lkMJfw
+
+###
+GET  http://localhost:3000/account/2/cluster/3
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgxNDc2NDM1fQ.MvZAw0KmXYcOVwjkeyIOMvXiOMQt2Gqcte4PEemyNJw
+
+###
+GET  http://localhost:3000/account/2/cluster
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgxNDc2NDM1fQ.MvZAw0KmXYcOVwjkeyIOMvXiOMQt2Gqcte4PEemyNJw

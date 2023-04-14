@@ -83,12 +83,15 @@ func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
-	id, err := getId(r)
+	vars, err := getVars(r)
 	if err != nil {
 		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
-	account, err := s.store.Account().FindByID(r.Context(), id)
+
+	accId := vars["account_id"]
+
+	account, err := s.store.Account().FindByID(r.Context(), accId)
 	if err != nil {
 		s.error(w, r, http.StatusNotFound, err)
 		return
@@ -148,18 +151,21 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
-	id, err := getId(r)
+	vars, err := getVars(r)
 	if err != nil {
 		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
-	if err := s.store.Account().Delete(r.Context(), id); err != nil {
+
+	accId := vars["account_id"]
+
+	if err := s.store.Account().Delete(r.Context(), accId); err != nil {
 		s.error(w, r, http.StatusNotFound, err)
 		return
 	}
 
 	resp := DeleteAccountResponse{
-		DeletedID: id,
+		DeletedID: accId,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)
@@ -205,6 +211,110 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 	resp := &RefreshTokenResponse{
 		Refresh: refreshToken,
 		JWT:     jwtToken,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetAllClusters(w http.ResponseWriter, r *http.Request) {
+	clusters, err := s.store.Cluster().GetAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	resp := make(GetAllClustersResponse, 0)
+
+	for _, cl := range clusters {
+		r := GetClusterResponse{
+			ID:       cl.ID,
+			Location: cl.Location,
+			URL:      cl.URL,
+		}
+		resp = append(resp, &r)
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetClusterByID(w http.ResponseWriter, r *http.Request) {
+	vars, err := getVars(r)
+	if err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	clId := vars["cluster_id"]
+
+	cluster, err := s.store.Cluster().FindByID(r.Context(), clId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := GetClusterResponse{
+		ID:       cluster.ID,
+		Location: cluster.Location,
+		URL:      cluster.URL,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleCreateCluster(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateClusterRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	cluster, err := models.NewCluster(req.Admin.Name, req.Admin.Email, req.Admin.Password, req.Url, req.Location)
+	if err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := cluster.Admin.Validate(); err != nil {
+		s.error(w, r, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	if err := cluster.Admin.BeforeCreate(); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := s.store.Cluster().Create(r.Context(), cluster); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	resp := CreateClusterResponse{
+		ID:        cluster.ID,
+		Location:  cluster.Location,
+		URL:       cluster.URL,
+		AdminName: cluster.Admin.Name,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleDeleteCluster(w http.ResponseWriter, r *http.Request) {
+	vars, err := getVars(r)
+	if err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	clId := vars["cluster_id"]
+
+	if err := s.store.Cluster().Delete(r.Context(), clId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteClusterResponse{
+		DeletedID: clId,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)
