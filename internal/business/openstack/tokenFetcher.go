@@ -52,7 +52,7 @@ func generateReq(account *models.Account) (GetTokenRequest, error) {
 					Domain: &Domain{
 						ID: "default",
 					},
-					Password: account.EncryptedPassword,
+					Password: account.Password,
 				},
 			},
 		},

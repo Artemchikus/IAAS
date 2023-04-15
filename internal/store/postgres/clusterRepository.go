@@ -50,7 +50,7 @@ func (r *ClusterRepository) Create(ctx context.Context, cluster *models.Cluster)
 
 	query := `
 	INSERT INTO cluster 
-	(location, url, admin_name, admin_email, admin_encrypted_password)  
+	(location, url, admin_name, admin_email, admin_password)  
 	values ($1, $2, $3, $4, $5) RETURNING *`
 
 	row, err := r.store.db.Query(
@@ -59,7 +59,7 @@ func (r *ClusterRepository) Create(ctx context.Context, cluster *models.Cluster)
 		cluster.URL,
 		cluster.Admin.Name,
 		cluster.Admin.Email,
-		cluster.Admin.EncryptedPassword)
+		cluster.Admin.Password)
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func scanIntoCluster(rows *sql.Rows) (*models.Cluster, error) {
 		&cluster.URL,
 		&cluster.Admin.Name,
 		&cluster.Admin.Email,
-		&cluster.Admin.EncryptedPassword); err != nil {
+		&cluster.Admin.Password); err != nil {
 		return nil, err
 	}
 
@@ -161,7 +161,7 @@ func (r *ClusterRepository) createClusterTable(ctx context.Context) error {
 		url VARCHAR(50) NOT NULL,
 		admin_name VARCHAR(50) NOT NULL,
 		admin_email VARCHAR(50) NOT NULL,
-		admin_encrypted_password VARCHAR(100) NOT NULL
+		admin_password VARCHAR(100) NOT NULL
 	)`
 
 	_, err := r.store.db.Exec(query)

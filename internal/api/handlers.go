@@ -279,11 +279,6 @@ func (s *server) handleCreateCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := cluster.Admin.BeforeCreate(); err != nil {
-		s.error(w, r, http.StatusInternalServerError, err)
-		return
-	}
-
 	if err := s.store.Cluster().Create(r.Context(), cluster); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return

@@ -44,7 +44,7 @@ content-type: application/json
 
 ###
 GET http://localhost:3000/account/1/cluster
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE0NzYwMzZ9.aVT8mCRFwJN2uLYGKaD0U4OxcLM9y10nS7lj9lkMJfw
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE1Nzk2MzF9.kpGI4MI4x-PI0VXN_eyxBQX5cGND-papRbkBNO7OkR4
 
 ###
 POST http://localhost:3000/account/1/admin/cluster
