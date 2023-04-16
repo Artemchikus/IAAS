@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 )
 
@@ -17,9 +16,9 @@ type ProjectFetcher struct {
 func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId string) (*models.Project, error) {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	deleteProjectURL := cluster.URL + "/v3/projects/" + projectId
+	fetchProjectURL := cluster.URL + "/v3/projects/" + projectId
 
-	req, err := http.NewRequest("GET", deleteProjectURL, nil)
+	req, err := http.NewRequest("GET", fetchProjectURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -39,23 +38,21 @@ func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId
 	}
 	defer resp.Body.Close()
 
-	log.Println(resp)
-
 	project := &models.Project{}
 
-	findProjectRes := &findProjectResponse{
+	fetchProjectRes := &FetchProjectResponse{
 		Project: project,
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&findProjectRes); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&fetchProjectRes); err != nil {
 		return nil, err
 	}
 
-	return findProjectRes.Project, nil
+	return fetchProjectRes.Project, nil
 }
 
 func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *models.Project) error {
-	reqDara := generateCreateReq(project)
+	reqDara := f.generateCreateReq(project)
 
 	json_data, err := json.Marshal(&reqDara)
 	if err != nil {
@@ -135,7 +132,7 @@ func (f *ProjectFetcher) Update(ctx context.Context, clusterId int) {
 
 }
 
-func generateCreateReq(project *models.Project) *CreateProjectRequest {
+func (f *ProjectFetcher) generateCreateReq(project *models.Project) *CreateProjectRequest {
 	req := &CreateProjectRequest{
 		Project: &CreateProject{
 			DomainID:    project.DomainID,

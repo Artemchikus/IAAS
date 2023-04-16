@@ -12,6 +12,17 @@ type Project struct {
 
 type Options struct{}
 
+func NewProject(name, description string) *Project {
+	return &Project{
+		Name:        name,
+		Description: description,
+		Tags:        make([]string, 0),
+		Options:     &Options{},
+		Enabled:     true,
+		DomainID:    "default",
+	}
+}
+
 // {
 // 	"description": "Service Project",
 // 	"domain_id": "default",

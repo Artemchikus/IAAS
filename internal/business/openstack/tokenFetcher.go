@@ -12,7 +12,7 @@ type TokenFetcher struct {
 }
 
 func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.Account) (*models.Token, error) {
-	req := generateGetReq(account)
+	req := f.generateGetReq(account)
 
 	json_data, err := json.Marshal(&req)
 	if err != nil {
@@ -43,7 +43,7 @@ func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.A
 	return token, nil
 }
 
-func generateGetReq(account *models.Account) *GetTokenRequest {
+func (f *TokenFetcher) generateGetReq(account *models.Account) *GetTokenRequest {
 	methods := [1]string{"password"}
 
 	req := &GetTokenRequest{

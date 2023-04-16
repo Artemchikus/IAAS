@@ -49,3 +49,16 @@ type CreateProject struct {
 	Description string `json:"description"`
 	Enabled     bool   `json:"enabled"`
 }
+
+type CreateUserRequest struct {
+	User *CreateUser `json:"user"`
+}
+
+type CreateUser struct {
+	Name      string `json:"name"`
+	DomainID  string `json:"domain_id"`
+	ProjectID string `json:"default_project_id"`
+	Password  string `json:"password"`
+	Enabled   bool   `json:"enabled"`
+	Email     string `json:"email"`
+}
