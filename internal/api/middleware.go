@@ -25,7 +25,7 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 		)
 		sugar.Infof("started %s %s", r.Method, r.RequestURI)
 
-		start := time.Now()
+		start := time.Now().UTC()
 		rw := &responseWriter{w, http.StatusOK}
 		next.ServeHTTP(rw, r)
 

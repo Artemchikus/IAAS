@@ -12,26 +12,29 @@ type TokenFetcher struct {
 }
 
 func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.Account) (*models.Token, error) {
-	req, err := generateReq(account)
+	req := generateGetReq(account)
+
+	json_data, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err
 	}
 
-	json_data, err := json.Marshal(req)
+	cluster := f.fetcher.clusters[clusterId-1]
+
+	getTokenURL := cluster.URL + "/v3/auth/tokens"
+
+	resp, err := f.fetcher.client.Post(getTokenURL, "application/json", bytes.NewBuffer(json_data))
 	if err != nil {
 		return nil, err
 	}
-
-	cluster := f.fetcher.clusters[1]
-
-	resp, err := f.fetcher.client.Post(cluster.URL, "application/json", bytes.NewBuffer(json_data))
-	if err != nil {
-		return nil, err
-	}
+	defer resp.Body.Close()
 
 	token := &models.Token{}
+	tokenRes := &GetTokenResponse{
+		Token: token,
+	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&token); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&tokenRes); err != nil {
 		return nil, err
 	}
 
@@ -40,23 +43,33 @@ func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.A
 	return token, nil
 }
 
-func generateReq(account *models.Account) (GetTokenRequest, error) {
+func generateGetReq(account *models.Account) *GetTokenRequest {
 	methods := [1]string{"password"}
 
-	req := GetTokenRequest{
-		Auth: &Identity{
-			Methods: methods[:],
-			Password: &Password{
-				User: &User{
-					Name: account.Name,
+	req := &GetTokenRequest{
+		Auth: &Auth{
+			Identity: &Identity{
+				Methods: methods[:],
+				Password: &Password{
+					User: &User{
+						Name: account.Name,
+						Domain: &Domain{
+							ID: "default",
+						},
+						Password: account.Password,
+					},
+				},
+			},
+			Scope: &Scope{
+				Project: &GetTokenProject{
+					Name: "admin", // TODO add support for different project names
 					Domain: &Domain{
 						ID: "default",
 					},
-					Password: account.Password,
 				},
 			},
 		},
 	}
 
-	return req, nil
+	return req
 }

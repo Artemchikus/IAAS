@@ -27,9 +27,9 @@ type Account struct {
 func NewAccount(name, email, password string) (*Account, error) {
 	return &Account{
 		Name:      name,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
 		Email:     email,
-		UpdatedAt: time.Now(),
+		UpdatedAt: time.Now().UTC(),
 		Password:  password,
 		Role:      "user",
 	}, nil
@@ -67,7 +67,7 @@ func (a *Account) ValidateJWTToken(tokenStr, secret string) error {
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
-	if float64(time.Now().Unix()) >= claims["ExpiresAt"].(float64) {
+	if float64(time.Now().UTC().Unix()) >= claims["ExpiresAt"].(float64) {
 		return errors.New("token expired")
 	}
 

@@ -1,6 +1,7 @@
 package postgres_test
 
 import (
+	"IAAS/internal/models"
 	"IAAS/internal/store"
 	"IAAS/internal/store/postgres"
 	"testing"
@@ -14,12 +15,12 @@ func TestSecretRepository_FindByType(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(postgres.TestInitContext(t), db, config)
+	s := postgres.New(models.TestInitContext(t), db, config)
 
-	_, err := s.Secret().FindByType(postgres.TestRequestContext(t), "test")
+	_, err := s.Secret().FindByType(models.TestRequestContext(t), "test")
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	sec, err := s.Secret().FindByType(postgres.TestRequestContext(t), "jwt")
+	sec, err := s.Secret().FindByType(models.TestRequestContext(t), "jwt")
 	assert.NoError(t, err)
 	assert.NotNil(t, sec)
 }

@@ -23,7 +23,7 @@ func Start(config *config.ApiConfig) error {
 
 	store := postgres.New(ctx, db, config)
 
-	fetcher := openstack.New(ctx, config)
+	fetcher := openstack.New(ctx, config, store)
 
 	srv := newServer(store, fetcher)
 

@@ -47,7 +47,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now()); err != nil {
+	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now().UTC()); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
@@ -203,7 +203,7 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now()); err != nil {
+	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now().UTC()); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
@@ -317,7 +317,7 @@ func (s *server) handleDeleteCluster(w http.ResponseWriter, r *http.Request) {
 
 func createJWT(account *models.Account, secret string) (string, error) {
 	claims := &jwt.MapClaims{
-		"ExpiresAt":    time.Now().Add(time.Minute * 30).Unix(),
+		"ExpiresAt":    time.Now().UTC().Add(time.Minute * 30).Unix(),
 		"AccountEmail": account.Email,
 		"AccountRole":  account.Role,
 	}
@@ -327,7 +327,7 @@ func createJWT(account *models.Account, secret string) (string, error) {
 
 func createRefreshToken(account *models.Account, secret string) (string, error) {
 	claims := &jwt.MapClaims{
-		"ExpiresAt":    time.Now().Add(time.Hour * 24).Unix(),
+		"ExpiresAt":    time.Now().UTC().Add(time.Hour * 24).Unix(),
 		"AccountEmail": account.Email,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -351,7 +351,7 @@ func getAccFromRefreshToken(ctx context.Context, s store.Storage, tokenStr, secr
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
-	if float64(time.Now().Unix()) >= claims["ExpiresAt"].(float64) {
+	if float64(time.Now().UTC().Unix()) >= claims["ExpiresAt"].(float64) {
 		return nil, errTokenExpired
 	}
 

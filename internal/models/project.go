@@ -7,7 +7,10 @@ type Project struct {
 	DomainID    string   `json:"domain_id"`
 	Description string   `json:"description"`
 	Tags        []string `json:"tags"`
+	Options     *Options `json:"options"`
 }
+
+type Options struct{}
 
 // {
 // 	"description": "Service Project",

@@ -17,10 +17,10 @@ func TestAccountRepository_Create(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(postgres.TestInitContext(t), db, config)
+	s := postgres.New(models.TestInitContext(t), db, config)
 
 	u := models.TestAccount(t)
-	assert.NoError(t, s.Account().Create(postgres.TestRequestContext(t), u))
+	assert.NoError(t, s.Account().Create(models.TestRequestContext(t), u))
 	assert.NotNil(t, u)
 }
 
@@ -30,14 +30,14 @@ func TestAccountRepository_FindByEmail(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(postgres.TestInitContext(t), db, config)
+	s := postgres.New(models.TestInitContext(t), db, config)
 
 	a1 := models.TestAccount(t)
-	_, err := s.Account().FindByEmail(postgres.TestRequestContext(t), a1.Email)
+	_, err := s.Account().FindByEmail(models.TestRequestContext(t), a1.Email)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	s.Account().Create(postgres.TestRequestContext(t), a1)
-	a2, err := s.Account().FindByEmail(postgres.TestRequestContext(t), a1.Email)
+	s.Account().Create(models.TestRequestContext(t), a1)
+	a2, err := s.Account().FindByEmail(models.TestRequestContext(t), a1.Email)
 	assert.NoError(t, err)
 	assert.NotNil(t, a2)
 }
@@ -48,14 +48,14 @@ func TestAccountRepository_FindByID(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(postgres.TestInitContext(t), db, config)
+	s := postgres.New(models.TestInitContext(t), db, config)
 
 	a1 := models.TestAccount(t)
-	_, err := s.Account().FindByID(postgres.TestRequestContext(t), 2)
+	_, err := s.Account().FindByID(models.TestRequestContext(t), 2)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	s.Account().Create(postgres.TestRequestContext(t), a1)
-	a2, err := s.Account().FindByID(postgres.TestRequestContext(t), a1.ID)
+	s.Account().Create(models.TestRequestContext(t), a1)
+	a2, err := s.Account().FindByID(models.TestRequestContext(t), a1.ID)
 	assert.NoError(t, err)
 	assert.NotNil(t, a2)
 }
@@ -65,14 +65,14 @@ func TestAccountRepository_Update(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(postgres.TestInitContext(t), db, config)
+	s := postgres.New(models.TestInitContext(t), db, config)
 
 	a1 := models.TestAccount(t)
-	_, err := s.Account().FindByID(postgres.TestRequestContext(t), 2)
+	_, err := s.Account().FindByID(models.TestRequestContext(t), 2)
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
-	s.Account().Create(postgres.TestRequestContext(t), a1)
-	a2, err := s.Account().FindByID(postgres.TestRequestContext(t), a1.ID)
+	s.Account().Create(models.TestRequestContext(t), a1)
+	a2, err := s.Account().FindByID(models.TestRequestContext(t), a1.ID)
 	assert.NoError(t, err)
 	assert.NotNil(t, a2)
 }
@@ -83,17 +83,17 @@ func TestAccountRepository_GetAll(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(postgres.TestInitContext(t), db, config)
+	s := postgres.New(models.TestInitContext(t), db, config)
 
-	err := s.Account().Delete(postgres.TestRequestContext(t), 1)
+	err := s.Account().Delete(models.TestRequestContext(t), 1)
 	assert.NoError(t, err)
 
-	_, err = s.Account().GetAll(postgres.TestRequestContext(t))
+	_, err = s.Account().GetAll(models.TestRequestContext(t))
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())
 
 	a1 := models.TestAccount(t)
-	s.Account().Create(postgres.TestRequestContext(t), a1)
-	as, err := s.Account().GetAll(postgres.TestRequestContext(t))
+	s.Account().Create(models.TestRequestContext(t), a1)
+	as, err := s.Account().GetAll(models.TestRequestContext(t))
 	assert.NoError(t, err)
 	assert.NotNil(t, as)
 }

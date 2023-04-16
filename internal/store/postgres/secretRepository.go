@@ -86,8 +86,8 @@ func (r *SecretRepository) storeSecret(ctx context.Context, secret *models.Secre
 	(value, type, created_at, updated_at)
 	values ($1, $2, $3, $4)`
 
-	secret.CreatedAt = time.Now()
-	secret.UpdatedAt = time.Now()
+	secret.CreatedAt = time.Now().UTC()
+	secret.UpdatedAt = time.Now().UTC()
 
 	_, err = r.store.db.Query(
 		query,
@@ -107,7 +107,7 @@ func (r *SecretRepository) logging(ctx context.Context, query string) func() {
 	sugar := r.store.logger.With(
 		"table", "secret",
 	)
-	start := time.Now()
+	start := time.Now().UTC()
 	sugar.Infof("started query %s", query)
 
 	return func() {

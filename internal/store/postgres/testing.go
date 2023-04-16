@@ -3,7 +3,6 @@ package postgres
 import (
 	"IAAS/internal/config"
 	"IAAS/internal/models"
-	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -35,16 +34,25 @@ func TestConfig(t *testing.T) *config.ApiConfig {
 	config := config.NewConfig()
 	config.JwtKey = "secretkey"
 	config.Admin = models.TestAdmin(t)
-	config.Clusters = models.TestClusters(t)
+	config.Clusters = TestClusters(t)
 
 	return config
 }
 
-func TestInitContext(t *testing.T) context.Context {
-	return context.WithValue(context.Background(), models.CtxKeyRequestID, "test-initial-request")
+func TestClusters(t *testing.T) []*models.Cluster {
+	cluster := &models.Cluster{
+		Location: "rus",
+		URL:      "rus",
+		Admin:    models.TestAdmin(t),
+	}
+
+	return []*models.Cluster{cluster}
 }
 
-func TestRequestContext(t *testing.T) context.Context {
-	return context.WithValue(context.Background(), models.CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
-
+func TestCluster(t *testing.T) *models.Cluster {
+	return &models.Cluster{
+		Location: "test",
+		URL:      "test",
+		Admin:    models.TestAdmin(t),
+	}
 }

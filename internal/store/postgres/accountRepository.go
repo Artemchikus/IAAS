@@ -230,7 +230,7 @@ func (r *AccountRepository) logging(ctx context.Context, query string) func() {
 	sugar := r.store.logger.With(
 		"table", "account",
 	)
-	start := time.Now()
+	start := time.Now().UTC()
 	sugar.Infof("started query %s", query)
 
 	return func() {

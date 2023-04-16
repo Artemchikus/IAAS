@@ -38,7 +38,7 @@ type VolumeAttachmentFetcher interface {
 }
 
 type UserFetcher interface {
-	FetchByID(context.Context, int)
+	FetchByID(context.Context, int, int)
 	Create(context.Context, int)
 	Delete(context.Context, int)
 	Update(context.Context, int)
@@ -108,9 +108,9 @@ type PortFetcher interface {
 }
 
 type ProjectFetcher interface {
-	FetchByID(context.Context, int)
-	Create(context.Context, int)
-	Delete(context.Context, int)
+	FetchByID(context.Context, int, string) (*models.Project, error)
+	Create(context.Context, int, *models.Project) error
+	Delete(context.Context, int, string) error
 	Update(context.Context, int)
 }
 

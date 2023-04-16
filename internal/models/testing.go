@@ -1,6 +1,9 @@
 package models
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 func TestAccount(t *testing.T) *Account {
 	return &Account{
@@ -18,20 +21,11 @@ func TestAdmin(t *testing.T) *Account {
 	}
 }
 
-func TestClusters(t *testing.T) []*Cluster {
-	cluster := &Cluster{
-		Location: "rus",
-		URL:      "rus",
-		Admin:    TestAdmin(t),
-	}
-
-	return []*Cluster{cluster}
+func TestInitContext(t *testing.T) context.Context {
+	return context.WithValue(context.Background(), CtxKeyRequestID, "test-initial-request")
 }
 
-func TestCluster(t *testing.T) *Cluster {
-	return &Cluster{
-		Location: "test",
-		URL:      "test",
-		Admin:    TestAdmin(t),
-	}
+func TestRequestContext(t *testing.T) context.Context {
+	return context.WithValue(context.Background(), CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
+
 }

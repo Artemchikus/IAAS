@@ -18,7 +18,7 @@ url = "http://192.168.122.20:5000"
 [clusters.cluster_admin]
 name = "admin"
 email = "admin@example.com"
-password = "administrator"
+password = "openstack"
 
 [[clusters]]
 location = "Europe/Paris"
@@ -27,7 +27,7 @@ url = "http://192.168.122.21:5000"
 [clusters.cluster_admin]
 name = "admin"
 email = "admin@example.com"
-password = "administrator"
+password = "openstack"
 
 [[clusters]]
 location = "Asia/Hong_Kong"
@@ -36,4 +36,4 @@ url = "http://192.168.122.22:5000"
 [clusters.cluster_admin]
 name = "admin"
 email = "admin@example.com"
-password = "administrator"
+password = "openstack"

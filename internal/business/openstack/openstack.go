@@ -4,6 +4,7 @@ import (
 	"IAAS/internal/business"
 	"IAAS/internal/config"
 	"IAAS/internal/models"
+	"IAAS/internal/store/postgres"
 	"context"
 	"net/http"
 
@@ -11,25 +12,31 @@ import (
 )
 
 type Fetcher struct {
-	logger        *zap.SugaredLogger
-	client        *http.Client
-	serverFetcher *ServerFetcher
-	userFetcher   *UserFetcher
-	tokenFetcher  *TokenFetcher
-	clusters      []*models.Cluster
+	logger         *zap.SugaredLogger
+	client         *http.Client
+	serverFetcher  *ServerFetcher
+	userFetcher    *UserFetcher
+	tokenFetcher   *TokenFetcher
+	projectFetcher *ProjectFetcher
+	clusters       []*models.Cluster
 }
 
-func New(ctx context.Context, config *config.ApiConfig) *Fetcher {
+func New(ctx context.Context, config *config.ApiConfig, store *postgres.Store) *Fetcher {
 	log, _ := zap.NewProduction()
 	defer log.Sync()
 	sugar := log.Sugar()
 
 	client := &http.Client{}
 
+	clusters, err := store.Cluster().GetAll(ctx)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	return &Fetcher{
 		logger:   sugar,
 		client:   client,
-		clusters: config.Clusters,
+		clusters: clusters,
 	}
 }
 
@@ -67,4 +74,16 @@ func (f *Fetcher) Token() business.TokenFetcher {
 	}
 
 	return f.tokenFetcher
+}
+
+func (f *Fetcher) Project() business.ProjectFetcher {
+	if f.projectFetcher != nil {
+		return f.projectFetcher
+	}
+
+	f.projectFetcher = &ProjectFetcher{
+		fetcher: f,
+	}
+
+	return f.projectFetcher
 }

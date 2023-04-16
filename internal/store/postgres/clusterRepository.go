@@ -210,7 +210,7 @@ func (r *ClusterRepository) logging(ctx context.Context, query string) func() {
 	sugar := r.store.logger.With(
 		"table", "cluster",
 	)
-	start := time.Now()
+	start := time.Now().UTC()
 	sugar.Infof("started query %s", query)
 
 	return func() {
