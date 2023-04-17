@@ -4,7 +4,7 @@ type Flavor struct {
 	Disabled    bool     `json:"disabled"`
 	Description string   `json:"description"`
 	Disk        int      `json:"disk"`
-	ID          int      `json:"id"`
+	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	IsPublic    bool     `json:"is_public"`
 	Properties  []string `json:"properties"`
@@ -12,6 +12,7 @@ type Flavor struct {
 	RXTXFactor  float32  `json:"rxtx_factor"`
 	Swap        string   `json:"swap"`
 	VCPUs       int      `json:"vcpus"`
+	Ephemeral   int      `json:"ephemeral"`
 }
 
 // {

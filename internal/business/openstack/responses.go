@@ -21,3 +21,11 @@ type CreateUserResponse struct {
 type FetchUserResponse struct {
 	User *map[string]interface{} `json:"user"`
 }
+
+type FetchFlavorResponse struct {
+	Flavor *models.Flavor `json:"flavor"`
+}
+
+type CreateFlavorResponse struct {
+	Flavor *models.Flavor `json:"flavor"`
+}

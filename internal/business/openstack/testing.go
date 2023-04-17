@@ -46,3 +46,16 @@ func TestImage(t *testing.T) *models.Image {
 		Visibility:      "public",
 	}
 }
+
+func TestFlavor(t *testing.T) *models.Flavor {
+	return &models.Flavor{
+		Disk:       2,
+		RAM:        300,
+		VCPUs:      1,
+		Name:       "m1.small",
+		Ephemeral:  0,
+		IsPublic:   true,
+		RXTXFactor: 1.0,
+		Swap:       "0",
+	}
+}

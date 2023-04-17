@@ -50,9 +50,9 @@ func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId
 }
 
 func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *models.Project) error {
-	reqDara := f.generateCreateReq(project)
+	reqData := f.generateCreateReq(project)
 
-	json_data, err := json.Marshal(&reqDara)
+	json_data, err := json.Marshal(&reqData)
 	if err != nil {
 		return err
 	}

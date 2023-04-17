@@ -2,12 +2,12 @@ package business
 
 type Fetcher interface {
 	Server() ServerFetcher
-	// Flavor() FlavorFetcher
+	Flavor() FlavorFetcher
 	// Volume() VolumeFetcher
 	// VolumeAttachment() VolumeAttachmentFetcher
 	User() UserFetcher
 	Token() TokenFetcher
-	// Cluster() ClusterFetcher
+	Image() ImageFetcher
 	// Subnet() SubnetFetcher
 	// Network() NetworkFetcher
 	// SSHKey() SSHKeyFetcher

@@ -43,12 +43,60 @@ func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.A
 	return token, nil
 }
 
+func (f *TokenFetcher) Refresh(ctx context.Context, clusterId int, oldToken *models.Token) (*models.Token, error) {
+	req := f.generateRefreshReq(oldToken)
+
+	json_data, err := json.Marshal(&req)
+	if err != nil {
+		return nil, err
+	}
+
+	cluster := f.fetcher.clusters[clusterId-1]
+
+	getTokenURL := cluster.URL + ":5000" + "/v3/auth/tokens"
+
+	resp, err := f.fetcher.client.Post(getTokenURL, "application/json", bytes.NewBuffer(json_data))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	newToken := &models.Token{}
+	tokenRes := &GetTokenResponse{
+		Token: newToken,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&tokenRes); err != nil {
+		return nil, err
+	}
+
+	newToken.Value = resp.Header.Get("X-Subject-Token")
+
+	return newToken, nil
+}
+
+func (f *TokenFetcher) generateRefreshReq(token *models.Token) *RefreshTokenRequest {
+	methods := [1]string{"token"}
+
+	req := &RefreshTokenRequest{
+		Auth: &RefreshTokenAuth{
+			Identity: &TokenIdentity{
+				Methods: methods[:],
+				Token: &Token{
+					ID: token.Value,
+				},
+			},
+		},
+	}
+	return req
+}
+
 func (f *TokenFetcher) generateGetReq(account *models.Account) *GetTokenRequest {
 	methods := [1]string{"password"}
 
 	req := &GetTokenRequest{
-		Auth: &Auth{
-			Identity: &Identity{
+		Auth: &GetTokenAuth{
+			Identity: &PasswordIdentity{
 				Methods: methods[:],
 				Password: &Password{
 					User: &User{

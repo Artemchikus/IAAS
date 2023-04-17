@@ -4,23 +4,22 @@ import "time"
 
 type Volume struct {
 	Attachments      []VolumeAttachment `json:"attachments"`
-	AvailabilityZone string            `json:"availability_zone"`
-	Bootable         bool              `json:"bootable"`
-	CreatedAt        time.Time         `json:"created_at"`
-	Description      string            `json:"description"`
-	Encrypted        bool              `json:"encrypted"`
-	ID               string            `json:"id"`
-	MultiAttach      bool              `json:"multiattach"`
-	Name             string            `json:"name"`
-	Host             string            `json:"host"`
-	Properties       []Property        `json:"properties"`
-	Size             int               `json:"size"`
-	SnapshotID       string            `json:"snapshot_id"`
-	SourceVolumeID   string            `json:"source_volid"`
-	Status           string            `json:"status"`
-	Type             string            `json:"type"`
-	UpdatedAt        time.Time         `json:"updated_at"`
-	AccountID        string            `json:"user_id"`
+	AvailabilityZone string             `json:"availability_zone"`
+	Bootable         bool               `json:"bootable"`
+	CreatedAt        time.Time          `json:"created_at"`
+	Description      string             `json:"description"`
+	Encrypted        bool               `json:"encrypted"`
+	ID               string             `json:"id"`
+	MultiAttach      bool               `json:"multiattach"`
+	Name             string             `json:"name"`
+	Host             string             `json:"host"`
+	Size             int                `json:"size"`
+	SnapshotID       string             `json:"snapshot_id"`
+	SourceVolumeID   string             `json:"source_volid"`
+	Status           string             `json:"status"`
+	Type             string             `json:"type"`
+	UpdatedAt        time.Time          `json:"updated_at"`
+	AccountID        string             `json:"user_id"`
 }
 
 // {

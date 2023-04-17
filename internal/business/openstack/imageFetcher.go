@@ -49,9 +49,9 @@ func (f *ImageFetcher) FetchByID(ctx context.Context, clusterId int, imageId str
 }
 
 func (f *ImageFetcher) Create(ctx context.Context, clusterId int, image *models.Image) error {
-	reqDara := f.generateCreateReq(image)
+	reqData := f.generateCreateReq(image)
 
-	json_data, err := json.Marshal(&reqDara)
+	json_data, err := json.Marshal(&reqData)
 	if err != nil {
 		return err
 	}

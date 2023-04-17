@@ -65,9 +65,9 @@ func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Ac
 		return err
 	}
 
-	reqDara := f.generateCreateReq(user, project.ID)
+	reqData := f.generateCreateReq(user, project.ID)
 
-	json_data, err := json.Marshal(&reqDara)
+	json_data, err := json.Marshal(&reqData)
 	if err != nil {
 		return err
 	}
