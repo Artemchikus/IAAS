@@ -14,6 +14,10 @@ type Network struct {
 	Subnets           []string  `json:"subnets"`
 	Tags              []string  `json:"tags"`
 	UpdatedAt         time.Time `json:"updated_at"`
+	NetworkType       string    `json:"provider:network_type"`
+	AdminStateUp      bool      `json:"admin_state_up"`
+	External          bool      `json:"router:external"`
+	PhysicalNetwork   string    `json:"provider:physical_network"`
 }
 
 // {

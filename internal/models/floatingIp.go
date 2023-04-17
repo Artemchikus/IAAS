@@ -8,6 +8,7 @@ type FloatingIp struct {
 	FixedIp     string    `json:"fixed_ip_address"`
 	Ip          string    `json:"floating_ip_address"`
 	ID          string    `json:"id"`
+	NetworkID   string    `json:"floating_network_id"`
 	Name        string    `json:"name"`
 	PortID      string    `json:"port_id"`
 	ProjectID   string    `json:"project_id"`

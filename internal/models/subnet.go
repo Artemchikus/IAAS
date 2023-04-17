@@ -1,20 +1,24 @@
 package models
 
 type Subnet struct {
-	AllocatinPoolStart string   `json:"allocation_pool_start"`
-	AllocatinPoolEnd   string   `json:"allocation_pool_end"`
-	CIDR               string   `json:"cidr"`
-	CreatedAt          string   `json:"created_at"`
-	Description        string   `json:"description"`
-	EnableDHCP         bool     `json:"enable_dhcp"`
-	GatewayIp          string   `json:"gateway_ip"`
-	ID                 string   `json:"id"`
-	IpVersion          int      `json:"ip_version"`
-	Name               string   `json:"name"`
-	NetworkID          string   `json:"network_id"`
-	ProjectID          string   `json:"project_id"`
-	Tags               []string `json:"tags"`
-	UpdatedAt          string   `json:"updated_at"`
+	AllocationPools []*AllocationPool `json:"allocation_pools"`
+	CIDR            string            `json:"cidr"`
+	CreatedAt       string            `json:"created_at"`
+	Description     string            `json:"description"`
+	EnableDHCP      bool              `json:"enable_dhcp"`
+	GatewayIp       string            `json:"gateway_ip"`
+	ID              string            `json:"id"`
+	IpVersion       int               `json:"ip_version"`
+	Name            string            `json:"name"`
+	NetworkID       string            `json:"network_id"`
+	ProjectID       string            `json:"project_id"`
+	Tags            []string          `json:"tags"`
+	UpdatedAt       string            `json:"updated_at"`
+}
+
+type AllocationPool struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
 }
 
 // {

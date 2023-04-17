@@ -12,15 +12,18 @@ import (
 )
 
 type Fetcher struct {
-	logger         *zap.SugaredLogger
-	client         *http.Client
-	serverFetcher  *ServerFetcher
-	userFetcher    *UserFetcher
-	tokenFetcher   *TokenFetcher
-	projectFetcher *ProjectFetcher
-	imageFetcher   *ImageFetcher
-	flavorFetcher  *FlavorFetcher
-	clusters       []*models.Cluster
+	logger            *zap.SugaredLogger
+	client            *http.Client
+	serverFetcher     *ServerFetcher
+	userFetcher       *UserFetcher
+	tokenFetcher      *TokenFetcher
+	projectFetcher    *ProjectFetcher
+	imageFetcher      *ImageFetcher
+	flavorFetcher     *FlavorFetcher
+	floatingIpFetcher *FloatingIpFetcher
+	networkFetcher    *NetworkFetcher
+	subnetFetcher     *SubnetFetcher
+	clusters          []*models.Cluster
 }
 
 func New(ctx context.Context, config *config.ApiConfig, store *postgres.Store) *Fetcher {
@@ -112,4 +115,40 @@ func (f *Fetcher) Flavor() business.FlavorFetcher {
 	}
 
 	return f.flavorFetcher
+}
+
+func (f *Fetcher) FloatingIp() business.FloatingIPFetcher {
+	if f.floatingIpFetcher != nil {
+		return f.floatingIpFetcher
+	}
+
+	f.floatingIpFetcher = &FloatingIpFetcher{
+		fetcher: f,
+	}
+
+	return f.floatingIpFetcher
+}
+
+func (f *Fetcher) Network() business.NetworkFetcher {
+	if f.networkFetcher != nil {
+		return f.networkFetcher
+	}
+
+	f.networkFetcher = &NetworkFetcher{
+		fetcher: f,
+	}
+
+	return f.networkFetcher
+}
+
+func (f *Fetcher) Subnet() business.SubnetFetcher {
+	if f.subnetFetcher != nil {
+		return f.subnetFetcher
+	}
+
+	f.subnetFetcher = &SubnetFetcher{
+		fetcher: f,
+	}
+
+	return f.subnetFetcher
 }

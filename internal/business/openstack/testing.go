@@ -59,3 +59,31 @@ func TestFlavor(t *testing.T) *models.Flavor {
 		Swap:       "0",
 	}
 }
+
+func TestNetwork(t *testing.T) *models.Network {
+	return &models.Network{
+		Name:            "public",
+		NetworkType:     "flat",
+		AdminStateUp:    true,
+		External:        true,
+		PhysicalNetwork: "external",
+	}
+}
+
+func TestSubnet(t *testing.T) *models.Subnet {
+	allocationPool := &models.AllocationPool{
+		Start: "192.168.122.200",
+		End:   "192.168.122.254",
+	}
+
+	allocationPools := []*models.AllocationPool{allocationPool}
+
+	return &models.Subnet{
+		CIDR:            "192.168.122.0/24",
+		Name:            "public-subnet",
+		EnableDHCP:      false,
+		AllocationPools: allocationPools,
+		IpVersion:       4,
+		GatewayIp:       "192.168.122.1",
+	}
+}

@@ -29,3 +29,27 @@ type FetchFlavorResponse struct {
 type CreateFlavorResponse struct {
 	Flavor *models.Flavor `json:"flavor"`
 }
+
+type FetchFloatingIpResponse struct {
+	FloatingIp *models.FloatingIp `json:"floatingip"`
+}
+
+type CreateFloatingIpResponse struct {
+	FloatingIp *models.FloatingIp `json:"floatingip"`
+}
+
+type FetchNetworkResponse struct {
+	Network *models.Network `json:"network"`
+}
+
+type CreateNetworkResponse struct {
+	Network *models.Network `json:"network"`
+}
+
+type CreateSubnetResponse struct {
+	Subnet *models.Subnet `json:"subnet"`
+}
+
+type FetchSubnetResponse struct {
+	Subnet *models.Subnet `json:"subnet"`
+}

@@ -8,13 +8,13 @@ type Fetcher interface {
 	User() UserFetcher
 	Token() TokenFetcher
 	Image() ImageFetcher
-	// Subnet() SubnetFetcher
-	// Network() NetworkFetcher
+	Subnet() SubnetFetcher
+	Network() NetworkFetcher
 	// SSHKey() SSHKeyFetcher
 	// SecurityGroup() SecurityGroupFetcher
 	// Router() RouterFetcher
 	// Role() RoleFetcher
-	// FloatingIP() FloatingIPFetcher
+	FloatingIP() FloatingIPFetcher
 	// Port() PortFetcher
 	// Project() ProjectFetcher
 	// SecurityRuler() SecurityRulerFetcher

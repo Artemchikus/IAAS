@@ -83,3 +83,42 @@ type Flavor struct {
 	Swap       string  `json:"swap"`
 	RXTXFactor float32 `json:"rxtx_factor"`
 }
+
+type CreateFloatingIpRequest struct {
+	FloatingIp *FloatingIp `json:"floatingip"`
+}
+
+type FloatingIp struct {
+	NetworkID string `json:"floating_network_id"`
+}
+
+type CreateNetworkRequest struct {
+	Network *Network `json:"network"`
+}
+
+type Network struct {
+	Name            string `json:"name"`
+	NetworkType     string `json:"provider:network_type"`
+	AdminStateUp    bool   `json:"admin_state_up"`
+	External        bool   `json:"router:external"`
+	PhysicalNetwork string `json:"provider:physical_network"`
+}
+
+type CreateSubnetRequest struct {
+	Subnet *Subnet `json:"subnet"`
+}
+
+type Subnet struct {
+	CIDR            string            `json:"cidr"`
+	Name            string            `json:"name"`
+	EnableDHCP      bool              `json:"enable_dhcp"`
+	NetworkID       string            `json:"network_id"`
+	AllocationPools []*AllocationPool `json:"allocation_pools"`
+	IpVersion       int               `json:"ip_version"`
+	GatewayIp       string            `json:"gateway_ip"`
+}
+
+type AllocationPool struct {
+	Start string `json:"start"`
+	End   string `json:"end"`
+}
