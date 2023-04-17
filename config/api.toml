@@ -19,6 +19,7 @@ url = "http://192.168.122.20:5000"
 name = "admin"
 email = "admin@example.com"
 password = "openstack"
+project_id = "a0f8bb68921b4ddea63c52ef1b4e7e74"
 
 [[clusters]]
 location = "Europe/Paris"

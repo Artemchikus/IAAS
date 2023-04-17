@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"log"
 )
 
 type TokenFetcher struct {
@@ -28,6 +29,9 @@ func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.A
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	log.Println(resp)
+	log.Println(account)
 
 	token := &models.Token{}
 	tokenRes := &GetTokenResponse{
@@ -62,7 +66,7 @@ func (f *TokenFetcher) generateGetReq(account *models.Account) *GetTokenRequest 
 			},
 			Scope: &Scope{
 				Project: &GetTokenProject{
-					Name: "admin", // TODO add support for different project names
+					ID: account.ProjectID,
 					Domain: &Domain{
 						ID: "default",
 					},

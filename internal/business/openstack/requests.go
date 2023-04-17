@@ -18,7 +18,7 @@ type Scope struct {
 }
 
 type GetTokenProject struct {
-	Name   string  `json:"name"`
+	ID     string  `json:"id"`
 	Domain *Domain `json:"domain"`
 }
 type Password struct {

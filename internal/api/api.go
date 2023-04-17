@@ -29,6 +29,8 @@ func Start(config *config.ApiConfig) error {
 
 	addr := config.BindAddr
 
+	log.Println(config.Clusters[0].Admin.ProjectID)
+
 	log.Println("Server is listening on port", addr)
 
 	return http.ListenAndServe(addr, srv)

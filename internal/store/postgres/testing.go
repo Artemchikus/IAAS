@@ -34,25 +34,24 @@ func TestConfig(t *testing.T) *config.ApiConfig {
 	config := config.NewConfig()
 	config.JwtKey = "secretkey"
 	config.Admin = models.TestAdmin(t)
-	config.Clusters = TestClusters(t)
+	config.Clusters = models.TestClusters(t)
 
 	return config
-}
-
-func TestClusters(t *testing.T) []*models.Cluster {
-	cluster := &models.Cluster{
-		Location: "rus",
-		URL:      "rus",
-		Admin:    models.TestAdmin(t),
-	}
-
-	return []*models.Cluster{cluster}
 }
 
 func TestCluster(t *testing.T) *models.Cluster {
 	return &models.Cluster{
 		Location: "test",
 		URL:      "test",
-		Admin:    models.TestAdmin(t),
+		Admin:    TestClusterAdmin(t),
+	}
+}
+
+func TestClusterAdmin(t *testing.T) *models.Account {
+	return &models.Account{
+		Email:     "adm@example.com",
+		Name:      "admin",
+		Password:  "openstack",
+		ProjectID: "1111111111111111111111111111",
 	}
 }

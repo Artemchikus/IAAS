@@ -23,9 +23,7 @@ func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId
 		return nil, err
 	}
 
-	clusterAdmin := cluster.Admin
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, clusterAdmin)
+	token, err := f.getAdminToken(ctx, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -68,9 +66,7 @@ func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *mod
 		return err
 	}
 
-	clusterAdmin := cluster.Admin
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, clusterAdmin)
+	token, err := f.getAdminToken(ctx, clusterId)
 	if err != nil {
 		return err
 	}
@@ -106,9 +102,7 @@ func (f *ProjectFetcher) Delete(ctx context.Context, clusterId int, projectID st
 		return err
 	}
 
-	clusterAdmin := cluster.Admin
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, clusterAdmin)
+	token, err := f.getAdminToken(ctx, clusterId)
 	if err != nil {
 		return err
 	}
@@ -130,6 +124,16 @@ func (f *ProjectFetcher) Delete(ctx context.Context, clusterId int, projectID st
 
 func (f *ProjectFetcher) Update(ctx context.Context, clusterId int) {
 
+}
+
+func (f *ProjectFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
+
+	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
 }
 
 func (f *ProjectFetcher) generateCreateReq(project *models.Project) *CreateProjectRequest {

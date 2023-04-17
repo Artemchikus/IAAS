@@ -23,9 +23,7 @@ func (f *UserFetcher) FetchByID(ctx context.Context, clusterId int, userId strin
 		return nil, err
 	}
 
-	clusterAdmin := cluster.Admin
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, clusterAdmin)
+	token, err := f.getAdminToken(ctx, clusterId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +57,6 @@ func (f *UserFetcher) FetchByID(ctx context.Context, clusterId int, userId strin
 }
 
 func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Account) error {
-	// token, err := f.getAdminToken(ctx, clusterId)
-	// if err != nil {
-	// 	return err
-	// }
-
 	description := "Project for user " + user.Email
 
 	project := models.NewProject(user.Email, description)
@@ -88,9 +81,7 @@ func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Ac
 		return err
 	}
 
-	clusterAdmin := cluster.Admin
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, clusterAdmin)
+	token, err := f.getAdminToken(ctx, clusterId)
 	if err != nil {
 		return err
 	}
@@ -130,9 +121,7 @@ func (f *UserFetcher) Delete(ctx context.Context, clusterId int, userId string) 
 		return err
 	}
 
-	clusterAdmin := cluster.Admin
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, clusterAdmin)
+	token, err := f.getAdminToken(ctx, clusterId)
 	if err != nil {
 		return err
 	}
@@ -154,15 +143,15 @@ func (f *UserFetcher) Delete(ctx context.Context, clusterId int, userId string) 
 
 func (f *UserFetcher) Update(ctx context.Context, clusterId int) {}
 
-// func (f *UserFetcher) getAdminToken(ctx context.Context, clusterId int) (string, error) {
+func (f *UserFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
 
-// 	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-// 	if err != nil {
-// 		return "", err
-// 	}
+	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
+	if err != nil {
+		return nil, err
+	}
 
-// 	return token.Value, nil
-// }
+	return token, nil
+}
 
 func (f *UserFetcher) generateCreateReq(user *models.Account, projectID string) *CreateUserRequest {
 	return &CreateUserRequest{

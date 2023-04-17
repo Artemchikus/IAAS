@@ -5,7 +5,6 @@ import (
 	"IAAS/internal/store"
 	"context"
 	"database/sql"
-	"log"
 	"time"
 )
 
@@ -198,8 +197,6 @@ func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Accou
 	if err != nil {
 		return err
 	}
-
-	log.Println(adm.Email)
 
 	if _, err := r.store.Account().FindByEmail(ctx, adm.Email); err == nil {
 		r.store.logger.With(
