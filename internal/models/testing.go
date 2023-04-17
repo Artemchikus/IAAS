@@ -34,7 +34,7 @@ func TestClusters(t *testing.T) []*Cluster {
 	cluster := &Cluster{
 		ID:       1,
 		Location: "rus",
-		URL:      "http://192.168.122.20:5000",
+		URL:      "http://192.168.122.20",
 		Admin:    TestClusterAdmin(t),
 	}
 

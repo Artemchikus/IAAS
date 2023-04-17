@@ -18,6 +18,7 @@ type Fetcher struct {
 	userFetcher    *UserFetcher
 	tokenFetcher   *TokenFetcher
 	projectFetcher *ProjectFetcher
+	imageFetcher   *ImageFetcher
 	clusters       []*models.Cluster
 }
 
@@ -86,4 +87,16 @@ func (f *Fetcher) Project() business.ProjectFetcher {
 	}
 
 	return f.projectFetcher
+}
+
+func (f *Fetcher) Image() business.ImageFetcher {
+	if f.imageFetcher != nil {
+		return f.imageFetcher
+	}
+
+	f.imageFetcher = &ImageFetcher{
+		fetcher: f,
+	}
+
+	return f.imageFetcher
 }

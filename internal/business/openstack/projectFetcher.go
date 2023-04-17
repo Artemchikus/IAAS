@@ -16,7 +16,7 @@ type ProjectFetcher struct {
 func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId string) (*models.Project, error) {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	fetchProjectURL := cluster.URL + "/v3/projects/" + projectId
+	fetchProjectURL := cluster.URL + ":5000" + "/v3/projects/" + projectId
 
 	req, err := http.NewRequest("GET", fetchProjectURL, nil)
 	if err != nil {
@@ -59,7 +59,7 @@ func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *mod
 
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	createProjectURL := cluster.URL + "/v3/projects"
+	createProjectURL := cluster.URL + ":5000" + "/v3/projects"
 
 	req, err := http.NewRequest("POST", createProjectURL, bytes.NewBuffer(json_data))
 	if err != nil {
@@ -95,7 +95,7 @@ func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *mod
 func (f *ProjectFetcher) Delete(ctx context.Context, clusterId int, projectID string) error {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	deleteProjectURL := cluster.URL + "/v3/projects/" + projectID
+	deleteProjectURL := cluster.URL + ":5000" + "/v3/projects/" + projectID
 
 	req, err := http.NewRequest("DELETE", deleteProjectURL, nil)
 	if err != nil {

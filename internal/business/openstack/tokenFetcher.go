@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log"
 )
 
 type TokenFetcher struct {
@@ -22,16 +21,13 @@ func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.A
 
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	getTokenURL := cluster.URL + "/v3/auth/tokens"
+	getTokenURL := cluster.URL + ":5000" + "/v3/auth/tokens"
 
 	resp, err := f.fetcher.client.Post(getTokenURL, "application/json", bytes.NewBuffer(json_data))
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	log.Println(resp)
-	log.Println(account)
 
 	token := &models.Token{}
 	tokenRes := &GetTokenResponse{

@@ -62,3 +62,10 @@ type CreateUser struct {
 	Enabled   bool   `json:"enabled"`
 	Email     string `json:"email"`
 }
+
+type CretaeImageRequest struct {
+	DiskFormat      string `json:"disk_format"`
+	ContainerFormat string `json:"container_format"`
+	Name            string `json:"name"`
+	Visibility      string `json:"visibility"`
+}

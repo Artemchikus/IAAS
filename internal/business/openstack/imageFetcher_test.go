@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUserFetcher_Create(t *testing.T) {
+func TestImageFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -22,20 +22,19 @@ func TestUserFetcher_Create(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	u := models.TestAccount(t)
+	i := openstack.TestImage(t)
 
-	err := fetcher.User().Create(models.TestRequestContext(t), clusterID, u)
+	err := fetcher.Image().Create(models.TestRequestContext(t), clusterID, i)
 	assert.NoError(t, err)
-	assert.NotEqual(t, u.OpenstackID, "")
-	assert.NotEqual(t, u.ProjectID, "")
+	assert.NotEqual(t, i.ID, "")
+	assert.NotEqual(t, i.OwnerID, "")
 
 	time.Sleep(1000)
 
-	fetcher.User().Delete(models.TestRequestContext(t), clusterID, u.OpenstackID)
-	fetcher.Project().Delete(models.TestRequestContext(t), clusterID, u.ProjectID)
+	fetcher.Image().Delete(models.TestRequestContext(t), clusterID, i.ID)
 }
 
-func TestUserFetcher_FetchByID(t *testing.T) {
+func TestImageFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -47,21 +46,18 @@ func TestUserFetcher_FetchByID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	u1 := models.TestAccount(t)
+	i := openstack.TestImage(t)
 
-	fetcher.User().Create(models.TestRequestContext(t), clusterID, u1)
+	fetcher.Image().Create(models.TestRequestContext(t), clusterID, i)
 
 	time.Sleep(1000)
 
-	u2, err := fetcher.User().FetchByID(models.TestRequestContext(t), clusterID, u1.OpenstackID)
+	err := fetcher.Image().Delete(models.TestRequestContext(t), clusterID, i.ID)
 	assert.NoError(t, err)
-	assert.NotEqual(t, u2.ID, "")
-
-	fetcher.User().Delete(models.TestRequestContext(t), clusterID, u2.OpenstackID)
-	fetcher.Project().Delete(models.TestRequestContext(t), clusterID, u2.ProjectID)
+	assert.NotEqual(t, i.ID, "")
 }
 
-func TestUserFetcher_Delete(t *testing.T) {
+func TestImageFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -73,14 +69,16 @@ func TestUserFetcher_Delete(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	u := models.TestAccount(t)
+	i1 := openstack.TestImage(t)
 
-	err := fetcher.User().Create(models.TestRequestContext(t), clusterID, u)
+	fetcher.Image().Create(models.TestRequestContext(t), clusterID, i1)
 
 	time.Sleep(1000)
 
-	fetcher.User().Delete(models.TestRequestContext(t), clusterID, u.OpenstackID)
+	i2, err := fetcher.Image().FetchByID(models.TestRequestContext(t), clusterID, i1.ID)
 	assert.NoError(t, err)
-	assert.NotEqual(t, u.OpenstackID, "")
-	fetcher.Project().Delete(models.TestRequestContext(t), clusterID, u.ProjectID)
+	assert.NotEqual(t, i2.ID, "")
+	assert.NotEqual(t, i2.OwnerID, "")
+
+	fetcher.Image().Delete(models.TestRequestContext(t), clusterID, i2.ID)
 }

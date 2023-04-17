@@ -3,6 +3,8 @@ package openstack
 import (
 	"IAAS/internal/config"
 	"IAAS/internal/models"
+	"log"
+	"os"
 	"testing"
 )
 
@@ -23,5 +25,24 @@ func TestProject(t *testing.T) *models.Project {
 		Description: "Demo project",
 		Options:     &models.Options{},
 		Tags:        make([]string, 0),
+	}
+}
+
+func TestImage(t *testing.T) *models.Image {
+	file := "../../../test/cirros-0.6.1-x86_64-disk.img"
+
+	data, err := os.ReadFile(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(len(data))
+
+	return &models.Image{
+		FileData:        data,
+		Name:            "Cirros",
+		DiskFormat:      "qcow2",
+		ContainerFormat: "bare",
+		Visibility:      "public",
 	}
 }

@@ -114,6 +114,13 @@ type ProjectFetcher interface {
 	Update(context.Context, int)
 }
 
+type ImageFetcher interface {
+	FetchByID(context.Context, int, string) (*models.Image, error)
+	Create(context.Context, int, *models.Image) error
+	Delete(context.Context, int, string) error
+	Update(context.Context, int)
+}
+
 type SecurityRulerFetcher interface {
 	FetchByID(context.Context, int)
 	Create(context.Context, int)

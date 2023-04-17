@@ -4,7 +4,6 @@ import (
 	"IAAS/internal/business/openstack"
 	"IAAS/internal/models"
 	"IAAS/internal/store/postgres"
-	"log"
 	"testing"
 	"time"
 
@@ -22,8 +21,6 @@ func TestProjectFetcher_Create(t *testing.T) {
 	fetcher := openstack.New(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
-
-	log.Println("adm:", config.Clusters[0].Admin.ProjectID)
 
 	p := openstack.TestProject(t)
 

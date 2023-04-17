@@ -16,7 +16,7 @@ type UserFetcher struct {
 func (f *UserFetcher) FetchByID(ctx context.Context, clusterId int, userId string) (*models.Account, error) {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	fetchUserURL := cluster.URL + "/v3/users/" + userId
+	fetchUserURL := cluster.URL + ":5000" + "/v3/users/" + userId
 
 	req, err := http.NewRequest("GET", fetchUserURL, nil)
 	if err != nil {
@@ -74,7 +74,7 @@ func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Ac
 
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	createUserURL := cluster.URL + "/v3/users"
+	createUserURL := cluster.URL + ":5000" + "/v3/users"
 
 	req, err := http.NewRequest("POST", createUserURL, bytes.NewBuffer(json_data))
 	if err != nil {
@@ -114,7 +114,7 @@ func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Ac
 func (f *UserFetcher) Delete(ctx context.Context, clusterId int, userId string) error {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	fetchUserURL := cluster.URL + "/v3/users/" + userId
+	fetchUserURL := cluster.URL + ":5000" + "/v3/users/" + userId
 
 	req, err := http.NewRequest("DELETE", fetchUserURL, nil)
 	if err != nil {
