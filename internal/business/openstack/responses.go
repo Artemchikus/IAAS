@@ -53,3 +53,35 @@ type CreateSubnetResponse struct {
 type FetchSubnetResponse struct {
 	Subnet *models.Subnet `json:"subnet"`
 }
+
+type CreateRoleResponse struct {
+	Role *models.Role `json:"role"`
+}
+
+type FetchRoleResponse struct {
+	Role *models.Role `json:"role"`
+}
+
+type CreateRouterResponse struct {
+	Router *models.Router `json:"router"`
+}
+
+type FetchRouterResponse struct {
+	Router *models.Router `json:"router"`
+}
+
+type CreateSecurityGroupResponse struct {
+	SecurityGroup *models.SecurityGroup `json:"security_group"`
+}
+
+type FetchSecurityGroupResponse struct {
+	SecurityGroup *models.SecurityGroup `json:"security_group"`
+}
+
+type FetchSecurityRuleResponse struct {
+	SecurityRule *models.SecurityRule `json:"security_rule"`
+}
+
+type CreateSecurityRuleResponse struct {
+	SecurityRule *models.SecurityRule `json:"security_rule"`
+}

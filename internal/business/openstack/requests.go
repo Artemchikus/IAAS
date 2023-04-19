@@ -122,3 +122,31 @@ type AllocationPool struct {
 	Start string `json:"start"`
 	End   string `json:"end"`
 }
+
+type CreateRoleRequest struct {
+	Role *Role `json:"role"`
+}
+
+type Role struct {
+}
+
+type CreateRouterRequest struct {
+	Router *Router `json:"router"`
+}
+
+type Router struct {
+}
+
+type CreateSecurityGroupRequest struct {
+	SecurityGroup *SecurityGroup `json:"security_group"`
+}
+
+type SecurityGroup struct {
+}
+
+type CreateSecurityRuleRequest struct {
+	SecurityRule *SecurityRule `json:"security_rule"`
+}
+
+type SecurityRule struct {
+}

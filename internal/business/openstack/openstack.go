@@ -12,18 +12,22 @@ import (
 )
 
 type Fetcher struct {
-	logger            *zap.SugaredLogger
-	client            *http.Client
-	serverFetcher     *ServerFetcher
-	userFetcher       *UserFetcher
-	tokenFetcher      *TokenFetcher
-	projectFetcher    *ProjectFetcher
-	imageFetcher      *ImageFetcher
-	flavorFetcher     *FlavorFetcher
-	floatingIpFetcher *FloatingIpFetcher
-	networkFetcher    *NetworkFetcher
-	subnetFetcher     *SubnetFetcher
-	clusters          []*models.Cluster
+	logger               *zap.SugaredLogger
+	client               *http.Client
+	serverFetcher        *ServerFetcher
+	userFetcher          *UserFetcher
+	tokenFetcher         *TokenFetcher
+	projectFetcher       *ProjectFetcher
+	imageFetcher         *ImageFetcher
+	flavorFetcher        *FlavorFetcher
+	floatingIpFetcher    *FloatingIpFetcher
+	networkFetcher       *NetworkFetcher
+	subnetFetcher        *SubnetFetcher
+	roleFetcher          *RoleFetcher
+	routerFecther        *RouterFetcher
+	securityGroupFetcher *SecurityGroupFetcher
+	securityRuleFetcher  *SecurityRuleFetcher
+	clusters             []*models.Cluster
 }
 
 func New(ctx context.Context, config *config.ApiConfig, store *postgres.Store) *Fetcher {
@@ -151,4 +155,52 @@ func (f *Fetcher) Subnet() business.SubnetFetcher {
 	}
 
 	return f.subnetFetcher
+}
+
+func (f *Fetcher) Role() business.RoleFetcher {
+	if f.roleFetcher != nil {
+		return f.roleFetcher
+	}
+
+	f.roleFetcher = &RoleFetcher{
+		fetcher: f,
+	}
+
+	return f.roleFetcher
+}
+
+func (f *Fetcher) Router() business.RouterFetcher {
+	if f.routerFecther != nil {
+		return f.routerFecther
+	}
+
+	f.routerFecther = &RouterFetcher{
+		fetcher: f,
+	}
+
+	return f.routerFecther
+}
+
+func (f *Fetcher) SecurityGroup() business.SecurityGroupFetcher {
+	if f.securityGroupFetcher != nil {
+		return f.securityGroupFetcher
+	}
+
+	f.securityGroupFetcher = &SecurityGroupFetcher{
+		fetcher: f,
+	}
+
+	return f.securityGroupFetcher
+}
+
+func (f *Fetcher) SecurityRule() business.SecurityRuleFetcher {
+	if f.securityRuleFetcher != nil {
+		return f.securityRuleFetcher
+	}
+
+	f.securityRuleFetcher = &SecurityRuleFetcher{
+		fetcher: f,
+	}
+
+	return f.securityRuleFetcher
 }

@@ -11,11 +11,11 @@ type Fetcher interface {
 	Subnet() SubnetFetcher
 	Network() NetworkFetcher
 	// SSHKey() SSHKeyFetcher
-	// SecurityGroup() SecurityGroupFetcher
-	// Router() RouterFetcher
-	// Role() RoleFetcher
-	FloatingIP() FloatingIPFetcher
+	SecurityGroup() SecurityGroupFetcher // *
+	Router() RouterFetcher               // *
+	Role() RoleFetcher                   // *
+	FloatingIp() FloatingIPFetcher
 	// Port() PortFetcher
-	// Project() ProjectFetcher
-	// SecurityRuler() SecurityRulerFetcher
+	Project() ProjectFetcher
+	SecurityRule() SecurityRuleFetcher
 }

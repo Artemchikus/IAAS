@@ -87,3 +87,33 @@ func TestSubnet(t *testing.T) *models.Subnet {
 		GatewayIp:       "192.168.122.1",
 	}
 }
+
+func TestRole(t *testing.T) *models.Role {
+	return &models.Role{
+		Name:        "test",
+		Description: "Test role",
+	}
+}
+
+func TestRouter(t *testing.T) *models.Router {
+	return &models.Router{
+		Description: "Test router",
+		Name:        "test",
+	}
+}
+
+func TestSecurityGroup(t *testing.T) *models.SecurityGroup {
+	return &models.SecurityGroup{
+		Description: "Test security group",
+		Name:        "test",
+	}
+}
+
+func TestSecurityRule(t *testing.T) *models.SecurityRule {
+	return &models.SecurityRule{
+		Protocol:     "tcp",
+		Description:  "SSH security rule",
+		PortRangeMax: 22,
+		PortRangeMin: 22,
+	}
+}
