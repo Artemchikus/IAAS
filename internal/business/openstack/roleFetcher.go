@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 )
 
@@ -79,6 +80,7 @@ func (f *RoleFetcher) Create(ctx context.Context, clusterId int, role *models.Ro
 		return err
 	}
 	defer resp.Body.Close()
+	log.Println(resp)
 
 	createRoleRes := &CreateRoleResponse{
 		Role: role,
@@ -138,7 +140,9 @@ func (f *RoleFetcher) getAdminToken(ctx context.Context, clusterId int) (*models
 
 func (f *RoleFetcher) generateCreateReq(role *models.Role) *CreateRoleRequest {
 	req := &CreateRoleRequest{
-		Role: &Role{},
+		Role: &Role{
+			Name: role.Name,
+		},
 	}
 
 	return req

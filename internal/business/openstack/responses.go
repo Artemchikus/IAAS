@@ -79,9 +79,25 @@ type FetchSecurityGroupResponse struct {
 }
 
 type FetchSecurityRuleResponse struct {
-	SecurityRule *models.SecurityRule `json:"security_rule"`
+	SecurityRule *models.SecurityRule `json:"security_group_rule"`
 }
 
 type CreateSecurityRuleResponse struct {
-	SecurityRule *models.SecurityRule `json:"security_rule"`
+	SecurityRule *models.SecurityRule `json:"security_group_rule"`
+}
+
+type FetchKeyPairResponse struct {
+	KeyPair *map[string]interface{} `json:"keypair"`
+}
+
+type CreateKeyPairResponse struct {
+	KeyPair *models.KeyPair `json:"keypair"`
+}
+
+type CreateVolumeResponse struct {
+	Volume *map[string]interface{} `json:"volume"`
+}
+
+type FetchVolumeResponse struct {
+	Volume *map[string]interface{} `json:"volume"`
 }

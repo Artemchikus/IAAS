@@ -128,6 +128,7 @@ type CreateRoleRequest struct {
 }
 
 type Role struct {
+	Name string `json:"name"`
 }
 
 type CreateRouterRequest struct {
@@ -135,6 +136,8 @@ type CreateRouterRequest struct {
 }
 
 type Router struct {
+	Name         string `json:"name"`
+	AdminStateUp bool   `json:"admin_state_up"`
 }
 
 type CreateSecurityGroupRequest struct {
@@ -142,11 +145,40 @@ type CreateSecurityGroupRequest struct {
 }
 
 type SecurityGroup struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type CreateSecurityRuleRequest struct {
-	SecurityRule *SecurityRule `json:"security_rule"`
+	SecurityRule *SecurityRule `json:"security_group_rule"`
 }
 
 type SecurityRule struct {
+	Protocol        string `json:"protocol"`
+	PortRangeMax    int    `json:"port_range_max"`
+	RemoteIPPrefix  string `json:"remote_ip_prefix"`
+	Ethertype       string `json:"ethertype"`
+	SecurityGroupID string `json:"security_group_id"`
+	Direction       string `json:"direction"`
+	PortRangeMin    int    `json:"port_range_min"`
+}
+
+type CreateKeyPairRequest struct {
+	KeyPair *KeyPair `json:"keypair"`
+}
+
+type KeyPair struct {
+	PublicKey string `json:"public_key"`
+	Name      string `json:"name"`
+}
+
+type CreateVolumeRequest struct {
+	Volume *Volume `json:"volume"`
+}
+
+type Volume struct {
+	Size        int    `json:"size"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Type        string `json:"volume_type"`
 }

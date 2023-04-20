@@ -111,9 +111,28 @@ func TestSecurityGroup(t *testing.T) *models.SecurityGroup {
 
 func TestSecurityRule(t *testing.T) *models.SecurityRule {
 	return &models.SecurityRule{
-		Protocol:     "tcp",
-		Description:  "SSH security rule",
-		PortRangeMax: 22,
-		PortRangeMin: 22,
+		Protocol:       "tcp",
+		Description:    "SSH security rule",
+		PortRangeMax:   22,
+		PortRangeMin:   22,
+		Direction:      "ingress",
+		RemoteIpPrefix: "0.0.0.0/0",
+		Ethertype:      "IPv4",
+	}
+}
+
+func TestKeyPair(t *testing.T) *models.KeyPair {
+	return &models.KeyPair{
+		Name:      "testKeyPair",
+		PublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDZjh2NAkpTS2QVB57w5p9vAU8WbmgjdrYwAklFEErMui+ZaBSWZUFHrgDS7NyTbLFF7VLXZHeKFrkF1YKYognlxvkCWyAqOPXFlR4Ajm8XF54RGBACpL+iWr8IodhguHC01Ygj23L9k5mNQ3ZLWHYh8zXACh5kCjc7Tu1yLPWnd4AvntmPv0ZfbE4xRpTQZI579EFZxmBVZdwJgql6lH/bFgktlYMJnXMyi+oAgaVSyLUwWCT9UHnKv6A/JvcrSIdI8enZwtKJPyNP4+LyDVkBhDPMJ7O4iR5iMK49bcCzT0W2ycuI1q5ZYMD4RN1CGcKaHO36bZJ4etfEchC+F98XUe2CNfXn61kRrL0N7qahvKa62ln9tHZuLGTwxTvxoHZ9ZNVVqsbsrOkgsJZfbRh7paD5FBAotaUv1TFtVyyeRLMRvlNVPeIclbRK5hur7ptryd25iS9IGbqnJ6VvSMs6hGCcfopEP28J5eN0gmx8pCsl2v0GkAqEILjWpl66cVc= root@controller.test.local\n",
+		Type:      "ssh",
+	}
+}
+
+func TestVolume(t *testing.T) *models.Volume {
+	return &models.Volume{
+		Name:        "test",
+		Description: "test volume",
+		Size:        1,
 	}
 }

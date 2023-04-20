@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSecurityGroupFetcher_Create(t *testing.T) {
+func TestKeyPairFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -22,18 +22,18 @@ func TestSecurityGroupFetcher_Create(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	sg := openstack.TestSecurityGroup(t)
+	kp := openstack.TestKeyPair(t)
 
-	err := fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+	err := fetcher.KeyPair().Create(models.TestRequestContext(t), clusterID, kp)
 	assert.NoError(t, err)
-	assert.NotEqual(t, sg.ID, "")
+	assert.NotEqual(t, kp.Fingerprint, "")
 
 	time.Sleep(1000)
 
-	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
+	fetcher.KeyPair().Delete(models.TestRequestContext(t), clusterID, kp.Name)
 }
 
-func TestSecurityGroupFetcher_Delete(t *testing.T) {
+func TestKeyPairFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -45,18 +45,18 @@ func TestSecurityGroupFetcher_Delete(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	sg := openstack.TestSecurityGroup(t)
+	kp := openstack.TestKeyPair(t)
 
-	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+	fetcher.KeyPair().Create(models.TestRequestContext(t), clusterID, kp)
 
 	time.Sleep(1000)
 
-	err := fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
+	err := fetcher.KeyPair().Delete(models.TestRequestContext(t), clusterID, kp.Name)
 	assert.NoError(t, err)
-	assert.NotEqual(t, sg.ID, "")
+	assert.NotEqual(t, kp.Name, "")
 }
 
-func TestSecurityGroupFetcher_FetchByID(t *testing.T) {
+func TestKeyPairFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -68,15 +68,15 @@ func TestSecurityGroupFetcher_FetchByID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	sg1 := openstack.TestSecurityGroup(t)
+	kp1 := openstack.TestKeyPair(t)
 
-	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg1)
+	fetcher.KeyPair().Create(models.TestRequestContext(t), clusterID, kp1)
 
 	time.Sleep(1000)
 
-	sg2, err := fetcher.SecurityGroup().FetchByID(models.TestRequestContext(t), clusterID, sg1.ID)
+	kp2, err := fetcher.KeyPair().FetchByID(models.TestRequestContext(t), clusterID, kp1.ID)
 	assert.NoError(t, err)
-	assert.NotEqual(t, sg2.ID, "")
+	assert.NotEqual(t, kp2.Fingerprint, "")
 
-	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg2.ID)
+	fetcher.KeyPair().Delete(models.TestRequestContext(t), clusterID, kp2.Name)
 }

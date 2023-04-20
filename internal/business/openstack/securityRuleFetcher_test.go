@@ -22,15 +22,20 @@ func TestSecurityRuleFetcher_Create(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	r := openstack.TestSecurityRule(t)
+	sg := openstack.TestSecurityGroup(t)
 
-	err := fetcher.SecurityRule().Create(models.TestRequestContext(t), clusterID, r)
+	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+
+	sr := openstack.TestSecurityRule(t)
+	sr.SecurityGroupID = sg.ID
+
+	err := fetcher.SecurityRule().Create(models.TestRequestContext(t), clusterID, sr)
 	assert.NoError(t, err)
-	assert.NotEqual(t, r.ID, "")
+	assert.NotEqual(t, sr.ID, "")
 
 	time.Sleep(1000)
 
-	fetcher.SecurityRule().Delete(models.TestRequestContext(t), clusterID, r.ID)
+	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
 }
 
 func TestSecurityRuleFetcher_Delete(t *testing.T) {
@@ -45,15 +50,22 @@ func TestSecurityRuleFetcher_Delete(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	r := openstack.TestSecurityRule(t)
+	sg := openstack.TestSecurityGroup(t)
 
-	fetcher.SecurityRule().Create(models.TestRequestContext(t), clusterID, r)
+	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+
+	sr := openstack.TestSecurityRule(t)
+	sr.SecurityGroupID = sg.ID
+
+	fetcher.SecurityRule().Create(models.TestRequestContext(t), clusterID, sr)
 
 	time.Sleep(1000)
 
-	err := fetcher.SecurityRule().Delete(models.TestRequestContext(t), clusterID, r.ID)
+	err := fetcher.SecurityRule().Delete(models.TestRequestContext(t), clusterID, sr.ID)
 	assert.NoError(t, err)
-	assert.NotEqual(t, r.ID, "")
+	assert.NotEqual(t, sr.ID, "")
+
+	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
 }
 
 func TestSecurityRuleFetcher_FetchByID(t *testing.T) {
@@ -68,15 +80,20 @@ func TestSecurityRuleFetcher_FetchByID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	r1 := openstack.TestSecurityRule(t)
+	sg := openstack.TestSecurityGroup(t)
 
-	fetcher.SecurityRule().Create(models.TestRequestContext(t), clusterID, r1)
+	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+
+	sr1 := openstack.TestSecurityRule(t)
+	sr1.SecurityGroupID = sg.ID
+
+	fetcher.SecurityRule().Create(models.TestRequestContext(t), clusterID, sr1)
 
 	time.Sleep(1000)
 
-	r2, err := fetcher.SecurityRule().FetchByID(models.TestRequestContext(t), clusterID, r1.ID)
+	sr2, err := fetcher.SecurityRule().FetchByID(models.TestRequestContext(t), clusterID, sr1.ID)
 	assert.NoError(t, err)
-	assert.NotEqual(t, r2.ID, "")
+	assert.NotEqual(t, sr2.ID, "")
 
-	fetcher.SecurityRule().Delete(models.TestRequestContext(t), clusterID, r2.ID)
+	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
 }

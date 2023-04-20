@@ -77,9 +77,9 @@ type ServerFetcher interface {
 	Delete(context.Context, int, string) error
 	Update(context.Context, int)
 }
-type SSHKeyFetcher interface {
-	FetchByID(context.Context, int, string) (*models.SSHKey, error)
-	Create(context.Context, int, *models.SSHKey) error
+type KeyPairFetcher interface {
+	FetchByID(context.Context, int, string) (*models.KeyPair, error)
+	Create(context.Context, int, *models.KeyPair) error
 	Delete(context.Context, int, string) error
 	Update(context.Context, int)
 }

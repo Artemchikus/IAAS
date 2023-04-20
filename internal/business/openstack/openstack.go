@@ -27,6 +27,8 @@ type Fetcher struct {
 	routerFecther        *RouterFetcher
 	securityGroupFetcher *SecurityGroupFetcher
 	securityRuleFetcher  *SecurityRuleFetcher
+	keyPairFetcher       *KeyPairFetcher
+	volumeFetcher        *VolumeFetcher
 	clusters             []*models.Cluster
 }
 
@@ -203,4 +205,28 @@ func (f *Fetcher) SecurityRule() business.SecurityRuleFetcher {
 	}
 
 	return f.securityRuleFetcher
+}
+
+func (f *Fetcher) KeyPair() business.KeyPairFetcher {
+	if f.keyPairFetcher != nil {
+		return f.keyPairFetcher
+	}
+
+	f.keyPairFetcher = &KeyPairFetcher{
+		fetcher: f,
+	}
+
+	return f.keyPairFetcher
+}
+
+func (f *Fetcher) Volume() business.VolumeFetcher {
+	if f.volumeFetcher != nil {
+		return f.volumeFetcher
+	}
+
+	f.volumeFetcher = &VolumeFetcher{
+		fetcher: f,
+	}
+
+	return f.volumeFetcher
 }

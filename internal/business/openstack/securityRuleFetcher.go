@@ -16,7 +16,7 @@ type SecurityRuleFetcher struct {
 func (f *SecurityRuleFetcher) FetchByID(ctx context.Context, clusterId int, securityRuleId string) (*models.SecurityRule, error) {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	fetchSecurityRuleURL := cluster.URL + ":5000" + "/v3/securityRules/" + securityRuleId
+	fetchSecurityRuleURL := cluster.URL + ":9696" + "/v2.0/security-group-rules/" + securityRuleId
 
 	req, err := http.NewRequest("GET", fetchSecurityRuleURL, nil)
 	if err != nil {
@@ -59,7 +59,7 @@ func (f *SecurityRuleFetcher) Create(ctx context.Context, clusterId int, securit
 
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	createSecurityRuleURL := cluster.URL + ":5000" + "/v3/securityRules"
+	createSecurityRuleURL := cluster.URL + ":9696" + "/v2.0/security-group-rules"
 
 	req, err := http.NewRequest("POST", createSecurityRuleURL, bytes.NewBuffer(json_data))
 	if err != nil {
@@ -95,7 +95,7 @@ func (f *SecurityRuleFetcher) Create(ctx context.Context, clusterId int, securit
 func (f *SecurityRuleFetcher) Delete(ctx context.Context, clusterId int, securityRuleID string) error {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	deleteSecurityRuleURL := cluster.URL + ":5000" + "/v3/securityRules/" + securityRuleID
+	deleteSecurityRuleURL := cluster.URL + ":9696" + "/v2.0/security-group-rules/" + securityRuleID
 
 	req, err := http.NewRequest("DELETE", deleteSecurityRuleURL, nil)
 	if err != nil {
@@ -138,7 +138,15 @@ func (f *SecurityRuleFetcher) getAdminToken(ctx context.Context, clusterId int) 
 
 func (f *SecurityRuleFetcher) generateCreateReq(securityRule *models.SecurityRule) *CreateSecurityRuleRequest {
 	req := &CreateSecurityRuleRequest{
-		SecurityRule: &SecurityRule{},
+		SecurityRule: &SecurityRule{
+			Protocol:        securityRule.Protocol,
+			PortRangeMax:    securityRule.PortRangeMax,
+			PortRangeMin:    securityRule.PortRangeMin,
+			RemoteIPPrefix:  securityRule.RemoteIpPrefix,
+			Ethertype:       securityRule.Ethertype,
+			Direction:       securityRule.Direction,
+			SecurityGroupID: securityRule.SecurityGroupID,
+		},
 	}
 
 	return req

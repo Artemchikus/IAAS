@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type SSHKey struct {
+type KeyPair struct {
 	CreatedAt   time.Time `json:"created_at"`
 	Fingerprint string    `json:"fingerprint"`
 	ID          string    `json:"id"`
@@ -11,6 +11,7 @@ type SSHKey struct {
 	PrivateKey  string    `json:"private_key"`
 	Type        string    `json:"type"`
 	AccountID   string    `json:"user_id"`
+	PublicKey   string    `json:"public_key"`
 }
 
 // {

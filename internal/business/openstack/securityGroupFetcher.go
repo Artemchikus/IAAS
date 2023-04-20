@@ -16,7 +16,7 @@ type SecurityGroupFetcher struct {
 func (f *SecurityGroupFetcher) FetchByID(ctx context.Context, clusterId int, securityGroupId string) (*models.SecurityGroup, error) {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	fetchSecurityGroupURL := cluster.URL + ":5000" + "/v3/securityGroups/" + securityGroupId
+	fetchSecurityGroupURL := cluster.URL + ":9696" + "/v2.0/security-groups/" + securityGroupId
 
 	req, err := http.NewRequest("GET", fetchSecurityGroupURL, nil)
 	if err != nil {
@@ -59,7 +59,7 @@ func (f *SecurityGroupFetcher) Create(ctx context.Context, clusterId int, securi
 
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	createSecurityGroupURL := cluster.URL + ":5000" + "/v3/securityGroups"
+	createSecurityGroupURL := cluster.URL + ":9696" + "/v2.0/security-groups"
 
 	req, err := http.NewRequest("POST", createSecurityGroupURL, bytes.NewBuffer(json_data))
 	if err != nil {
@@ -95,7 +95,7 @@ func (f *SecurityGroupFetcher) Create(ctx context.Context, clusterId int, securi
 func (f *SecurityGroupFetcher) Delete(ctx context.Context, clusterId int, securityGroupID string) error {
 	cluster := f.fetcher.clusters[clusterId-1]
 
-	deleteSecurityGroupURL := cluster.URL + ":5000" + "/v3/securityGroups/" + securityGroupID
+	deleteSecurityGroupURL := cluster.URL + ":9696" + "/v2.0/security-groups/" + securityGroupID
 
 	req, err := http.NewRequest("DELETE", deleteSecurityGroupURL, nil)
 	if err != nil {
@@ -138,7 +138,10 @@ func (f *SecurityGroupFetcher) getAdminToken(ctx context.Context, clusterId int)
 
 func (f *SecurityGroupFetcher) generateCreateReq(securityGroup *models.SecurityGroup) *CreateSecurityGroupRequest {
 	req := &CreateSecurityGroupRequest{
-		SecurityGroup: &SecurityGroup{},
+		SecurityGroup: &SecurityGroup{
+			Name:        securityGroup.Name,
+			Description: securityGroup.Description,
+		},
 	}
 
 	return req

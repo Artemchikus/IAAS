@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSecurityGroupFetcher_Create(t *testing.T) {
+func TestVolumeFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -22,18 +22,18 @@ func TestSecurityGroupFetcher_Create(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	sg := openstack.TestSecurityGroup(t)
+	v := openstack.TestVolume(t)
 
-	err := fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+	err := fetcher.Volume().Create(models.TestRequestContext(t), clusterID, v)
 	assert.NoError(t, err)
-	assert.NotEqual(t, sg.ID, "")
+	assert.NotEqual(t, v.ID, "")
 
-	time.Sleep(1000)
+	time.Sleep(100000000)
 
-	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
+	fetcher.Volume().Delete(models.TestRequestContext(t), clusterID, v.ID)
 }
 
-func TestSecurityGroupFetcher_Delete(t *testing.T) {
+func TestVolumeFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -45,18 +45,18 @@ func TestSecurityGroupFetcher_Delete(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	sg := openstack.TestSecurityGroup(t)
+	v := openstack.TestVolume(t)
 
-	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+	fetcher.Volume().Create(models.TestRequestContext(t), clusterID, v)
 
-	time.Sleep(1000)
+	time.Sleep(100000000)
 
-	err := fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
+	err := fetcher.Volume().Delete(models.TestRequestContext(t), clusterID, v.ID)
 	assert.NoError(t, err)
-	assert.NotEqual(t, sg.ID, "")
+	assert.NotEqual(t, v.ID, "")
 }
 
-func TestSecurityGroupFetcher_FetchByID(t *testing.T) {
+func TestVolumeFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster")
 
@@ -68,15 +68,15 @@ func TestSecurityGroupFetcher_FetchByID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	sg1 := openstack.TestSecurityGroup(t)
+	v1 := openstack.TestVolume(t)
 
-	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg1)
+	fetcher.Volume().Create(models.TestRequestContext(t), clusterID, v1)
 
-	time.Sleep(1000)
+	time.Sleep(100000000)
 
-	sg2, err := fetcher.SecurityGroup().FetchByID(models.TestRequestContext(t), clusterID, sg1.ID)
+	v2, err := fetcher.Volume().FetchByID(models.TestRequestContext(t), clusterID, v1.ID)
 	assert.NoError(t, err)
-	assert.NotEqual(t, sg2.ID, "")
+	assert.NotEqual(t, v2.ID, "")
 
-	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg2.ID)
+	fetcher.Volume().Delete(models.TestRequestContext(t), clusterID, v2.ID)
 }
