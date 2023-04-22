@@ -47,7 +47,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now().UTC()); err != nil {
+	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
@@ -90,6 +90,11 @@ func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	accId := vars["account_id"]
+
+	if r.Context().Value(models.CtxKeyAccount).(*models.Account).ID != accId && r.Context().Value(models.CtxKeyAccount).(*models.Account).Role != "admin" {
+		s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
+		return
+	}
 
 	account, err := s.store.Account().FindByID(r.Context(), accId)
 	if err != nil {
@@ -159,6 +164,11 @@ func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
 
 	accId := vars["account_id"]
 
+	if r.Context().Value(models.CtxKeyAccount).(*models.Account).ID != accId && r.Context().Value(models.CtxKeyAccount).(*models.Account).Role != "admin" {
+		s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
+		return
+	}
+
 	if err := s.store.Account().Delete(r.Context(), accId); err != nil {
 		s.error(w, r, http.StatusNotFound, err)
 		return
@@ -180,14 +190,14 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	acc, err := getAccFromRefreshToken(r.Context(), s.store, refreshTokenStr, secret.Value)
+	acc, err := getAccFromToken(r.Context(), s.store, refreshTokenStr, secret.Value)
 	if err != nil {
 		s.error(w, r, http.StatusUnauthorized, err)
 		return
 	}
 
 	if acc.RefreshToken != refreshTokenStr {
-		s.error(w, r, http.StatusUnauthorized, errIncorrectRefreshToken)
+		s.error(w, r, http.StatusUnauthorized, errIncorrectToken)
 		return
 	}
 
@@ -203,7 +213,7 @@ func (s *server) handleRefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken, time.Now().UTC()); err != nil {
+	if err := s.store.Account().UpdateRefreshToken(r.Context(), acc.RefreshToken, refreshToken); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
@@ -334,7 +344,7 @@ func createRefreshToken(account *models.Account, secret string) (string, error) 
 	return token.SignedString([]byte(secret))
 }
 
-func getAccFromRefreshToken(ctx context.Context, s store.Storage, tokenStr, secret string) (*models.Account, error) {
+func getAccFromToken(ctx context.Context, s store.Storage, tokenStr, secret string) (*models.Account, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errUnexpectedSigningMethod
@@ -343,7 +353,7 @@ func getAccFromRefreshToken(ctx context.Context, s store.Storage, tokenStr, secr
 		return []byte(secret), nil
 	})
 	if err != nil {
-		return nil, errIncorrectRefreshToken
+		return nil, errIncorrectToken
 	}
 
 	if !token.Valid {
@@ -359,7 +369,7 @@ func getAccFromRefreshToken(ctx context.Context, s store.Storage, tokenStr, secr
 
 	acc, err := s.Account().FindByEmail(ctx, email)
 	if err != nil {
-		return nil, errIncorrectRefreshToken
+		return nil, errIncorrectToken
 	}
 
 	return acc, nil

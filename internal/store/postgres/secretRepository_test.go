@@ -15,7 +15,7 @@ func TestSecretRepository_FindByType(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	_, err := s.Secret().FindByType(models.TestRequestContext(t), "test")
 	assert.EqualError(t, err, store.ErrRecordNotFound.Error())

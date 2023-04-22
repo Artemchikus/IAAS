@@ -16,21 +16,21 @@ func TestSecurityGroupFetcher_Create(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	sg := openstack.TestSecurityGroup(t)
 
-	err := fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+	err := fetcher.SecurityGroup().Create(openstack.TestRequestContext(t, fetcher, clusterID), sg)
 	assert.NoError(t, err)
 	assert.NotEqual(t, sg.ID, "")
 
 	time.Sleep(1000)
 
-	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
+	fetcher.SecurityGroup().Delete(openstack.TestRequestContext(t, fetcher, clusterID), sg.ID)
 }
 
 func TestSecurityGroupFetcher_Delete(t *testing.T) {
@@ -39,19 +39,19 @@ func TestSecurityGroupFetcher_Delete(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	sg := openstack.TestSecurityGroup(t)
 
-	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg)
+	fetcher.SecurityGroup().Create(openstack.TestRequestContext(t, fetcher, clusterID), sg)
 
 	time.Sleep(1000)
 
-	err := fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg.ID)
+	err := fetcher.SecurityGroup().Delete(openstack.TestRequestContext(t, fetcher, clusterID), sg.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, sg.ID, "")
 }
@@ -62,21 +62,21 @@ func TestSecurityGroupFetcher_FetchByID(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	sg1 := openstack.TestSecurityGroup(t)
 
-	fetcher.SecurityGroup().Create(models.TestRequestContext(t), clusterID, sg1)
+	fetcher.SecurityGroup().Create(openstack.TestRequestContext(t, fetcher, clusterID), sg1)
 
 	time.Sleep(1000)
 
-	sg2, err := fetcher.SecurityGroup().FetchByID(models.TestRequestContext(t), clusterID, sg1.ID)
+	sg2, err := fetcher.SecurityGroup().FetchByID(openstack.TestRequestContext(t, fetcher, clusterID), sg1.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, sg2.ID, "")
 
-	fetcher.SecurityGroup().Delete(models.TestRequestContext(t), clusterID, sg2.ID)
+	fetcher.SecurityGroup().Delete(openstack.TestRequestContext(t, fetcher, clusterID), sg2.ID)
 }

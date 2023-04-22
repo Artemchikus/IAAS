@@ -1,8 +1,10 @@
 package openstack
 
 import (
+	"IAAS/internal/business"
 	"IAAS/internal/config"
 	"IAAS/internal/models"
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -35,8 +37,6 @@ func TestImage(t *testing.T) *models.Image {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	log.Println(len(data))
 
 	return &models.Image{
 		FileData:        data,
@@ -135,4 +135,13 @@ func TestVolume(t *testing.T) *models.Volume {
 		Description: "test volume",
 		Size:        1,
 	}
+}
+
+func TestRequestContext(t *testing.T, fetcher business.Fetcher, clusterId int) context.Context {
+	ctx := context.WithValue(context.Background(), models.CtxKeyClusterID, "99999999-9999-9999-9999-999999999999")
+	ctx = context.WithValue(ctx, models.CtxKeyClusterID, clusterId)
+
+	admin := models.TestClusters(t)[clusterId].Admin
+	token, _ := fetcher.Token().Get(ctx, admin)
+	return context.WithValue(ctx, models.CtxKeyToken, token)
 }

@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -16,8 +15,10 @@ type VolumeFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *VolumeFetcher) FetchByID(ctx context.Context, clusterId int, volumeId string) (*models.Volume, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *VolumeFetcher) FetchByID(ctx context.Context, volumeId string) (*models.Volume, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchVolumeURL := cluster.URL + ":8776" + "/v3/volumes/" + volumeId
 
@@ -26,7 +27,7 @@ func (f *VolumeFetcher) FetchByID(ctx context.Context, clusterId int, volumeId s
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func (f *VolumeFetcher) FetchByID(ctx context.Context, clusterId int, volumeId s
 	return volume, nil
 }
 
-func (f *VolumeFetcher) Create(ctx context.Context, clusterId int, volume *models.Volume) error {
+func (f *VolumeFetcher) Create(ctx context.Context, volume *models.Volume) error {
 	reqData := f.generateCreateReq(volume)
 
 	json_data, err := json.Marshal(&reqData)
@@ -88,7 +89,9 @@ func (f *VolumeFetcher) Create(ctx context.Context, clusterId int, volume *model
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createVolumeURL := cluster.URL + ":8776" + "/v3/volumes"
 
@@ -97,7 +100,7 @@ func (f *VolumeFetcher) Create(ctx context.Context, clusterId int, volume *model
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -145,8 +148,10 @@ func (f *VolumeFetcher) Create(ctx context.Context, clusterId int, volume *model
 	return nil
 }
 
-func (f *VolumeFetcher) Delete(ctx context.Context, clusterId int, volumeID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *VolumeFetcher) Delete(ctx context.Context, volumeID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteVolumeURL := cluster.URL + ":8776" + "/v3/volumes/" + volumeID
 
@@ -155,7 +160,7 @@ func (f *VolumeFetcher) Delete(ctx context.Context, clusterId int, volumeID stri
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -168,8 +173,6 @@ func (f *VolumeFetcher) Delete(ctx context.Context, clusterId int, volumeID stri
 	}
 	defer resp.Body.Close()
 
-	log.Println(resp)
-
 	if resp.StatusCode != 202 {
 		return errors.New("internal server error")
 	}
@@ -177,18 +180,8 @@ func (f *VolumeFetcher) Delete(ctx context.Context, clusterId int, volumeID stri
 	return nil
 }
 
-func (f *VolumeFetcher) Update(ctx context.Context, clusterId int) {
+func (f *VolumeFetcher) Update(ctx context.Context, volumeId string) {
 
-}
-
-func (f *VolumeFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *VolumeFetcher) generateCreateReq(volume *models.Volume) *CreateVolumeRequest {

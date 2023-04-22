@@ -13,8 +13,10 @@ type UserFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *UserFetcher) FetchByID(ctx context.Context, clusterId int, userId string) (*models.Account, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *UserFetcher) FetchByID(ctx context.Context, userId string) (*models.Account, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchUserURL := cluster.URL + ":5000" + "/v3/users/" + userId
 
@@ -23,7 +25,7 @@ func (f *UserFetcher) FetchByID(ctx context.Context, clusterId int, userId strin
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -56,12 +58,12 @@ func (f *UserFetcher) FetchByID(ctx context.Context, clusterId int, userId strin
 	return user, nil
 }
 
-func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Account) error {
+func (f *UserFetcher) Create(ctx context.Context, user *models.Account) error {
 	description := "Project for user " + user.Email
 
 	project := models.NewProject(user.Email, description)
 
-	if err := f.fetcher.Project().Create(ctx, clusterId, project); err != nil {
+	if err := f.fetcher.Project().Create(ctx, project); err != nil {
 		return err
 	}
 
@@ -72,7 +74,9 @@ func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Ac
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createUserURL := cluster.URL + ":5000" + "/v3/users"
 
@@ -81,7 +85,7 @@ func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Ac
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -111,8 +115,10 @@ func (f *UserFetcher) Create(ctx context.Context, clusterId int, user *models.Ac
 	return nil
 }
 
-func (f *UserFetcher) Delete(ctx context.Context, clusterId int, userId string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *UserFetcher) Delete(ctx context.Context, userId string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchUserURL := cluster.URL + ":5000" + "/v3/users/" + userId
 
@@ -121,7 +127,7 @@ func (f *UserFetcher) Delete(ctx context.Context, clusterId int, userId string) 
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -141,17 +147,7 @@ func (f *UserFetcher) Delete(ctx context.Context, clusterId int, userId string) 
 	return nil
 }
 
-func (f *UserFetcher) Update(ctx context.Context, clusterId int) {}
-
-func (f *UserFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
-}
+func (f *UserFetcher) Update(ctx context.Context, userId string) {}
 
 func (f *UserFetcher) generateCreateReq(user *models.Account, projectID string) *CreateUserRequest {
 	return &CreateUserRequest{

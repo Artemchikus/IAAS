@@ -16,9 +16,9 @@ func TestFloatingIpFetcher_Create(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
@@ -26,19 +26,19 @@ func TestFloatingIpFetcher_Create(t *testing.T) {
 	sub := openstack.TestSubnet(t)
 	n := openstack.TestNetwork(t)
 
-	fetcher.Network().Create(models.TestRequestContext(t), clusterID, n)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID
 	ip.NetworkID = n.ID
 
-	fetcher.Subnet().Create(models.TestRequestContext(t), clusterID, sub)
+	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), sub)
 
-	err := fetcher.FloatingIp().Create(models.TestRequestContext(t), clusterID, ip)
+	err := fetcher.FloatingIp().Create(openstack.TestRequestContext(t, fetcher, clusterID), ip)
 	assert.NoError(t, err)
 	assert.NotEqual(t, ip.ID, "")
 
 	time.Sleep(1000)
 
-	fetcher.Network().Delete(models.TestRequestContext(t), clusterID, n.ID)
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
 }
 
 func TestFloatingIpFetcher_Delete(t *testing.T) {
@@ -47,9 +47,9 @@ func TestFloatingIpFetcher_Delete(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
@@ -57,20 +57,20 @@ func TestFloatingIpFetcher_Delete(t *testing.T) {
 	sub := openstack.TestSubnet(t)
 	n := openstack.TestNetwork(t)
 
-	fetcher.Network().Create(models.TestRequestContext(t), clusterID, n)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID
 	ip.NetworkID = n.ID
 
-	fetcher.Subnet().Create(models.TestRequestContext(t), clusterID, sub)
+	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), sub)
 
-	fetcher.FloatingIp().Create(models.TestRequestContext(t), clusterID, ip)
+	fetcher.FloatingIp().Create(openstack.TestRequestContext(t, fetcher, clusterID), ip)
 
 	time.Sleep(1000)
 
-	err := fetcher.FloatingIp().Delete(models.TestRequestContext(t), clusterID, ip.ID)
+	err := fetcher.FloatingIp().Delete(openstack.TestRequestContext(t, fetcher, clusterID), ip.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, ip.ID, "")
-	fetcher.Network().Delete(models.TestRequestContext(t), clusterID, n.ID)
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
 }
 
 func TestFloatingIpFetcher_FetchByID(t *testing.T) {
@@ -79,9 +79,9 @@ func TestFloatingIpFetcher_FetchByID(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
@@ -89,19 +89,19 @@ func TestFloatingIpFetcher_FetchByID(t *testing.T) {
 	sub := openstack.TestSubnet(t)
 	n := openstack.TestNetwork(t)
 
-	fetcher.Network().Create(models.TestRequestContext(t), clusterID, n)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID
 	ip1.NetworkID = n.ID
 
-	fetcher.Subnet().Create(models.TestRequestContext(t), clusterID, sub)
+	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), sub)
 
-	fetcher.FloatingIp().Create(models.TestRequestContext(t), clusterID, ip1)
+	fetcher.FloatingIp().Create(openstack.TestRequestContext(t, fetcher, clusterID), ip1)
 
 	time.Sleep(1000)
 
-	ip2, err := fetcher.FloatingIp().FetchByID(models.TestRequestContext(t), clusterID, ip1.ID)
+	ip2, err := fetcher.FloatingIp().FetchByID(openstack.TestRequestContext(t, fetcher, clusterID), ip1.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, ip2.ID, "")
 
-	fetcher.Network().Delete(models.TestRequestContext(t), clusterID, n.ID)
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
 }

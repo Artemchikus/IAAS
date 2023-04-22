@@ -16,21 +16,21 @@ func TestVolumeFetcher_Create(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	v := openstack.TestVolume(t)
 
-	err := fetcher.Volume().Create(models.TestRequestContext(t), clusterID, v)
+	err := fetcher.Volume().Create(openstack.TestRequestContext(t, fetcher, clusterID), v)
 	assert.NoError(t, err)
 	assert.NotEqual(t, v.ID, "")
 
 	time.Sleep(100000000)
 
-	fetcher.Volume().Delete(models.TestRequestContext(t), clusterID, v.ID)
+	fetcher.Volume().Delete(openstack.TestRequestContext(t, fetcher, clusterID), v.ID)
 }
 
 func TestVolumeFetcher_Delete(t *testing.T) {
@@ -39,19 +39,19 @@ func TestVolumeFetcher_Delete(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	v := openstack.TestVolume(t)
 
-	fetcher.Volume().Create(models.TestRequestContext(t), clusterID, v)
+	fetcher.Volume().Create(openstack.TestRequestContext(t, fetcher, clusterID), v)
 
 	time.Sleep(100000000)
 
-	err := fetcher.Volume().Delete(models.TestRequestContext(t), clusterID, v.ID)
+	err := fetcher.Volume().Delete(openstack.TestRequestContext(t, fetcher, clusterID), v.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, v.ID, "")
 }
@@ -62,21 +62,21 @@ func TestVolumeFetcher_FetchByID(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	v1 := openstack.TestVolume(t)
 
-	fetcher.Volume().Create(models.TestRequestContext(t), clusterID, v1)
+	fetcher.Volume().Create(openstack.TestRequestContext(t, fetcher, clusterID), v1)
 
 	time.Sleep(100000000)
 
-	v2, err := fetcher.Volume().FetchByID(models.TestRequestContext(t), clusterID, v1.ID)
+	v2, err := fetcher.Volume().FetchByID(openstack.TestRequestContext(t, fetcher, clusterID), v1.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, v2.ID, "")
 
-	fetcher.Volume().Delete(models.TestRequestContext(t), clusterID, v2.ID)
+	fetcher.Volume().Delete(openstack.TestRequestContext(t, fetcher, clusterID), v2.ID)
 }

@@ -13,8 +13,10 @@ type SecurityRuleFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *SecurityRuleFetcher) FetchByID(ctx context.Context, clusterId int, securityRuleId string) (*models.SecurityRule, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *SecurityRuleFetcher) FetchByID(ctx context.Context, securityRuleId string) (*models.SecurityRule, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchSecurityRuleURL := cluster.URL + ":9696" + "/v2.0/security-group-rules/" + securityRuleId
 
@@ -23,7 +25,7 @@ func (f *SecurityRuleFetcher) FetchByID(ctx context.Context, clusterId int, secu
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *SecurityRuleFetcher) FetchByID(ctx context.Context, clusterId int, secu
 	return fetchSecurityRuleRes.SecurityRule, nil
 }
 
-func (f *SecurityRuleFetcher) Create(ctx context.Context, clusterId int, securityRule *models.SecurityRule) error {
+func (f *SecurityRuleFetcher) Create(ctx context.Context, securityRule *models.SecurityRule) error {
 	reqData := f.generateCreateReq(securityRule)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *SecurityRuleFetcher) Create(ctx context.Context, clusterId int, securit
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createSecurityRuleURL := cluster.URL + ":9696" + "/v2.0/security-group-rules"
 
@@ -66,7 +70,7 @@ func (f *SecurityRuleFetcher) Create(ctx context.Context, clusterId int, securit
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -92,8 +96,10 @@ func (f *SecurityRuleFetcher) Create(ctx context.Context, clusterId int, securit
 
 }
 
-func (f *SecurityRuleFetcher) Delete(ctx context.Context, clusterId int, securityRuleID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *SecurityRuleFetcher) Delete(ctx context.Context, securityRuleID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteSecurityRuleURL := cluster.URL + ":9696" + "/v2.0/security-group-rules/" + securityRuleID
 
@@ -102,7 +108,7 @@ func (f *SecurityRuleFetcher) Delete(ctx context.Context, clusterId int, securit
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -122,18 +128,8 @@ func (f *SecurityRuleFetcher) Delete(ctx context.Context, clusterId int, securit
 	return nil
 }
 
-func (f *SecurityRuleFetcher) Update(ctx context.Context, clusterId int) {
+func (f *SecurityRuleFetcher) Update(ctx context.Context, securityRuleId string) {
 
-}
-
-func (f *SecurityRuleFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *SecurityRuleFetcher) generateCreateReq(securityRule *models.SecurityRule) *CreateSecurityRuleRequest {

@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 )
 
@@ -14,8 +13,10 @@ type RoleFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *RoleFetcher) FetchByID(ctx context.Context, clusterId int, roleId string) (*models.Role, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *RoleFetcher) FetchByID(ctx context.Context, roleId string) (*models.Role, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchRoleURL := cluster.URL + ":5000" + "/v3/roles/" + roleId
 
@@ -24,7 +25,7 @@ func (f *RoleFetcher) FetchByID(ctx context.Context, clusterId int, roleId strin
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func (f *RoleFetcher) FetchByID(ctx context.Context, clusterId int, roleId strin
 	return fetchRoleRes.Role, nil
 }
 
-func (f *RoleFetcher) Create(ctx context.Context, clusterId int, role *models.Role) error {
+func (f *RoleFetcher) Create(ctx context.Context, role *models.Role) error {
 	reqData := f.generateCreateReq(role)
 
 	json_data, err := json.Marshal(&reqData)
@@ -58,7 +59,9 @@ func (f *RoleFetcher) Create(ctx context.Context, clusterId int, role *models.Ro
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createRoleURL := cluster.URL + ":5000" + "/v3/roles"
 
@@ -67,7 +70,7 @@ func (f *RoleFetcher) Create(ctx context.Context, clusterId int, role *models.Ro
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -80,7 +83,6 @@ func (f *RoleFetcher) Create(ctx context.Context, clusterId int, role *models.Ro
 		return err
 	}
 	defer resp.Body.Close()
-	log.Println(resp)
 
 	createRoleRes := &CreateRoleResponse{
 		Role: role,
@@ -94,8 +96,10 @@ func (f *RoleFetcher) Create(ctx context.Context, clusterId int, role *models.Ro
 
 }
 
-func (f *RoleFetcher) Delete(ctx context.Context, clusterId int, roleID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *RoleFetcher) Delete(ctx context.Context, roleID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteRoleURL := cluster.URL + ":5000" + "/v3/roles/" + roleID
 
@@ -104,7 +108,7 @@ func (f *RoleFetcher) Delete(ctx context.Context, clusterId int, roleID string) 
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -124,18 +128,8 @@ func (f *RoleFetcher) Delete(ctx context.Context, clusterId int, roleID string) 
 	return nil
 }
 
-func (f *RoleFetcher) Update(ctx context.Context, clusterId int) {
+func (f *RoleFetcher) Update(ctx context.Context, roleId string) {
 
-}
-
-func (f *RoleFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *RoleFetcher) generateCreateReq(role *models.Role) *CreateRoleRequest {

@@ -17,7 +17,7 @@ func TestAccountRepository_Create(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	u := models.TestAccount(t)
 	assert.NoError(t, s.Account().Create(models.TestRequestContext(t), u))
@@ -30,7 +30,7 @@ func TestAccountRepository_FindByEmail(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	a1 := models.TestAccount(t)
 	_, err := s.Account().FindByEmail(models.TestRequestContext(t), a1.Email)
@@ -48,7 +48,7 @@ func TestAccountRepository_FindByID(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	a1 := models.TestAccount(t)
 	_, err := s.Account().FindByID(models.TestRequestContext(t), 2)
@@ -65,7 +65,7 @@ func TestAccountRepository_Update(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	a1 := models.TestAccount(t)
 	_, err := s.Account().FindByID(models.TestRequestContext(t), 2)
@@ -83,7 +83,7 @@ func TestAccountRepository_GetAll(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	err := s.Account().Delete(models.TestRequestContext(t), 1)
 	assert.NoError(t, err)

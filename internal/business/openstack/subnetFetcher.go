@@ -13,8 +13,10 @@ type SubnetFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *SubnetFetcher) FetchByID(ctx context.Context, clusterId int, subnetId string) (*models.Subnet, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *SubnetFetcher) FetchByID(ctx context.Context, subnetId string) (*models.Subnet, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchSubnetURL := cluster.URL + ":9696" + "/v2.0/subnets/" + subnetId
 
@@ -23,7 +25,7 @@ func (f *SubnetFetcher) FetchByID(ctx context.Context, clusterId int, subnetId s
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *SubnetFetcher) FetchByID(ctx context.Context, clusterId int, subnetId s
 	return subnet, nil
 }
 
-func (f *SubnetFetcher) Create(ctx context.Context, clusterId int, subnet *models.Subnet) error {
+func (f *SubnetFetcher) Create(ctx context.Context, subnet *models.Subnet) error {
 	reqData := f.generateCreateReq(subnet)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *SubnetFetcher) Create(ctx context.Context, clusterId int, subnet *model
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createSubnetURL := cluster.URL + ":9696" + "/v2.0/subnets"
 
@@ -66,7 +70,7 @@ func (f *SubnetFetcher) Create(ctx context.Context, clusterId int, subnet *model
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -92,8 +96,10 @@ func (f *SubnetFetcher) Create(ctx context.Context, clusterId int, subnet *model
 
 }
 
-func (f *SubnetFetcher) Delete(ctx context.Context, clusterId int, subnetID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *SubnetFetcher) Delete(ctx context.Context, subnetID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteSubnetURL := cluster.URL + ":9696" + "/v2.0/subnets/" + subnetID
 
@@ -102,7 +108,7 @@ func (f *SubnetFetcher) Delete(ctx context.Context, clusterId int, subnetID stri
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -122,18 +128,8 @@ func (f *SubnetFetcher) Delete(ctx context.Context, clusterId int, subnetID stri
 	return nil
 }
 
-func (f *SubnetFetcher) Update(ctx context.Context, clusterId int) {
+func (f *SubnetFetcher) Update(ctx context.Context, subnetId string) {
 
-}
-
-func (f *SubnetFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *SubnetFetcher) generateCreateReq(subnet *models.Subnet) *CreateSubnetRequest {

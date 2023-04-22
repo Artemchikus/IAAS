@@ -13,8 +13,10 @@ type FlavorFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *FlavorFetcher) FetchByID(ctx context.Context, clusterId int, flavorId string) (*models.Flavor, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *FlavorFetcher) FetchByID(ctx context.Context, flavorId string) (*models.Flavor, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchFlavorURL := cluster.URL + ":8774" + "/v2.1/flavors/" + flavorId
 
@@ -23,7 +25,7 @@ func (f *FlavorFetcher) FetchByID(ctx context.Context, clusterId int, flavorId s
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *FlavorFetcher) FetchByID(ctx context.Context, clusterId int, flavorId s
 	return fetchFlavorRes.Flavor, nil
 }
 
-func (f *FlavorFetcher) Create(ctx context.Context, clusterId int, flavor *models.Flavor) error {
+func (f *FlavorFetcher) Create(ctx context.Context, flavor *models.Flavor) error {
 	reqData := f.generateCreateReq(flavor)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *FlavorFetcher) Create(ctx context.Context, clusterId int, flavor *model
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createFlavorURL := cluster.URL + ":8774" + "/v2.1/flavors"
 
@@ -66,7 +70,7 @@ func (f *FlavorFetcher) Create(ctx context.Context, clusterId int, flavor *model
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -90,8 +94,10 @@ func (f *FlavorFetcher) Create(ctx context.Context, clusterId int, flavor *model
 
 	return nil
 }
-func (f *FlavorFetcher) Delete(ctx context.Context, clusterId int, flavorId string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *FlavorFetcher) Delete(ctx context.Context, flavorId string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteFlavorURL := cluster.URL + ":8774" + "/v2.1/flavors/" + flavorId
 
@@ -100,7 +106,7 @@ func (f *FlavorFetcher) Delete(ctx context.Context, clusterId int, flavorId stri
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -120,18 +126,8 @@ func (f *FlavorFetcher) Delete(ctx context.Context, clusterId int, flavorId stri
 	return nil
 }
 
-func (f *FlavorFetcher) Update(ctx context.Context, clusterId int) {
+func (f *FlavorFetcher) Update(ctx context.Context, flavorId string) {
 
-}
-
-func (f *FlavorFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *FlavorFetcher) generateCreateReq(flavor *models.Flavor) *CreateFlavorRequest {

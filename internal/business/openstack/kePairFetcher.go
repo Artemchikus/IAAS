@@ -14,8 +14,10 @@ type KeyPairFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *KeyPairFetcher) FetchByID(ctx context.Context, clusterId int, keyPairId string) (*models.KeyPair, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *KeyPairFetcher) FetchByID(ctx context.Context, keyPairId string) (*models.KeyPair, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchKeyPairURL := cluster.URL + ":8774" + "/v2.1/os-keypairs/" + keyPairId
 
@@ -24,7 +26,7 @@ func (f *KeyPairFetcher) FetchByID(ctx context.Context, clusterId int, keyPairId
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +68,7 @@ func (f *KeyPairFetcher) FetchByID(ctx context.Context, clusterId int, keyPairId
 	return keyPair, nil
 }
 
-func (f *KeyPairFetcher) Create(ctx context.Context, clusterId int, keyPair *models.KeyPair) error {
+func (f *KeyPairFetcher) Create(ctx context.Context, keyPair *models.KeyPair) error {
 	reqData := f.generateCreateReq(keyPair)
 
 	json_data, err := json.Marshal(&reqData)
@@ -74,7 +76,9 @@ func (f *KeyPairFetcher) Create(ctx context.Context, clusterId int, keyPair *mod
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createKeyPairURL := cluster.URL + ":8774" + "/v2.1/os-keypairs"
 
@@ -83,7 +87,7 @@ func (f *KeyPairFetcher) Create(ctx context.Context, clusterId int, keyPair *mod
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -111,8 +115,10 @@ func (f *KeyPairFetcher) Create(ctx context.Context, clusterId int, keyPair *mod
 
 }
 
-func (f *KeyPairFetcher) Delete(ctx context.Context, clusterId int, keyPairId string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *KeyPairFetcher) Delete(ctx context.Context, keyPairId string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteKeyPairURL := cluster.URL + ":8774" + "/v2.1/os-keypairs/" + keyPairId
 
@@ -121,7 +127,7 @@ func (f *KeyPairFetcher) Delete(ctx context.Context, clusterId int, keyPairId st
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -141,18 +147,8 @@ func (f *KeyPairFetcher) Delete(ctx context.Context, clusterId int, keyPairId st
 	return nil
 }
 
-func (f *KeyPairFetcher) Update(ctx context.Context, clusterId int) {
+func (f *KeyPairFetcher) Update(ctx context.Context, keyPairId string) {
 
-}
-
-func (f *KeyPairFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *KeyPairFetcher) generateCreateReq(keyPair *models.KeyPair) *CreateKeyPairRequest {

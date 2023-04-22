@@ -18,15 +18,15 @@ func TestTokenFetcher_Get(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	account := config.Clusters[0].Admin
 
-	token, err := fetcher.Token().Get(models.TestRequestContext(t), clusterID, account)
+	token, err := fetcher.Token().Get(openstack.TestRequestContext(t, fetcher, clusterID), account)
 	assert.NoError(t, err)
 	assert.NotNil(t, token.Value)
 	assert.NotNil(t, token.ExpiresAt)

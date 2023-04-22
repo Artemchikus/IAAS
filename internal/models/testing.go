@@ -27,7 +27,6 @@ func TestInitContext(t *testing.T) context.Context {
 
 func TestRequestContext(t *testing.T) context.Context {
 	return context.WithValue(context.Background(), CtxKeyRequestID, "99999999-9999-9999-9999-999999999999")
-
 }
 
 func TestClusters(t *testing.T) []*Cluster {

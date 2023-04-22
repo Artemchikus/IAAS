@@ -46,26 +46,13 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 			return
 		}
 
-		vars, err := getVars(r)
+		acc, err := getAccFromToken(r.Context(), s.store, tokenStr, secret.Value)
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
-			return
-		}
-
-		accId := vars["account_id"]
-
-		account, err := s.store.Account().FindByID(r.Context(), accId)
-		if err != nil {
-			s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
-			return
-		}
-
-		if err := account.ValidateJWTToken(tokenStr, secret.Value); err != nil {
 			s.error(w, r, http.StatusUnauthorized, err)
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), models.CtxKeyAccount, account)))
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), models.CtxKeyAccount, acc)))
 	})
 }
 

@@ -21,15 +21,13 @@ func Start(config *config.ApiConfig) error {
 
 	ctx := context.WithValue(context.Background(), models.CtxKeyRequestID, "initial-request")
 
-	store := postgres.New(ctx, db, config)
+	store := postgres.NewStore(ctx, db, config)
 
-	fetcher := openstack.New(ctx, config, store)
+	fetcher := openstack.NewFetcher(ctx, config, store)
 
 	srv := newServer(store, fetcher)
 
 	addr := config.BindAddr
-
-	log.Println(config.Clusters[0].Admin.ProjectID)
 
 	log.Println("Server is listening on port", addr)
 

@@ -13,8 +13,10 @@ type NetworkFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *NetworkFetcher) FetchByID(ctx context.Context, clusterId int, networkId string) (*models.Network, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *NetworkFetcher) FetchByID(ctx context.Context, networkId string) (*models.Network, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchNetworkURL := cluster.URL + ":9696" + "/v2.0/networks/" + networkId
 
@@ -23,7 +25,7 @@ func (f *NetworkFetcher) FetchByID(ctx context.Context, clusterId int, networkId
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *NetworkFetcher) FetchByID(ctx context.Context, clusterId int, networkId
 	return fetchNetworkRes.Network, nil
 }
 
-func (f *NetworkFetcher) Create(ctx context.Context, clusterId int, network *models.Network) error {
+func (f *NetworkFetcher) Create(ctx context.Context, network *models.Network) error {
 	reqData := f.generateCreateReq(network)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *NetworkFetcher) Create(ctx context.Context, clusterId int, network *mod
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createNetworkURL := cluster.URL + ":9696" + "/v2.0/networks"
 
@@ -66,7 +70,7 @@ func (f *NetworkFetcher) Create(ctx context.Context, clusterId int, network *mod
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -92,8 +96,10 @@ func (f *NetworkFetcher) Create(ctx context.Context, clusterId int, network *mod
 
 }
 
-func (f *NetworkFetcher) Delete(ctx context.Context, clusterId int, networkID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *NetworkFetcher) Delete(ctx context.Context, networkID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteNetworkURL := cluster.URL + ":9696" + "/v2.0/networks/" + networkID
 
@@ -102,7 +108,7 @@ func (f *NetworkFetcher) Delete(ctx context.Context, clusterId int, networkID st
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -122,18 +128,8 @@ func (f *NetworkFetcher) Delete(ctx context.Context, clusterId int, networkID st
 	return nil
 }
 
-func (f *NetworkFetcher) Update(ctx context.Context, clusterId int) {
+func (f *NetworkFetcher) Update(ctx context.Context, networkId string) {
 
-}
-
-func (f *NetworkFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *NetworkFetcher) generateCreateReq(network *models.Network) *CreateNetworkRequest {

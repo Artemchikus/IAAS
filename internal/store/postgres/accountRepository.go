@@ -150,8 +150,10 @@ func scanIntoAccount(rows *sql.Rows) (*models.Account, error) {
 	return account, nil
 }
 
-func (r *AccountRepository) UpdateRefreshToken(ctx context.Context, old, new string, time time.Time) error {
+func (r *AccountRepository) UpdateRefreshToken(ctx context.Context, old, new string) error {
 	defer r.logging(ctx, "UPDATE refresh_token")()
+
+	time := time.Now().UTC()
 
 	query := `UPDATE account
 	SET refresh_token = $1,
@@ -206,17 +208,17 @@ func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Accou
 		return nil
 	}
 
-	if err := admin.Validate(); err != nil {
+	if err := adm.Validate(); err != nil {
 		return err
 	}
 
-	if err := admin.BeforeCreate(); err != nil {
+	if err := adm.BeforeCreate(); err != nil {
 		return err
 	}
 
-	admin.Role = "admin"
+	adm.Role = "admin"
 
-	if err := r.store.Account().Create(ctx, admin); err != nil {
+	if err := r.store.Account().Create(ctx, adm); err != nil {
 		return err
 	}
 

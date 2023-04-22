@@ -16,21 +16,21 @@ func TestFlavorFetcher_Create(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	f := openstack.TestFlavor(t)
 
-	err := fetcher.Flavor().Create(models.TestRequestContext(t), clusterID, f)
+	err := fetcher.Flavor().Create(openstack.TestRequestContext(t, fetcher, clusterID), f)
 	assert.NoError(t, err)
 	assert.NotEqual(t, f.ID, "")
 
 	time.Sleep(1000)
 
-	fetcher.Flavor().Delete(models.TestRequestContext(t), clusterID, f.ID)
+	fetcher.Flavor().Delete(openstack.TestRequestContext(t, fetcher, clusterID), f.ID)
 }
 
 func TestFlavorFetcher_Delete(t *testing.T) {
@@ -39,19 +39,19 @@ func TestFlavorFetcher_Delete(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	f := openstack.TestFlavor(t)
 
-	fetcher.Flavor().Create(models.TestRequestContext(t), clusterID, f)
+	fetcher.Flavor().Create(openstack.TestRequestContext(t, fetcher, clusterID), f)
 
 	time.Sleep(1000)
 
-	err := fetcher.Flavor().Delete(models.TestRequestContext(t), clusterID, f.ID)
+	err := fetcher.Flavor().Delete(openstack.TestRequestContext(t, fetcher, clusterID), f.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, f.ID, "")
 }
@@ -62,21 +62,21 @@ func TestFlavorFetcher_FetchByID(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	f1 := openstack.TestFlavor(t)
 
-	fetcher.Flavor().Create(models.TestRequestContext(t), clusterID, f1)
+	fetcher.Flavor().Create(openstack.TestRequestContext(t, fetcher, clusterID), f1)
 
 	time.Sleep(1000)
 
-	f2, err := fetcher.Flavor().FetchByID(models.TestRequestContext(t), clusterID, f1.ID)
+	f2, err := fetcher.Flavor().FetchByID(openstack.TestRequestContext(t, fetcher, clusterID), f1.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, f2.ID, "")
 
-	fetcher.Flavor().Delete(models.TestRequestContext(t), clusterID, f2.ID)
+	fetcher.Flavor().Delete(openstack.TestRequestContext(t, fetcher, clusterID), f2.ID)
 }

@@ -16,21 +16,21 @@ func TestRoleFetcher_Create(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	r := openstack.TestRole(t)
 
-	err := fetcher.Role().Create(models.TestRequestContext(t), clusterID, r)
+	err := fetcher.Role().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
 	assert.NoError(t, err)
 	assert.NotEqual(t, r.ID, "")
 
 	time.Sleep(1000)
 
-	fetcher.Role().Delete(models.TestRequestContext(t), clusterID, r.ID)
+	fetcher.Role().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 }
 
 func TestRoleFetcher_Delete(t *testing.T) {
@@ -39,19 +39,19 @@ func TestRoleFetcher_Delete(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	r := openstack.TestRole(t)
 
-	fetcher.Role().Create(models.TestRequestContext(t), clusterID, r)
+	fetcher.Role().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
 
 	time.Sleep(1000)
 
-	err := fetcher.Role().Delete(models.TestRequestContext(t), clusterID, r.ID)
+	err := fetcher.Role().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, r.ID, "")
 }
@@ -62,21 +62,21 @@ func TestRoleFetcher_FetchByID(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	r1 := openstack.TestRole(t)
 
-	fetcher.Role().Create(models.TestRequestContext(t), clusterID, r1)
+	fetcher.Role().Create(openstack.TestRequestContext(t, fetcher, clusterID), r1)
 
 	time.Sleep(1000)
 
-	r2, err := fetcher.Role().FetchByID(models.TestRequestContext(t), clusterID, r1.ID)
+	r2, err := fetcher.Role().FetchByID(openstack.TestRequestContext(t, fetcher, clusterID), r1.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, r2.ID, "")
 
-	fetcher.Role().Delete(models.TestRequestContext(t), clusterID, r2.ID)
+	fetcher.Role().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r2.ID)
 }

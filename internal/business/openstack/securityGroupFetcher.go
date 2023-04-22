@@ -13,8 +13,10 @@ type SecurityGroupFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *SecurityGroupFetcher) FetchByID(ctx context.Context, clusterId int, securityGroupId string) (*models.SecurityGroup, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *SecurityGroupFetcher) FetchByID(ctx context.Context, securityGroupId string) (*models.SecurityGroup, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchSecurityGroupURL := cluster.URL + ":9696" + "/v2.0/security-groups/" + securityGroupId
 
@@ -23,7 +25,7 @@ func (f *SecurityGroupFetcher) FetchByID(ctx context.Context, clusterId int, sec
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *SecurityGroupFetcher) FetchByID(ctx context.Context, clusterId int, sec
 	return fetchSecurityGroupRes.SecurityGroup, nil
 }
 
-func (f *SecurityGroupFetcher) Create(ctx context.Context, clusterId int, securityGroup *models.SecurityGroup) error {
+func (f *SecurityGroupFetcher) Create(ctx context.Context, securityGroup *models.SecurityGroup) error {
 	reqData := f.generateCreateReq(securityGroup)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *SecurityGroupFetcher) Create(ctx context.Context, clusterId int, securi
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createSecurityGroupURL := cluster.URL + ":9696" + "/v2.0/security-groups"
 
@@ -66,7 +70,7 @@ func (f *SecurityGroupFetcher) Create(ctx context.Context, clusterId int, securi
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -92,8 +96,10 @@ func (f *SecurityGroupFetcher) Create(ctx context.Context, clusterId int, securi
 
 }
 
-func (f *SecurityGroupFetcher) Delete(ctx context.Context, clusterId int, securityGroupID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *SecurityGroupFetcher) Delete(ctx context.Context, securityGroupID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteSecurityGroupURL := cluster.URL + ":9696" + "/v2.0/security-groups/" + securityGroupID
 
@@ -102,7 +108,7 @@ func (f *SecurityGroupFetcher) Delete(ctx context.Context, clusterId int, securi
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -122,18 +128,8 @@ func (f *SecurityGroupFetcher) Delete(ctx context.Context, clusterId int, securi
 	return nil
 }
 
-func (f *SecurityGroupFetcher) Update(ctx context.Context, clusterId int) {
+func (f *SecurityGroupFetcher) Update(ctx context.Context, securityGroupId string) {
 
-}
-
-func (f *SecurityGroupFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *SecurityGroupFetcher) generateCreateReq(securityGroup *models.SecurityGroup) *CreateSecurityGroupRequest {

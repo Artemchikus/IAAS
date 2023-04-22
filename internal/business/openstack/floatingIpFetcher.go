@@ -13,8 +13,10 @@ type FloatingIpFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *FloatingIpFetcher) FetchByID(ctx context.Context, clusterId int, folatingIpId string) (*models.FloatingIp, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *FloatingIpFetcher) FetchByID(ctx context.Context, folatingIpId string) (*models.FloatingIp, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchFloatingIpURL := cluster.URL + ":9696" + "/v2.0/floatingips/" + folatingIpId
 
@@ -23,7 +25,7 @@ func (f *FloatingIpFetcher) FetchByID(ctx context.Context, clusterId int, folati
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *FloatingIpFetcher) FetchByID(ctx context.Context, clusterId int, folati
 	return fetchFloatingIpRes.FloatingIp, nil
 }
 
-func (f *FloatingIpFetcher) Create(ctx context.Context, clusterId int, folatingIp *models.FloatingIp) error {
+func (f *FloatingIpFetcher) Create(ctx context.Context, folatingIp *models.FloatingIp) error {
 	reqData := f.generateCreateReq(folatingIp)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *FloatingIpFetcher) Create(ctx context.Context, clusterId int, folatingI
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createFloatingIpURL := cluster.URL + ":9696" + "/v2.0/floatingips"
 
@@ -66,7 +70,7 @@ func (f *FloatingIpFetcher) Create(ctx context.Context, clusterId int, folatingI
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -92,8 +96,10 @@ func (f *FloatingIpFetcher) Create(ctx context.Context, clusterId int, folatingI
 
 }
 
-func (f *FloatingIpFetcher) Delete(ctx context.Context, clusterId int, folatingIpID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *FloatingIpFetcher) Delete(ctx context.Context, folatingIpID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteFloatingIpURL := cluster.URL + ":9696" + "/v2.0/floatingips/" + folatingIpID
 
@@ -102,7 +108,7 @@ func (f *FloatingIpFetcher) Delete(ctx context.Context, clusterId int, folatingI
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -122,18 +128,8 @@ func (f *FloatingIpFetcher) Delete(ctx context.Context, clusterId int, folatingI
 	return nil
 }
 
-func (f *FloatingIpFetcher) Update(ctx context.Context, clusterId int) {
+func (f *FloatingIpFetcher) Update(ctx context.Context, floatingIpId string) {
 
-}
-
-func (f *FloatingIpFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *FloatingIpFetcher) generateCreateReq(folatingIp *models.FloatingIp) *CreateFloatingIpRequest {

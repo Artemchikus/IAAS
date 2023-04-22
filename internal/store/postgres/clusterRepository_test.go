@@ -15,7 +15,7 @@ func TestClusterRepository_Create(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	c := postgres.TestCluster(t)
 	assert.NoError(t, s.Cluster().Create(models.TestRequestContext(t), c))
@@ -28,7 +28,7 @@ func TestClusterRepository_FindByLocation(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	c1 := postgres.TestCluster(t)
 	_, err := s.Cluster().FindByLocation(models.TestRequestContext(t), c1.Location)
@@ -46,7 +46,7 @@ func TestClusterRepository_FindByID(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	c1 := postgres.TestCluster(t)
 	_, err := s.Cluster().FindByID(models.TestRequestContext(t), 2)
@@ -63,7 +63,7 @@ func TestClusterRepository_Update(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	c1 := postgres.TestCluster(t)
 	_, err := s.Cluster().FindByID(models.TestRequestContext(t), 2)
@@ -81,7 +81,7 @@ func TestClusterRepository_GetAll(t *testing.T) {
 
 	config := postgres.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
 	err := s.Cluster().Delete(models.TestRequestContext(t), 1)
 	assert.NoError(t, err)

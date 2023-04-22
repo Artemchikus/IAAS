@@ -13,8 +13,10 @@ type ProjectFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId string) (*models.Project, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *ProjectFetcher) FetchByID(ctx context.Context, projectId string) (*models.Project, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchProjectURL := cluster.URL + ":5000" + "/v3/projects/" + projectId
 
@@ -23,7 +25,7 @@ func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *ProjectFetcher) FetchByID(ctx context.Context, clusterId int, projectId
 	return fetchProjectRes.Project, nil
 }
 
-func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *models.Project) error {
+func (f *ProjectFetcher) Create(ctx context.Context, project *models.Project) error {
 	reqData := f.generateCreateReq(project)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *mod
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createProjectURL := cluster.URL + ":5000" + "/v3/projects"
 
@@ -66,7 +70,7 @@ func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *mod
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -92,8 +96,10 @@ func (f *ProjectFetcher) Create(ctx context.Context, clusterId int, project *mod
 
 }
 
-func (f *ProjectFetcher) Delete(ctx context.Context, clusterId int, projectID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *ProjectFetcher) Delete(ctx context.Context, projectID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteProjectURL := cluster.URL + ":5000" + "/v3/projects/" + projectID
 
@@ -102,7 +108,7 @@ func (f *ProjectFetcher) Delete(ctx context.Context, clusterId int, projectID st
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -122,18 +128,8 @@ func (f *ProjectFetcher) Delete(ctx context.Context, clusterId int, projectID st
 	return nil
 }
 
-func (f *ProjectFetcher) Update(ctx context.Context, clusterId int) {
+func (f *ProjectFetcher) Update(ctx context.Context, projectId string) {
 
-}
-
-func (f *ProjectFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *ProjectFetcher) generateCreateReq(project *models.Project) *CreateProjectRequest {

@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 )
 
@@ -14,8 +13,10 @@ type ImageFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *ImageFetcher) FetchByID(ctx context.Context, clusterId int, imageId string) (*models.Image, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *ImageFetcher) FetchByID(ctx context.Context, imageId string) (*models.Image, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchImageURL := cluster.URL + ":9292" + "/v2/images/" + imageId
 
@@ -24,7 +25,7 @@ func (f *ImageFetcher) FetchByID(ctx context.Context, clusterId int, imageId str
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -43,12 +44,10 @@ func (f *ImageFetcher) FetchByID(ctx context.Context, clusterId int, imageId str
 		return nil, err
 	}
 
-	log.Println(image)
-
 	return image, nil
 }
 
-func (f *ImageFetcher) Create(ctx context.Context, clusterId int, image *models.Image) error {
+func (f *ImageFetcher) Create(ctx context.Context, image *models.Image) error {
 	reqData := f.generateCreateReq(image)
 
 	json_data, err := json.Marshal(&reqData)
@@ -56,7 +55,9 @@ func (f *ImageFetcher) Create(ctx context.Context, clusterId int, image *models.
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createImageURL := cluster.URL + ":9292" + "/v2/images"
 
@@ -65,7 +66,7 @@ func (f *ImageFetcher) Create(ctx context.Context, clusterId int, image *models.
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -93,8 +94,10 @@ func (f *ImageFetcher) Create(ctx context.Context, clusterId int, image *models.
 
 }
 
-func (f *ImageFetcher) Delete(ctx context.Context, clusterId int, imageId string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *ImageFetcher) Delete(ctx context.Context, imageId string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteImageURL := cluster.URL + ":9292" + "/v2/images/" + imageId
 
@@ -103,7 +106,7 @@ func (f *ImageFetcher) Delete(ctx context.Context, clusterId int, imageId string
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -123,22 +126,11 @@ func (f *ImageFetcher) Delete(ctx context.Context, clusterId int, imageId string
 	return nil
 }
 
-func (f *ImageFetcher) Update(ctx context.Context, clusterId int) {
+func (f *ImageFetcher) Update(ctx context.Context, imageId string) {
 
 }
-
-func (f *ImageFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
-}
-
 func (f *ImageFetcher) uploadImage(ctx context.Context, fileData []byte, clusterId int, imageId string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+	cluster := f.fetcher.clusters[clusterId]
 
 	putImageDataURL := cluster.URL + ":9292" + "/v2/images/" + imageId + "/file"
 
@@ -147,7 +139,7 @@ func (f *ImageFetcher) uploadImage(ctx context.Context, fileData []byte, cluster
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}

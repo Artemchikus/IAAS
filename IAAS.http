@@ -1,13 +1,13 @@
-GET http://localhost:3000/account/1/admin/account
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgxMzg5NTczfQ.Vkwdp2qH29NoQjgbiOGvBcN0sDyVVrt03Xb1t4PaSe8
+GET http://localhost:3000/account
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIxODQxNDB9.bJEM2qTFJK8W0KkXiMb8TMyEmKal-z22MzEATuljsHc
 
 ###
-GET http://localhost:3000/account/1
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODEzODUxMzd9.ULwMFJ_wIb5O2QH0exxo7LJPeHk09c8RdoqGIh8SqWY
+GET http://localhost:3000/account/2
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMTgwMjE0fQ.ED0sL9VS0j4kXXBbrgN9bnm9QWbGES40yQNktGmJjRc
 
 ###
-DELETE http://localhost:3000/account/1
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiRXhwaXJlc0F0IjoxNjgxMzgxNDgzfQ.FkMwro0v5iMmG30n4fXIwyWtjd6A8efXMQrLqrs1t5g
+DELETE http://localhost:3000/account/2
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIxODA4MjR9.NXcF8lAXmHgXhwduzT_BHWWcGxmapVU45toGYbRw6WA
 
 ###
 POST http://localhost:3000/account
@@ -43,12 +43,12 @@ content-type: application/json
 }
 
 ###
-GET http://localhost:3000/account/1/cluster
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE1Nzk2MzF9.kpGI4MI4x-PI0VXN_eyxBQX5cGND-papRbkBNO7OkR4
+GET http://localhost:3000/cluster
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMTg1MjQwfQ.9MNDpeoAGT2Axeeb_7esRtCIDKmBDIkRpKdHDzhkPu0
 
 ###
-POST http://localhost:3000/account/1/admin/cluster
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE0NzYwMzZ9.aVT8mCRFwJN2uLYGKaD0U4OxcLM9y10nS7lj9lkMJfw
+POST http://localhost:3000/cluster
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMTgxMjcxfQ._qh4CAq5pl1bGPEmbmhHAG0qBFg3iq772cdyPORqhQc
 content-type: application/json
 
 {
@@ -62,13 +62,13 @@ content-type: application/json
 }
 
 ###
-DELETE  http://localhost:3000/account/1/admin/cluster/4
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODE0NzYwMzZ9.aVT8mCRFwJN2uLYGKaD0U4OxcLM9y10nS7lj9lkMJfw
+DELETE  http://localhost:3000/cluster/4
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMTgxMjcxfQ._qh4CAq5pl1bGPEmbmhHAG0qBFg3iq772cdyPORqhQc
 
 ###
-GET  http://localhost:3000/account/2/cluster/3
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgxNDc2NDM1fQ.MvZAw0KmXYcOVwjkeyIOMvXiOMQt2Gqcte4PEemyNJw
+GET  http://localhost:3000/cluster/3
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMTgxMjcxfQ._qh4CAq5pl1bGPEmbmhHAG0qBFg3iq772cdyPORqhQc
 
 ###
-GET  http://localhost:3000/account/2/cluster
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgxNDc2NDM1fQ.MvZAw0KmXYcOVwjkeyIOMvXiOMQt2Gqcte4PEemyNJw
+GET  http://localhost:3000/cluster/
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIxODQxNDB9.bJEM2qTFJK8W0KkXiMb8TMyEmKal-z22MzEATuljsHc

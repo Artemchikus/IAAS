@@ -11,7 +11,7 @@ type TokenFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.Account) (*models.Token, error) {
+func (f *TokenFetcher) Get(ctx context.Context, account *models.Account) (*models.Token, error) {
 	req := f.generateGetReq(account)
 
 	json_data, err := json.Marshal(&req)
@@ -19,7 +19,9 @@ func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.A
 		return nil, err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	getTokenURL := cluster.URL + ":5000" + "/v3/auth/tokens"
 
@@ -43,7 +45,7 @@ func (f *TokenFetcher) Get(ctx context.Context, clusterId int, account *models.A
 	return token, nil
 }
 
-func (f *TokenFetcher) Refresh(ctx context.Context, clusterId int, oldToken *models.Token) (*models.Token, error) {
+func (f *TokenFetcher) Refresh(ctx context.Context, oldToken *models.Token) (*models.Token, error) {
 	req := f.generateRefreshReq(oldToken)
 
 	json_data, err := json.Marshal(&req)
@@ -51,7 +53,9 @@ func (f *TokenFetcher) Refresh(ctx context.Context, clusterId int, oldToken *mod
 		return nil, err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	getTokenURL := cluster.URL + ":5000" + "/v3/auth/tokens"
 

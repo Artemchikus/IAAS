@@ -16,21 +16,21 @@ func TestNetworkFetcher_Create(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	n := openstack.TestNetwork(t)
 
-	err := fetcher.Network().Create(models.TestRequestContext(t), clusterID, n)
+	err := fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	assert.NoError(t, err)
 	assert.NotEqual(t, n.ID, "")
 
 	time.Sleep(1000)
 
-	fetcher.Network().Delete(models.TestRequestContext(t), clusterID, n.ID)
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
 }
 
 func TestNetworkFetcher_Delete(t *testing.T) {
@@ -39,19 +39,19 @@ func TestNetworkFetcher_Delete(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	n := openstack.TestNetwork(t)
 
-	fetcher.Network().Create(models.TestRequestContext(t), clusterID, n)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 
 	time.Sleep(1000)
 
-	err := fetcher.Network().Delete(models.TestRequestContext(t), clusterID, n.ID)
+	err := fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, n.ID, "")
 }
@@ -62,21 +62,21 @@ func TestNetworkFetcher_FetchByID(t *testing.T) {
 
 	config := openstack.TestConfig(t)
 
-	s := postgres.New(models.TestInitContext(t), db, config)
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
 
-	fetcher := openstack.New(models.TestInitContext(t), config, s)
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
 
 	clusterID := config.Clusters[0].ID
 
 	n1 := openstack.TestNetwork(t)
 
-	fetcher.Network().Create(models.TestRequestContext(t), clusterID, n1)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n1)
 
 	time.Sleep(1000)
 
-	n2, err := fetcher.Network().FetchByID(models.TestRequestContext(t), clusterID, n1.ID)
+	n2, err := fetcher.Network().FetchByID(openstack.TestRequestContext(t, fetcher, clusterID), n1.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, n2.ID, "")
 
-	fetcher.Network().Delete(models.TestRequestContext(t), clusterID, n2.ID)
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n2.ID)
 }

@@ -3,7 +3,6 @@ package store
 import (
 	"IAAS/internal/models"
 	"context"
-	"time"
 )
 
 type AccountRepository interface {
@@ -14,7 +13,7 @@ type AccountRepository interface {
 	FindByEmail(context.Context, string) (*models.Account, error)
 	Init(context.Context, *models.Account) error // TODO add support for multiple accounts
 	GetAll(context.Context) ([]*models.Account, error)
-	UpdateRefreshToken(context.Context, string, string, time.Time) error
+	UpdateRefreshToken(context.Context, string, string) error
 }
 
 type SecretRepository interface {

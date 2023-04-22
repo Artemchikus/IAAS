@@ -13,8 +13,10 @@ type RouterFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *RouterFetcher) FetchByID(ctx context.Context, clusterId int, routerId string) (*models.Router, error) {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *RouterFetcher) FetchByID(ctx context.Context, routerId string) (*models.Router, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	fetchRouterURL := cluster.URL + ":9696" + "/v2.0/routers/" + routerId
 
@@ -23,7 +25,7 @@ func (f *RouterFetcher) FetchByID(ctx context.Context, clusterId int, routerId s
 		return nil, err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +51,7 @@ func (f *RouterFetcher) FetchByID(ctx context.Context, clusterId int, routerId s
 	return fetchRouterRes.Router, nil
 }
 
-func (f *RouterFetcher) Create(ctx context.Context, clusterId int, router *models.Router) error {
+func (f *RouterFetcher) Create(ctx context.Context, router *models.Router) error {
 	reqData := f.generateCreateReq(router)
 
 	json_data, err := json.Marshal(&reqData)
@@ -57,7 +59,9 @@ func (f *RouterFetcher) Create(ctx context.Context, clusterId int, router *model
 		return err
 	}
 
-	cluster := f.fetcher.clusters[clusterId-1]
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	createRouterURL := cluster.URL + ":9696" + "/v2.0/routers"
 
@@ -66,7 +70,7 @@ func (f *RouterFetcher) Create(ctx context.Context, clusterId int, router *model
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -92,8 +96,10 @@ func (f *RouterFetcher) Create(ctx context.Context, clusterId int, router *model
 
 }
 
-func (f *RouterFetcher) Delete(ctx context.Context, clusterId int, routerID string) error {
-	cluster := f.fetcher.clusters[clusterId-1]
+func (f *RouterFetcher) Delete(ctx context.Context, routerID string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
 
 	deleteRouterURL := cluster.URL + ":9696" + "/v2.0/routers/" + routerID
 
@@ -102,7 +108,7 @@ func (f *RouterFetcher) Delete(ctx context.Context, clusterId int, routerID stri
 		return err
 	}
 
-	token, err := f.getAdminToken(ctx, clusterId)
+	token := getTokenFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -122,18 +128,8 @@ func (f *RouterFetcher) Delete(ctx context.Context, clusterId int, routerID stri
 	return nil
 }
 
-func (f *RouterFetcher) Update(ctx context.Context, clusterId int) {
+func (f *RouterFetcher) Update(ctx context.Context, routerId string) {
 
-}
-
-func (f *RouterFetcher) getAdminToken(ctx context.Context, clusterId int) (*models.Token, error) {
-
-	token, err := f.fetcher.Token().Get(ctx, clusterId, f.fetcher.clusters[clusterId-1].Admin)
-	if err != nil {
-		return nil, err
-	}
-
-	return token, nil
 }
 
 func (f *RouterFetcher) generateCreateReq(router *models.Router) *CreateRouterRequest {

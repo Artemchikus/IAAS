@@ -20,7 +20,7 @@ type Store struct {
 	logger            *zap.SugaredLogger
 }
 
-func New(ctx context.Context, db *sql.DB, config *config.ApiConfig) *Store {
+func NewStore(ctx context.Context, db *sql.DB, config *config.ApiConfig) *Store {
 	zapLog, err := zap.NewProduction()
 	if err != nil {
 		log.Fatal(err)

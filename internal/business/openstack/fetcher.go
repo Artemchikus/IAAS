@@ -29,10 +29,10 @@ type Fetcher struct {
 	securityRuleFetcher  *SecurityRuleFetcher
 	keyPairFetcher       *KeyPairFetcher
 	volumeFetcher        *VolumeFetcher
-	clusters             []*models.Cluster
+	clusters             map[int]*models.Cluster
 }
 
-func New(ctx context.Context, config *config.ApiConfig, store *postgres.Store) *Fetcher {
+func NewFetcher(ctx context.Context, config *config.ApiConfig, store *postgres.Store) *Fetcher {
 	log, _ := zap.NewProduction()
 	defer log.Sync()
 	sugar := log.Sugar()
@@ -44,10 +44,16 @@ func New(ctx context.Context, config *config.ApiConfig, store *postgres.Store) *
 		log.Fatal(err.Error())
 	}
 
+	clusterMap := make(map[int]*models.Cluster)
+
+	for _, cluster := range clusters {
+		clusterMap[cluster.ID] = cluster
+	}
+
 	return &Fetcher{
 		logger:   sugar,
 		client:   client,
-		clusters: clusters,
+		clusters: clusterMap,
 	}
 }
 
@@ -229,4 +235,12 @@ func (f *Fetcher) Volume() business.VolumeFetcher {
 	}
 
 	return f.volumeFetcher
+}
+
+func getClusterIDFromContext(ctx context.Context) int {
+	return ctx.Value(models.CtxKeyClusterID).(int)
+}
+
+func getTokenFromContext(ctx context.Context) *models.Token {
+	return ctx.Value(models.CtxKeyClusterID).(*models.Token)
 }
