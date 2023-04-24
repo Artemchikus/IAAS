@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -79,34 +78,36 @@ func (s *server) configureRouter() {
 	private.HandleFunc("/cluster", s.handleGetAllClusters).Methods("GET")
 	private.HandleFunc("/cluster/{cluster_id}", s.handleGetClusterByID).Methods("GET")
 
-	// cluster := private.PathPrefix("/cluster/{cluster_id}").Subrouter()
+	cluster := private.PathPrefix("/cluster/{cluster_id}").Subrouter()
 
-	// cluster.HandleFunc("/flavor/").Methods("GET")
-	// cluster.HandleFunc("/flavor/{flavor_id}").Methods("GET")
-	// cluster.HandleFunc("/floatingIp/").Methods("GET")
+	// cluster.HandleFunc("/flavor").Methods("GET")
+	cluster.HandleFunc("/flavor/{flavor_id}", s.handleGetFlavorByID).Methods("GET")
+	// cluster.HandleFunc("/floatingIp").Methods("GET")
 	// cluster.HandleFunc("/floatingIp/{floatingIp_id}").Methods("GET")
-	// cluster.HandleFunc("/image/").Methods("GET")
+	// cluster.HandleFunc("/image").Methods("GET")
 	// cluster.HandleFunc("/image/{image_id}").Methods("GET")
-	// cluster.HandleFunc("/keyPair/").Methods("GET")
+	// cluster.HandleFunc("/keyPair").Methods("GET")
 	// cluster.HandleFunc("/keyPair/{keyPair_id}").Methods("GET")
 	// cluster.HandleFunc("/keyPair/{keyPair_id}").Methods("DELETE")
 	// cluster.HandleFunc("/keyPair}").Methods("POST")
-	// cluster.HandleFunc("/network/").Methods("GET")
+	// cluster.HandleFunc("/network").Methods("GET")
 	// cluster.HandleFunc("/network/{network_id}").Methods("GET")
 	// cluster.HandleFunc("/project/{project_id}").Methods("GET")
 	// cluster.HandleFunc("/role/{role_id}").Methods("GET")
-	// cluster.HandleFunc("/router/").Methods("GET")
+	// cluster.HandleFunc("/router").Methods("GET")
 	// cluster.HandleFunc("/router/{router_id}").Methods("GET")
-	// cluster.HandleFunc("/securityGroup/").Methods("GET")
+	// cluster.HandleFunc("/securityGroup").Methods("GET")
 	// cluster.HandleFunc("/securityGroup/{securityGroup_id}").Methods("GET")
-	// cluster.HandleFunc("/server/").Methods("GET")
+	// cluster.HandleFunc("/securityRule").Methods("GET")
+	// cluster.HandleFunc("/securityRule/{securityRule_id}").Methods("GET")
+	// cluster.HandleFunc("/server").Methods("GET")
 	// cluster.HandleFunc("/server/{server_id}").Methods("GET")
 	// cluster.HandleFunc("/server/{server_id}").Methods("CREATE")
 	// cluster.HandleFunc("/server/{server_id}").Methods("DELETE")
-	// cluster.HandleFunc("/subnet/").Methods("GET")
+	// cluster.HandleFunc("/subnet").Methods("GET")
 	// cluster.HandleFunc("/subnet/{subnet_id}").Methods("GET")
 	// cluster.HandleFunc("/user/{user_id}").Methods("GET")
-	// cluster.HandleFunc("/volume/").Methods("GET")
+	// cluster.HandleFunc("/volume").Methods("GET")
 	// cluster.HandleFunc("/volume/{volume_id}").Methods("GET")
 	// cluster.HandleFunc("/volume/{volume_id}").Methods("DELETE")
 	// cluster.HandleFunc("/volume/{volume_id}").Methods("POST")
@@ -119,24 +120,31 @@ func (s *server) configureRouter() {
 	admin.HandleFunc("/cluster", s.handleCreateCluster).Methods("POST")
 	admin.HandleFunc("/cluster/{cluster_id}", s.handleDeleteCluster).Methods("DELETE")
 
-	// clusterAdmin := admin.PathPrefix("/cluster/").Subrouter()
-	// clusterAdmin.HandleFunc("/flavor/").Methods("GET")
-}
+	clusterAdmin := admin.PathPrefix("/cluster/{cluster_id}").Subrouter()
+	clusterAdmin.HandleFunc("/flavor", s.handleCreateFlavor).Methods("POST")
+	clusterAdmin.HandleFunc("/flavor/{flavor_id}", s.handleDeleteFlavor).Methods("DELETE")
+	// clusterAdmin.HandleFunc("/floatingIp/{floatingIp_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/floatingIp/{floatingIp_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/image/{image_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/image/{image_id}/file").Methods("POST")
+	// clusterAdmin.HandleFunc("/image/{image_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/network/{network_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/network/{network_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/project/{project_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/project/{project_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/role/{role_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/role/{role_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/router/{router_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/router/{router_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/securityGroup/{securityGroup_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/securityGroup/{securityGroup_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/securityRule/{securityRule_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/securityRule/{securityRule_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/subnet/{subnet_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/subnet/{subnet_id}").Methods("DELETE")
+	// clusterAdmin.HandleFunc("/user/{user_id}").Methods("POST")
+	// clusterAdmin.HandleFunc("/user/{user_id}").Methods("DELETE")
 
-func getVars(r *http.Request) (map[string]int, error) {
-	vars := mux.Vars(r)
-
-	intVars := make(map[string]int)
-
-	for k, v := range vars {
-		intV, err := strconv.Atoi(v)
-		if err != nil {
-			return nil, err
-		}
-
-		intVars[k] = intV
-	}
-	return intVars, nil
 }
 
 func incapsulateError(code int, err error) error {

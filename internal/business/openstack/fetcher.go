@@ -6,6 +6,8 @@ import (
 	"IAAS/internal/models"
 	"IAAS/internal/store/postgres"
 	"context"
+	"encoding/json"
+	"errors"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -242,5 +244,19 @@ func getClusterIDFromContext(ctx context.Context) int {
 }
 
 func getTokenFromContext(ctx context.Context) *models.Token {
-	return ctx.Value(models.CtxKeyClusterID).(*models.Token)
+	return ctx.Value(models.CtxKeyToken).(*models.Token)
+}
+
+func handleErrorResponse(resp *http.Response) error {
+	er := &Error{}
+	errResponse := &ErrorResponse{Error: er}
+	if err := json.NewDecoder(resp.Body).Decode(&errResponse); err != nil {
+		return err
+	}
+
+	if er.Message == "" {
+		return errors.New(resp.Status)
+	}
+
+	return errors.New(resp.Status + ": " + er.Message)
 }

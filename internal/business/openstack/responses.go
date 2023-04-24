@@ -101,3 +101,13 @@ type CreateVolumeResponse struct {
 type FetchVolumeResponse struct {
 	Volume *map[string]interface{} `json:"volume"`
 }
+
+type ErrorResponse struct {
+	Error *Error `json:"error"`
+}
+
+type Error struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Title   string `json:"title"`
+}

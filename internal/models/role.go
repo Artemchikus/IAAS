@@ -4,7 +4,6 @@ type Role struct {
 	ID          string `json:"id"`
 	Description string `json:"description"`
 	Name        string `json:"name"`
-	// Options     []string `json:"options"`
 }
 
 // {

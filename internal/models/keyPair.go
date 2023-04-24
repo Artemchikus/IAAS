@@ -14,6 +14,14 @@ type KeyPair struct {
 	PublicKey   string    `json:"public_key"`
 }
 
+func NewKeyPair(PublicKey, Name, Type string) *KeyPair {
+	return &KeyPair{
+		PublicKey: PublicKey,
+		Name:      Name,
+		Type:      Type,
+	}
+}
+
 // {
 // 	"created_at": "2023-04-03T13:25:06.000000",
 // 	"fingerprint": "af:60:d7:f5:12:ac:64:d9:aa:9d:b8:3f:9a:5a:26:24",

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -37,6 +36,10 @@ func (f *FloatingIpFetcher) FetchByID(ctx context.Context, folatingIpId string) 
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	folatingIp := &models.FloatingIp{}
 
@@ -84,6 +87,10 @@ func (f *FloatingIpFetcher) Create(ctx context.Context, folatingIp *models.Float
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createFloatingIpRes := &CreateFloatingIpResponse{
 		FloatingIp: folatingIp,
 	}
@@ -122,14 +129,10 @@ func (f *FloatingIpFetcher) Delete(ctx context.Context, folatingIpID string) err
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *FloatingIpFetcher) Update(ctx context.Context, floatingIpId string) {
-
 }
 
 func (f *FloatingIpFetcher) generateCreateReq(folatingIp *models.FloatingIp) *CreateFloatingIpRequest {

@@ -3,14 +3,20 @@ package models
 import "time"
 
 type SecurityGroup struct {
-	CreatedAt   time.Time      `json:"created_at"`
-	Description string         `json:"description"`
-	ID          string         `json:"id"`
-	Name        string         `json:"name"`
-	ProjectID   string         `json:"project_id"`
-	Rules       []SecurityRule `json:"rules"`
-	Tags        []string       `json:"tags"`
-	UpdatedAt   time.Time      `json:"updated_at"`
+	CreatedAt   time.Time       `json:"created_at"`
+	Description string          `json:"description"`
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	ProjectID   string          `json:"project_id"`
+	Rules       []*SecurityRule `json:"rules"`
+	UpdatedAt   time.Time       `json:"updated_at"`
+}
+
+func NewSecurityGroup(Description, Name string, Rules []*SecurityRule) *SecurityGroup {
+	return &SecurityGroup{
+		Description: Description,
+		Name:        Name,
+	}
 }
 
 // {

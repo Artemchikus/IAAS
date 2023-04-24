@@ -1,19 +1,31 @@
 package models
 
 type SecurityRule struct {
-	ID              string   `json:"id"`
-	ProjectId       string   `json:"project_id"`
-	SecurityGroupID string   `json:"security_group_id"`
-	Ethertype       string   `json:"ethertype"`
-	Direction       string   `json:"direction"`
-	Protocol        string   `json:"protocol"`
-	PortRangeMax    int      `json:"port_range_max"`
-	PortRangeMin    int      `json:"port_range_min"`
-	RemoteIpPrefix  string   `json:"remote_ip_prefix"`
-	Description     string   `json:"description"`
-	Tags            []string `json:"tags"`
-	CreatedAt       string   `json:"created_at"`
-	UpdatedAt       string   `json:"updated_at"`
+	ID              string `json:"id"`
+	ProjectId       string `json:"project_id"`
+	SecurityGroupID string `json:"security_group_id"`
+	Ethertype       string `json:"ethertype"`
+	Direction       string `json:"direction"`
+	Protocol        string `json:"protocol"`
+	PortRangeMax    int    `json:"port_range_max"`
+	PortRangeMin    int    `json:"port_range_min"`
+	RemoteIpPrefix  string `json:"remote_ip_prefix"`
+	Description     string `json:"description"`
+	CreatedAt       string `json:"created_at"`
+	UpdatedAt       string `json:"updated_at"`
+}
+
+func NewSecurityRule(Ethertype, Direction, Protocol, RemoteIpPrefix, Description, SecurityGroupID string, PortRangeMax, PortRangeMin int) *SecurityRule {
+	return &SecurityRule{
+		Ethertype:       Ethertype,
+		Direction:       Direction,
+		Protocol:        Protocol,
+		RemoteIpPrefix:  RemoteIpPrefix,
+		Description:     Description,
+		PortRangeMax:    PortRangeMax,
+		PortRangeMin:    PortRangeMin,
+		SecurityGroupID: SecurityGroupID,
+	}
 }
 
 // {

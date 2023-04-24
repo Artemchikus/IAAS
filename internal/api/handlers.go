@@ -6,9 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v4"
+	"github.com/gorilla/mux"
 )
 
 func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -83,13 +85,13 @@ func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetAccountByID(w http.ResponseWriter, r *http.Request) {
-	vars, err := getVars(r)
+	vars := mux.Vars(r)
+
+	accId, err := strconv.Atoi(vars["account_id"])
 	if err != nil {
 		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
-
-	accId := vars["account_id"]
 
 	if r.Context().Value(models.CtxKeyAccount).(*models.Account).ID != accId && r.Context().Value(models.CtxKeyAccount).(*models.Account).Role != "admin" {
 		s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
@@ -119,11 +121,7 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	account, err := models.NewAccount(req.Name, req.Email, req.Password)
-	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, err)
-		return
-	}
+	account := models.NewAccount(req.Name, req.Email, req.Password, "user")
 
 	if _, err := s.store.Account().FindByEmail(r.Context(), account.Email); err == nil {
 		s.error(w, r, http.StatusConflict, err)
@@ -156,13 +154,13 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleDeleteAccount(w http.ResponseWriter, r *http.Request) {
-	vars, err := getVars(r)
+	vars := mux.Vars(r)
+
+	accId, err := strconv.Atoi(vars["account_id"])
 	if err != nil {
 		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
-
-	accId := vars["account_id"]
 
 	if r.Context().Value(models.CtxKeyAccount).(*models.Account).ID != accId && r.Context().Value(models.CtxKeyAccount).(*models.Account).Role != "admin" {
 		s.error(w, r, http.StatusUnauthorized, errNotAutheticated)
@@ -248,15 +246,15 @@ func (s *server) handleGetAllClusters(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetClusterByID(w http.ResponseWriter, r *http.Request) {
-	vars, err := getVars(r)
+	vars := mux.Vars(r)
+
+	clusterId, err := strconv.Atoi(vars["cluster_id"])
 	if err != nil {
 		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
-	clId := vars["cluster_id"]
-
-	cluster, err := s.store.Cluster().FindByID(r.Context(), clId)
+	cluster, err := s.store.Cluster().FindByID(r.Context(), clusterId)
 	if err != nil {
 		s.error(w, r, http.StatusNotFound, err)
 		return
@@ -278,11 +276,7 @@ func (s *server) handleCreateCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cluster, err := models.NewCluster(req.Admin.Name, req.Admin.Email, req.Admin.Password, req.Url, req.Location)
-	if err != nil {
-		s.error(w, r, http.StatusInternalServerError, err)
-		return
-	}
+	cluster := models.NewCluster(req.Admin.Name, req.Admin.Email, req.Admin.Password, req.Url, req.Location)
 
 	if err := cluster.Admin.Validate(); err != nil {
 		s.error(w, r, http.StatusUnprocessableEntity, err)
@@ -305,21 +299,119 @@ func (s *server) handleCreateCluster(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleDeleteCluster(w http.ResponseWriter, r *http.Request) {
-	vars, err := getVars(r)
+	vars := mux.Vars(r)
+
+	clusterId, err := strconv.Atoi(vars["cluster_id"])
 	if err != nil {
 		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
-	clId := vars["cluster_id"]
-
-	if err := s.store.Cluster().Delete(r.Context(), clId); err != nil {
+	if err := s.store.Cluster().Delete(r.Context(), clusterId); err != nil {
 		s.error(w, r, http.StatusNotFound, err)
 		return
 	}
 
 	resp := DeleteClusterResponse{
-		DeletedID: clId,
+		DeletedID: clusterId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetFlavorByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	clusterId, err := strconv.Atoi(vars["cluster_id"])
+	if err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
+
+	flavorId := vars["flavor_id"]
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxKeyAccount).(*models.Account))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	flavor, err := s.fetcher.Flavor().FetchByID(r.Context(), flavorId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, flavor)
+}
+
+func (s *server) handleCreateFlavor(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	clusterId, err := strconv.Atoi(vars["cluster_id"])
+	if err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
+
+	req := new(CreateFlavorRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxKeyAccount).(*models.Account))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	flavor := models.NewFlavor(req.Name, req.Description, req.VCPUs, req.Ephemeral, req.Disk, req.RAM, req.Swap, req.IsPublic, req.RXTXFactor)
+
+	if err := s.fetcher.Flavor().Create(r.Context(), flavor); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, flavor)
+}
+
+func (s *server) handleDeleteFlavor(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	clusterId, err := strconv.Atoi(vars["cluster_id"])
+	if err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
+
+	flavorId := vars["flavor_id"]
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxKeyAccount).(*models.Account))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Flavor().Delete(r.Context(), flavorId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: flavorId,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)

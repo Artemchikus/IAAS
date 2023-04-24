@@ -12,14 +12,18 @@ type TokenFetcher struct {
 }
 
 func (f *TokenFetcher) Get(ctx context.Context, account *models.Account) (*models.Token, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	if account.Role == "admin" {
+		account = f.fetcher.clusters[clusterId].Admin
+	}
+
 	req := f.generateGetReq(account)
 
 	json_data, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err
 	}
-
-	clusterId := getClusterIDFromContext(ctx)
 
 	cluster := f.fetcher.clusters[clusterId]
 
@@ -30,6 +34,10 @@ func (f *TokenFetcher) Get(ctx context.Context, account *models.Account) (*model
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 201 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	token := &models.Token{}
 	tokenRes := &GetTokenResponse{
@@ -64,6 +72,10 @@ func (f *TokenFetcher) Refresh(ctx context.Context, oldToken *models.Token) (*mo
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 201 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	newToken := &models.Token{}
 	tokenRes := &GetTokenResponse{

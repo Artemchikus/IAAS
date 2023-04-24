@@ -7,15 +7,12 @@ type Cluster struct {
 	URL      string   `json:"url"`
 }
 
-func NewCluster(adminName, adminEmail, adminPassword, url, location string) (*Cluster, error) {
-	clusterAdmin, err := NewAccount(adminName, adminEmail, adminPassword)
-	if err != nil {
-		return nil, err
-	}
+func NewCluster(adminName, adminEmail, adminPassword, url, location string) *Cluster {
+	clusterAdmin := NewAccount(adminName, adminEmail, adminPassword, "admin")
 
 	return &Cluster{
 		Location: location,
 		URL:      url,
 		Admin:    clusterAdmin,
-	}, nil
+	}
 }

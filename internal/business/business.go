@@ -4,7 +4,6 @@ type Fetcher interface {
 	Server() ServerFetcher
 	Flavor() FlavorFetcher
 	Volume() VolumeFetcher
-	// VolumeAttachment() VolumeAttachmentFetcher -H "OpenStack-API-Version: volume 3.27"
 	User() UserFetcher
 	Token() TokenFetcher
 	Image() ImageFetcher

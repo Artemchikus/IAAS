@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -37,6 +37,10 @@ func (f *NetworkFetcher) FetchByID(ctx context.Context, networkId string) (*mode
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	network := &models.Network{}
 
@@ -84,6 +88,12 @@ func (f *NetworkFetcher) Create(ctx context.Context, network *models.Network) er
 	}
 	defer resp.Body.Close()
 
+	fmt.Printf("resp: %v\n", resp)
+
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createNetworkRes := &CreateNetworkResponse{
 		Network: network,
 	}
@@ -122,14 +132,10 @@ func (f *NetworkFetcher) Delete(ctx context.Context, networkID string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *NetworkFetcher) Update(ctx context.Context, networkId string) {
-
 }
 
 func (f *NetworkFetcher) generateCreateReq(network *models.Network) *CreateNetworkRequest {
@@ -137,9 +143,9 @@ func (f *NetworkFetcher) generateCreateReq(network *models.Network) *CreateNetwo
 		Network: &Network{
 			Name:            network.Name,
 			NetworkType:     network.NetworkType,
-			AdminStateUp:    network.AdminStateUp,
 			External:        network.External,
 			PhysicalNetwork: network.PhysicalNetwork,
+			Description:     network.Description,
 		},
 	}
 

@@ -52,3 +52,7 @@ type GetClusterResponse struct {
 }
 
 type GetAllClustersResponse []*GetClusterResponse
+
+type DeleteOpenstackResurceResponse struct {
+	DeletedID string `json:"deleted_id"`
+}

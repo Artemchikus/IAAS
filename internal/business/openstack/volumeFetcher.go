@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -40,6 +39,10 @@ func (f *VolumeFetcher) FetchByID(ctx context.Context, volumeId string) (*models
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
 	volumeResp := map[string]interface{}{}
 
 	fetchVolumeRes := &FetchVolumeResponse{
@@ -66,16 +69,14 @@ func (f *VolumeFetcher) FetchByID(ctx context.Context, volumeId string) (*models
 	}
 
 	volume := &models.Volume{
-		ID:               volumeResp["id"].(string),
-		Status:           volumeResp["status"].(string),
-		Size:             int(volumeResp["size"].(float64)),
-		AvailabilityZone: volumeResp["availability_zone"].(string),
-		CreatedAt:        volumeResp["created_at"].(time.Time),
-		UpdatedAt:        volumeResp["updated_at"].(time.Time),
-		Type:             volumeResp["volume_type"].(string),
-		AccountID:        volumeResp["user_id"].(string),
-		Bootable:         volumeResp["bootable"].(bool),
-		Encrypted:        volumeResp["encrypted"].(bool),
+		ID:        volumeResp["id"].(string),
+		Status:    volumeResp["status"].(string),
+		Size:      int(volumeResp["size"].(float64)),
+		CreatedAt: volumeResp["created_at"].(time.Time),
+		UpdatedAt: volumeResp["updated_at"].(time.Time),
+		TypeID:    volumeResp["volume_type"].(string),
+		AccountID: volumeResp["user_id"].(string),
+		Bootable:  volumeResp["bootable"].(bool),
 	}
 
 	return volume, nil
@@ -114,6 +115,10 @@ func (f *VolumeFetcher) Create(ctx context.Context, volume *models.Volume) error
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 202 {
+		return handleErrorResponse(resp)
+	}
+
 	volumeResp := map[string]interface{}{}
 
 	createVolumeRes := &CreateVolumeResponse{
@@ -137,13 +142,11 @@ func (f *VolumeFetcher) Create(ctx context.Context, volume *models.Volume) error
 	volume.ID = volumeResp["id"].(string)
 	volume.Status = volumeResp["status"].(string)
 	volume.Size = int(volumeResp["size"].(float64))
-	volume.AvailabilityZone = volumeResp["availability_zone"].(string)
 	volume.CreatedAt = volumeResp["created_at"].(time.Time)
 	volume.UpdatedAt = volumeResp["created_at"].(time.Time)
-	volume.Type = volumeResp["volume_type"].(string)
+	volume.TypeID = volumeResp["volume_type"].(string)
 	volume.AccountID = volumeResp["user_id"].(string)
 	volume.Bootable = volumeResp["bootable"].(bool)
-	volume.Encrypted = volumeResp["encrypted"].(bool)
 
 	return nil
 }
@@ -174,14 +177,10 @@ func (f *VolumeFetcher) Delete(ctx context.Context, volumeID string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 202 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *VolumeFetcher) Update(ctx context.Context, volumeId string) {
-
 }
 
 func (f *VolumeFetcher) generateCreateReq(volume *models.Volume) *CreateVolumeRequest {
@@ -190,7 +189,8 @@ func (f *VolumeFetcher) generateCreateReq(volume *models.Volume) *CreateVolumeRe
 			Name:        volume.Name,
 			Size:        volume.Size,
 			Description: volume.Description,
-			Type:        volume.Type,
+			TypeID:      volume.TypeID,
+			Bootable:    volume.Bootable,
 		},
 	}
 

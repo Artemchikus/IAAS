@@ -38,6 +38,10 @@ func (f *RouterFetcher) FetchByID(ctx context.Context, routerId string) (*models
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
 	router := &models.Router{}
 
 	fetchRouterRes := &FetchRouterResponse{
@@ -84,6 +88,10 @@ func (f *RouterFetcher) Create(ctx context.Context, router *models.Router) error
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createRouterRes := &CreateRouterResponse{
 		Router: router,
 	}
@@ -122,21 +130,63 @@ func (f *RouterFetcher) Delete(ctx context.Context, routerID string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
+
+func (f *RouterFetcher) AddSubnet(ctx context.Context, routerId, subnetId string) error {
+	type request struct {
+		SubnetId string `json:"subnet_id"`
+	}
+
+	r := &request{
+		SubnetId: subnetId,
+	}
+
+	json_data, err := json.Marshal(&r)
+	if err != nil {
+		return err
+	}
+
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	updateRouterURL := cluster.URL + ":9696" + "/v2.0/routers/" + routerId + "/add_router_interface"
+
+	req, err := http.NewRequest("PUT", updateRouterURL, bytes.NewBuffer(json_data))
+	if err != nil {
+		return err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
 		return errors.New("internal server error")
 	}
 
 	return nil
 }
 
-func (f *RouterFetcher) Update(ctx context.Context, routerId string) {
-
-}
-
 func (f *RouterFetcher) generateCreateReq(router *models.Router) *CreateRouterRequest {
 	req := &CreateRouterRequest{
 		Router: &Router{
-			Name:         router.Name,
-			AdminStateUp: true,
+			Name:                router.Name,
+			ExternalGatewayInfo: router.ExternalGatewayInfo,
 		},
 	}
 

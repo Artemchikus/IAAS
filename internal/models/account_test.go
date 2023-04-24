@@ -4,12 +4,9 @@ import (
 	"IAAS/internal/models"
 	"fmt"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestNewAccount(t *testing.T) {
-	acc, err := models.NewAccount("a", "b", "c")
-	assert.Nil(t, err)
+	acc := models.NewAccount("a", "b", "c", "user")
 	fmt.Printf("%+v\n", acc)
 }

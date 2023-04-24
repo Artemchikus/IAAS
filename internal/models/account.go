@@ -25,15 +25,15 @@ type Account struct {
 	Role              string    `json:"role"`
 }
 
-func NewAccount(name, email, password string) (*Account, error) {
+func NewAccount(name, email, password, role string) *Account {
 	return &Account{
 		Name:      name,
 		CreatedAt: time.Now().UTC(),
 		Email:     email,
 		UpdatedAt: time.Now().UTC(),
 		Password:  password,
-		Role:      "user",
-	}, nil
+		Role:      role,
+	}
 }
 
 func (a *Account) Validate() error {

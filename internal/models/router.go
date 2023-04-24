@@ -3,19 +3,33 @@ package models
 import "time"
 
 type Router struct {
-	AvailabilityZones []string `json:"availability_zones"`
-	CreatedAt         time.Time   `json:"created_at"`
-	Description       string   `json:"description"`
-	FlavorID          string   `json:"flavor_id"`
-	ID                string   `json:"id"`
-	Interfaces        []string `json:"interfaces_info"`
-	ExternalGateway   string   `json:"external_gateway_info"`
-	Name              string   `json:"name"`
-	ProjectID         string   `json:"project_id"`
-	Routes            []string `json:"routes"`
-	Status            string   `json:"status"`
-	Tags              []string `json:"tags"`
-	UpdatedAt         time.Time   `json:"updated_at"`
+	CreatedAt           time.Time            `json:"created_at"`
+	Description         string               `json:"description"`
+	FlavorID            string               `json:"flavor_id"`
+	ID                  string               `json:"id"`
+	Interfaces          []string             `json:"interfaces_info"`
+	ExternalGatewayInfo *ExternalGatewayInfo `json:"external_gateway_info"`
+	Name                string               `json:"name"`
+	ProjectID           string               `json:"project_id"`
+	Routes              []string             `json:"routes"`
+	Status              string               `json:"status"`
+	UpdatedAt           time.Time            `json:"updated_at"`
+}
+
+type ExternalGatewayInfo struct {
+	NetworkID string `json:"network_id"`
+}
+
+func NewRouter(Description, Name, ExternalNetworkId string) *Router {
+	info := &ExternalGatewayInfo{
+		NetworkID: ExternalNetworkId,
+	}
+
+	return &Router{
+		Description:         Description,
+		Name:                Name,
+		ExternalGatewayInfo: info,
+	}
 }
 
 // {

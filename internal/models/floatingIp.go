@@ -6,17 +6,22 @@ type FloatingIp struct {
 	CreatedAt   time.Time `json:"created_at"`
 	Description string    `json:"description"`
 	FixedIp     string    `json:"fixed_ip_address"`
-	Ip          string    `json:"floating_ip_address"`
+	FolatingIp  string    `json:"floating_ip_address"`
 	ID          string    `json:"id"`
 	NetworkID   string    `json:"floating_network_id"`
-	Name        string    `json:"name"`
 	PortID      string    `json:"port_id"`
 	ProjectID   string    `json:"project_id"`
 	RouterID    string    `json:"router_id"`
 	Status      string    `json:"status"`
 	SubnetID    string    `json:"subnet_id"`
-	Tags        []string  `json:"tags"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func NewFloatingIP(NetworkID, ProjectID, description string) *FloatingIp {
+	return &FloatingIp{
+		NetworkID:   NetworkID,
+		Description: description,
+	}
 }
 
 // {

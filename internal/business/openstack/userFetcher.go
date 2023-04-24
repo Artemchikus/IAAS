@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -38,6 +37,10 @@ func (f *UserFetcher) FetchByID(ctx context.Context, userId string) (*models.Acc
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
 	userResp := map[string]interface{}{}
 
 	fetchUserResp := &FetchUserResponse{
@@ -59,15 +62,7 @@ func (f *UserFetcher) FetchByID(ctx context.Context, userId string) (*models.Acc
 }
 
 func (f *UserFetcher) Create(ctx context.Context, user *models.Account) error {
-	description := "Project for user " + user.Email
-
-	project := models.NewProject(user.Email, description)
-
-	if err := f.fetcher.Project().Create(ctx, project); err != nil {
-		return err
-	}
-
-	reqData := f.generateCreateReq(user, project.ID)
+	reqData := f.generateCreateReq(user, user.ProjectID)
 
 	json_data, err := json.Marshal(&reqData)
 	if err != nil {
@@ -99,6 +94,10 @@ func (f *UserFetcher) Create(ctx context.Context, user *models.Account) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	userResp := map[string]interface{}{}
 
 	createUserResp := &CreateUserResponse{
@@ -110,7 +109,6 @@ func (f *UserFetcher) Create(ctx context.Context, user *models.Account) error {
 	}
 
 	user.OpenstackID = userResp["id"].(string)
-	user.ProjectID = userResp["default_project_id"].(string)
 
 	return nil
 }
@@ -141,13 +139,11 @@ func (f *UserFetcher) Delete(ctx context.Context, userId string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
 }
-
-func (f *UserFetcher) Update(ctx context.Context, userId string) {}
 
 func (f *UserFetcher) generateCreateReq(user *models.Account, projectID string) *CreateUserRequest {
 	return &CreateUserRequest{
@@ -155,7 +151,6 @@ func (f *UserFetcher) generateCreateReq(user *models.Account, projectID string) 
 			Name:      user.Name,
 			DomainID:  "default",
 			Password:  user.Password,
-			Enabled:   true,
 			ProjectID: projectID,
 			Email:     user.Email,
 		},

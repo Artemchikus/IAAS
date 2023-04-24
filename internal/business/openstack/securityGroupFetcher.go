@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -37,6 +36,10 @@ func (f *SecurityGroupFetcher) FetchByID(ctx context.Context, securityGroupId st
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	securityGroup := &models.SecurityGroup{}
 
@@ -84,6 +87,10 @@ func (f *SecurityGroupFetcher) Create(ctx context.Context, securityGroup *models
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createSecurityGroupRes := &CreateSecurityGroupResponse{
 		SecurityGroup: securityGroup,
 	}
@@ -122,14 +129,10 @@ func (f *SecurityGroupFetcher) Delete(ctx context.Context, securityGroupID strin
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *SecurityGroupFetcher) Update(ctx context.Context, securityGroupId string) {
-
 }
 
 func (f *SecurityGroupFetcher) generateCreateReq(securityGroup *models.SecurityGroup) *CreateSecurityGroupRequest {

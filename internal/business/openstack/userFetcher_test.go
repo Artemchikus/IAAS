@@ -22,7 +22,12 @@ func TestUserFetcher_Create(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
+	p := openstack.TestProject(t)
+
+	fetcher.Project().Create(openstack.TestRequestContext(t, fetcher, clusterID), p)
+
 	u := models.TestAccount(t)
+	u.ProjectID = p.ID
 
 	err := fetcher.User().Create(openstack.TestRequestContext(t, fetcher, clusterID), u)
 	assert.NoError(t, err)
@@ -47,7 +52,12 @@ func TestUserFetcher_FetchByID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
+	p := openstack.TestProject(t)
+
+	fetcher.Project().Create(openstack.TestRequestContext(t, fetcher, clusterID), p)
+
 	u1 := models.TestAccount(t)
+	u1.ProjectID = p.ID
 
 	fetcher.User().Create(openstack.TestRequestContext(t, fetcher, clusterID), u1)
 
@@ -73,7 +83,12 @@ func TestUserFetcher_Delete(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
+	p := openstack.TestProject(t)
+
+	fetcher.Project().Create(openstack.TestRequestContext(t, fetcher, clusterID), p)
+
 	u := models.TestAccount(t)
+	u.ProjectID = p.ID
 
 	err := fetcher.User().Create(openstack.TestRequestContext(t, fetcher, clusterID), u)
 

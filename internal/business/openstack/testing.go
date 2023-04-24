@@ -21,12 +21,9 @@ func TestConfig(t *testing.T) *config.ApiConfig {
 
 func TestProject(t *testing.T) *models.Project {
 	return &models.Project{
-		Name:        "demo",
-		Enabled:     true,
+		Name:        "demo1",
 		DomainID:    "default",
 		Description: "Demo project",
-		Options:     &models.Options{},
-		Tags:        make([]string, 0),
 	}
 }
 
@@ -49,31 +46,33 @@ func TestImage(t *testing.T) *models.Image {
 
 func TestFlavor(t *testing.T) *models.Flavor {
 	return &models.Flavor{
-		Disk:       2,
-		RAM:        300,
-		VCPUs:      1,
-		Name:       "m1.small",
-		Ephemeral:  0,
-		IsPublic:   true,
-		RXTXFactor: 1.0,
-		Swap:       "0",
+		Disk:        2,
+		RAM:         300,
+		VCPUs:       1,
+		Name:        "m1.small",
+		Ephemeral:   0,
+		IsPublic:    true,
+		RXTXFactor:  1.0,
+		Swap:        "0",
+		Description: "test flavor",
 	}
 }
 
 func TestNetwork(t *testing.T) *models.Network {
 	return &models.Network{
-		Name:            "public",
+		Name:            "test-public",
 		NetworkType:     "flat",
-		AdminStateUp:    true,
 		External:        true,
 		PhysicalNetwork: "external",
+		MTU:             1442,
+		Description:     "test network",
 	}
 }
 
 func TestSubnet(t *testing.T) *models.Subnet {
 	allocationPool := &models.AllocationPool{
-		Start: "192.168.122.200",
-		End:   "192.168.122.254",
+		Start: "192.168.122.100",
+		End:   "192.168.122.110",
 	}
 
 	allocationPools := []*models.AllocationPool{allocationPool}
@@ -85,6 +84,7 @@ func TestSubnet(t *testing.T) *models.Subnet {
 		AllocationPools: allocationPools,
 		IpVersion:       4,
 		GatewayIp:       "192.168.122.1",
+		Description:     "test subnet",
 	}
 }
 
@@ -96,9 +96,12 @@ func TestRole(t *testing.T) *models.Role {
 }
 
 func TestRouter(t *testing.T) *models.Router {
+	info := &models.ExternalGatewayInfo{}
+
 	return &models.Router{
-		Description: "Test router",
-		Name:        "test",
+		Description:         "Test router",
+		Name:                "test",
+		ExternalGatewayInfo: info,
 	}
 }
 
@@ -134,6 +137,8 @@ func TestVolume(t *testing.T) *models.Volume {
 		Name:        "test",
 		Description: "test volume",
 		Size:        1,
+		Bootable:    false,
+		TypeID:      "9f315d13-84ad-451e-ad6f-26e673ff9144",
 	}
 }
 
@@ -141,7 +146,7 @@ func TestRequestContext(t *testing.T, fetcher business.Fetcher, clusterId int) c
 	ctx := context.WithValue(context.Background(), models.CtxKeyClusterID, "99999999-9999-9999-9999-999999999999")
 	ctx = context.WithValue(ctx, models.CtxKeyClusterID, clusterId)
 
-	admin := models.TestClusters(t)[clusterId].Admin
+	admin := models.TestClusters(t)[clusterId-1].Admin
 	token, _ := fetcher.Token().Get(ctx, admin)
 	return context.WithValue(ctx, models.CtxKeyToken, token)
 }

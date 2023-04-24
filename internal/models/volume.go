@@ -3,23 +3,38 @@ package models
 import "time"
 
 type Volume struct {
-	Attachments      []VolumeAttachment `json:"attachments"`
-	AvailabilityZone string             `json:"availability_zone"`
-	Bootable         bool               `json:"bootable"`
-	CreatedAt        time.Time          `json:"created_at"`
-	Description      string             `json:"description"`
-	Encrypted        bool               `json:"encrypted"`
-	ID               string             `json:"id"`
-	MultiAttach      bool               `json:"multiattach"`
-	Name             string             `json:"name"`
-	Host             string             `json:"host"`
-	Size             int                `json:"size"`
-	SnapshotID       string             `json:"snapshot_id"`
-	SourceVolumeID   string             `json:"source_volid"`
-	Status           string             `json:"status"`
-	Type             string             `json:"type"`
-	UpdatedAt        time.Time          `json:"updated_at"`
-	AccountID        string             `json:"user_id"`
+	Attachments []*VolumeAttachment `json:"attachments"`
+	Bootable    bool                `json:"bootable"`
+	CreatedAt   time.Time           `json:"created_at"`
+	Description string              `json:"description"`
+	ID          string              `json:"id"`
+	Name        string              `json:"name"`
+	Host        string              `json:"os-vol-host-attr:host"`
+	Size        int                 `json:"size"`
+	Status      string              `json:"status"`
+	TypeID      string              `json:"type"`
+	UpdatedAt   time.Time           `json:"updated_at"`
+	AccountID   string              `json:"user_id"`
+}
+
+func NewVolume(Description, Name, TypeID string, Bootable bool, Size int) *Volume {
+	return &Volume{
+		Description: Description,
+		Name:        Name,
+		TypeID:      TypeID,
+		Bootable:    Bootable,
+		Size:        Size,
+	}
+}
+
+type VolumeAttachment struct {
+	ID           string    `json:"id"`
+	AttachmentID string    `json:"attachment_id"`
+	VolumeID     string    `json:"volume_id"`
+	ServerID     string    `json:"server_id"`
+	HostName     string    `json:"host_name"`
+	Device       string    `json:"device"`
+	AttacedAt    time.Time `json:"attaced_at"`
 }
 
 // {

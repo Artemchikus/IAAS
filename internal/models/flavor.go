@@ -1,18 +1,34 @@
 package models
 
+import "fmt"
+
 type Flavor struct {
-	Disabled    bool     `json:"disabled"`
-	Description string   `json:"description"`
-	Disk        int      `json:"disk"`
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	IsPublic    bool     `json:"is_public"`
-	Properties  []string `json:"properties"`
-	RAM         int      `json:"ram"`
-	RXTXFactor  float32  `json:"rxtx_factor"`
-	Swap        string   `json:"swap"`
-	VCPUs       int      `json:"vcpus"`
-	Ephemeral   int      `json:"ephemeral"`
+	Description string  `json:"description"`
+	Disk        int     `json:"disk"`
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	IsPublic    bool    `json:"is_public"`
+	RAM         int     `json:"ram"`
+	RXTXFactor  float32 `json:"rxtx_factor"`
+	Swap        string  `json:"swap"`
+	VCPUs       int     `json:"vcpus"`
+	Ephemeral   int     `json:"ephemeral"`
+}
+
+func NewFlavor(name, description string, VCPUs, ephemeral, Disk, RAM, swap int, isPublic bool, RXTXFactor float32) *Flavor {
+	stringSwap := fmt.Sprint(swap)
+
+	return &Flavor{
+		Description: description,
+		Disk:        Disk,
+		Name:        name,
+		IsPublic:    isPublic,
+		RAM:         RAM,
+		RXTXFactor:  RXTXFactor,
+		Swap:        stringSwap,
+		VCPUs:       VCPUs,
+		Ephemeral:   ephemeral,
+	}
 }
 
 // {

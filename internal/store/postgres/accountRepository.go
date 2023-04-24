@@ -195,10 +195,7 @@ func (r *AccountRepository) createAccountTable(ctx context.Context) error {
 func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Account) error {
 	defer r.logging(ctx, "CREATE admin")()
 
-	adm, err := models.NewAccount(admin.Name, admin.Email, admin.Password)
-	if err != nil {
-		return err
-	}
+	adm := models.NewAccount(admin.Name, admin.Email, admin.Password, "admin")
 
 	if _, err := r.store.Account().FindByEmail(ctx, adm.Email); err == nil {
 		r.store.logger.With(
@@ -215,8 +212,6 @@ func (r *AccountRepository) createAdmin(ctx context.Context, admin *models.Accou
 	if err := adm.BeforeCreate(); err != nil {
 		return err
 	}
-
-	adm.Role = "admin"
 
 	if err := r.store.Account().Create(ctx, adm); err != nil {
 		return err

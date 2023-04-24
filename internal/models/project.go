@@ -1,13 +1,10 @@
 package models
 
 type Project struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Enabled     bool     `json:"enabled"`
-	DomainID    string   `json:"domain_id"`
-	Description string   `json:"description"`
-	Tags        []string `json:"tags"`
-	Options     *Options `json:"options"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	DomainID    string `json:"domain_id"`
+	Description string `json:"description"`
 }
 
 type Options struct{}
@@ -16,9 +13,6 @@ func NewProject(name, description string) *Project {
 	return &Project{
 		Name:        name,
 		Description: description,
-		Tags:        make([]string, 0),
-		Options:     &Options{},
-		Enabled:     true,
 		DomainID:    "default",
 	}
 }

@@ -38,6 +38,10 @@ func (f *ImageFetcher) FetchByID(ctx context.Context, imageId string) (*models.I
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
 	image := &models.Image{}
 
 	if err := json.NewDecoder(resp.Body).Decode(&image); err != nil {
@@ -80,6 +84,10 @@ func (f *ImageFetcher) Create(ctx context.Context, image *models.Image) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(&image); err != nil {
 		return err
 	}
@@ -120,15 +128,12 @@ func (f *ImageFetcher) Delete(ctx context.Context, imageId string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
 }
 
-func (f *ImageFetcher) Update(ctx context.Context, imageId string) {
-
-}
 func (f *ImageFetcher) uploadImage(ctx context.Context, fileData []byte, clusterId int, imageId string) error {
 	cluster := f.fetcher.clusters[clusterId]
 

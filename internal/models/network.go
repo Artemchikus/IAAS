@@ -3,21 +3,39 @@ package models
 import "time"
 
 type Network struct {
-	AvailabilityZones []string  `json:"availability_zones"`
-	CreatedAt         time.Time `json:"created_at"`
-	Description       string    `json:"description"`
-	ID                string    `json:"id"`
-	MTU               int       `json:"mtu"`
-	Name              string    `json:"name"`
-	ProjectID         string    `json:"project_id"`
-	Status            string    `json:"status"`
-	Subnets           []string  `json:"subnets"`
-	Tags              []string  `json:"tags"`
-	UpdatedAt         time.Time `json:"updated_at"`
-	NetworkType       string    `json:"provider:network_type"`
-	AdminStateUp      bool      `json:"admin_state_up"`
-	External          bool      `json:"router:external"`
-	PhysicalNetwork   string    `json:"provider:physical_network"`
+	CreatedAt       time.Time `json:"created_at"`
+	Description     string    `json:"description"`
+	ID              string    `json:"id"`
+	MTU             int       `json:"mtu"`
+	Name            string    `json:"name"`
+	ProjectID       string    `json:"project_id"`
+	Status          string    `json:"status"`
+	Subnets         []string  `json:"subnets"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	NetworkType     string    `json:"provider:network_type"`
+	External        bool      `json:"router:external"`
+	PhysicalNetwork string    `json:"provider:physical_network"`
+}
+
+func NewNetwork(Description, Name string, MTU int, External bool) *Network {
+	if External {
+		return &Network{
+			Description:     Description,
+			MTU:             MTU,
+			Name:            Name,
+			External:        External,
+			NetworkType:     "flat",
+			PhysicalNetwork: "extrnal",
+		}
+	}
+
+	return &Network{
+		Description: Description,
+		MTU:         MTU,
+		Name:        Name,
+		External:    External,
+		NetworkType: "geneve",
+	}
 }
 
 // {
@@ -33,7 +51,7 @@ type Network struct {
 // 	"is_default": null,
 // 	"is_vlan_transparent": null,
 // 	"mtu": 1442,
-// 	"name": "private",
+// 	"name": "private",--description
 // 	"port_security_enabled": true,
 // 	"project_id": "09522dddf25648d5bc30307cf3bf5f72",
 // 	"provider:network_type": "geneve",

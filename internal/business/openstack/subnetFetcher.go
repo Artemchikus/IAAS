@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -37,6 +36,10 @@ func (f *SubnetFetcher) FetchByID(ctx context.Context, subnetId string) (*models
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	subnet := &models.Subnet{}
 
@@ -84,6 +87,10 @@ func (f *SubnetFetcher) Create(ctx context.Context, subnet *models.Subnet) error
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createSubnetRes := &FetchSubnetResponse{
 		Subnet: subnet,
 	}
@@ -122,21 +129,17 @@ func (f *SubnetFetcher) Delete(ctx context.Context, subnetID string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
 }
 
-func (f *SubnetFetcher) Update(ctx context.Context, subnetId string) {
-
-}
-
 func (f *SubnetFetcher) generateCreateReq(subnet *models.Subnet) *CreateSubnetRequest {
-	allocationPools := []*AllocationPool{}
+	allocationPools := []*models.AllocationPool{}
 
 	for _, pool := range subnet.AllocationPools {
-		newPool := &AllocationPool{
+		newPool := &models.AllocationPool{
 			Start: pool.Start,
 			End:   pool.End,
 		}

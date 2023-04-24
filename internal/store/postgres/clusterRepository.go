@@ -179,10 +179,7 @@ func (r *ClusterRepository) addCluster(ctx context.Context, cluster *models.Clus
 		return errors.New("admin for cluster not set")
 	}
 
-	clusterAdmin, err := models.NewAccount(cluster.Admin.Name, cluster.Admin.Email, cluster.Admin.Password)
-	if err != nil {
-		return err
-	}
+	clusterAdmin := models.NewAccount(cluster.Admin.Name, cluster.Admin.Email, cluster.Admin.Password, "admin")
 
 	clusterAdmin.ProjectID = cluster.Admin.ProjectID
 

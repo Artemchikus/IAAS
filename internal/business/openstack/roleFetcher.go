@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -37,6 +36,10 @@ func (f *RoleFetcher) FetchByID(ctx context.Context, roleId string) (*models.Rol
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	role := &models.Role{}
 
@@ -84,6 +87,10 @@ func (f *RoleFetcher) Create(ctx context.Context, role *models.Role) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createRoleRes := &CreateRoleResponse{
 		Role: role,
 	}
@@ -122,20 +129,17 @@ func (f *RoleFetcher) Delete(ctx context.Context, roleID string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
 }
 
-func (f *RoleFetcher) Update(ctx context.Context, roleId string) {
-
-}
-
 func (f *RoleFetcher) generateCreateReq(role *models.Role) *CreateRoleRequest {
 	req := &CreateRoleRequest{
 		Role: &Role{
-			Name: role.Name,
+			Name:        role.Name,
+			Description: role.Description,
 		},
 	}
 

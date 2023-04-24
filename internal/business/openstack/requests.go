@@ -1,5 +1,7 @@
 package openstack
 
+import "IAAS/internal/models"
+
 type GetTokenRequest struct {
 	Auth *GetTokenAuth `json:"auth"`
 }
@@ -49,7 +51,6 @@ type CreateProject struct {
 	DomainID    string `json:"domain_id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Enabled     bool   `json:"enabled"`
 }
 type CreateUserRequest struct {
 	User *CreateUser `json:"user"`
@@ -59,7 +60,6 @@ type CreateUser struct {
 	DomainID  string `json:"domain_id"`
 	ProjectID string `json:"default_project_id"`
 	Password  string `json:"password"`
-	Enabled   bool   `json:"enabled"`
 	Email     string `json:"email"`
 }
 type CretaeImageRequest struct {
@@ -82,6 +82,7 @@ type Flavor struct {
 	IsPublic   bool    `json:"os-flavor-access:is_public"`
 	Swap       string  `json:"swap"`
 	RXTXFactor float32 `json:"rxtx_factor"`
+	// Description string  `json:"description"`
 }
 
 type CreateFloatingIpRequest struct {
@@ -89,7 +90,8 @@ type CreateFloatingIpRequest struct {
 }
 
 type FloatingIp struct {
-	NetworkID string `json:"floating_network_id"`
+	NetworkID   string `json:"floating_network_id"`
+	Description string `json:"description"`
 }
 
 type CreateNetworkRequest struct {
@@ -99,9 +101,10 @@ type CreateNetworkRequest struct {
 type Network struct {
 	Name            string `json:"name"`
 	NetworkType     string `json:"provider:network_type"`
-	AdminStateUp    bool   `json:"admin_state_up"`
 	External        bool   `json:"router:external"`
 	PhysicalNetwork string `json:"provider:physical_network"`
+	MTU             int    `json:"mtu"`
+	Description     string `json:"description"`
 }
 
 type CreateSubnetRequest struct {
@@ -109,18 +112,14 @@ type CreateSubnetRequest struct {
 }
 
 type Subnet struct {
-	CIDR            string            `json:"cidr"`
-	Name            string            `json:"name"`
-	EnableDHCP      bool              `json:"enable_dhcp"`
-	NetworkID       string            `json:"network_id"`
-	AllocationPools []*AllocationPool `json:"allocation_pools"`
-	IpVersion       int               `json:"ip_version"`
-	GatewayIp       string            `json:"gateway_ip"`
-}
-
-type AllocationPool struct {
-	Start string `json:"start"`
-	End   string `json:"end"`
+	CIDR            string                   `json:"cidr"`
+	Name            string                   `json:"name"`
+	EnableDHCP      bool                     `json:"enable_dhcp"`
+	NetworkID       string                   `json:"network_id"`
+	AllocationPools []*models.AllocationPool `json:"allocation_pools"`
+	IpVersion       int                      `json:"ip_version"`
+	GatewayIp       string                   `json:"gateway_ip"`
+	Description     string                   `json:"description"`
 }
 
 type CreateRoleRequest struct {
@@ -128,7 +127,8 @@ type CreateRoleRequest struct {
 }
 
 type Role struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type CreateRouterRequest struct {
@@ -136,8 +136,9 @@ type CreateRouterRequest struct {
 }
 
 type Router struct {
-	Name         string `json:"name"`
-	AdminStateUp bool   `json:"admin_state_up"`
+	Name                string                      `json:"name"`
+	Description         string                      `json:"description"`
+	ExternalGatewayInfo *models.ExternalGatewayInfo `json:"external_gateway_info"`
 }
 
 type CreateSecurityGroupRequest struct {
@@ -156,11 +157,12 @@ type CreateSecurityRuleRequest struct {
 type SecurityRule struct {
 	Protocol        string `json:"protocol"`
 	PortRangeMax    int    `json:"port_range_max"`
-	RemoteIPPrefix  string `json:"remote_ip_prefix"`
+	RemoteIpPrefix  string `json:"remote_ip_prefix"`
 	Ethertype       string `json:"ethertype"`
 	SecurityGroupID string `json:"security_group_id"`
 	Direction       string `json:"direction"`
 	PortRangeMin    int    `json:"port_range_min"`
+	Description     string `json:"description"`
 }
 
 type CreateKeyPairRequest struct {
@@ -170,6 +172,7 @@ type CreateKeyPairRequest struct {
 type KeyPair struct {
 	PublicKey string `json:"public_key"`
 	Name      string `json:"name"`
+	// Type      string `json:"type"`
 }
 
 type CreateVolumeRequest struct {
@@ -180,5 +183,6 @@ type Volume struct {
 	Size        int    `json:"size"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Type        string `json:"volume_type"`
+	TypeID      string `json:"volume_type"`
+	Bootable    bool   `json:"bootable"`
 }

@@ -12,13 +12,32 @@ type Subnet struct {
 	Name            string            `json:"name"`
 	NetworkID       string            `json:"network_id"`
 	ProjectID       string            `json:"project_id"`
-	Tags            []string          `json:"tags"`
 	UpdatedAt       string            `json:"updated_at"`
 }
 
 type AllocationPool struct {
 	Start string `json:"start"`
 	End   string `json:"end"`
+}
+
+func NewAllocationPool(start, end string) *AllocationPool {
+	return &AllocationPool{
+		Start: start,
+		End:   end,
+	}
+}
+
+func NewSubnet(CIDR, Description, Name, NetworkID, GatewayIp string, EnableDHCP bool, AllocatinPools []*AllocationPool) *Subnet {
+	return &Subnet{
+		AllocationPools: AllocatinPools,
+		CIDR:            CIDR,
+		Description:     Description,
+		Name:            Name,
+		NetworkID:       NetworkID,
+		GatewayIp:       GatewayIp,
+		EnableDHCP:      EnableDHCP,
+		IpVersion:       4,
+	}
 }
 
 // {

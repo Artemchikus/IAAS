@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -37,6 +36,10 @@ func (f *FlavorFetcher) FetchByID(ctx context.Context, flavorId string) (*models
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	flavor := &models.Flavor{}
 
@@ -84,6 +87,10 @@ func (f *FlavorFetcher) Create(ctx context.Context, flavor *models.Flavor) error
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return handleErrorResponse(resp)
+	}
+
 	createFlavorRes := &CreateFlavorResponse{
 		Flavor: flavor,
 	}
@@ -120,14 +127,10 @@ func (f *FlavorFetcher) Delete(ctx context.Context, flavorId string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 202 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *FlavorFetcher) Update(ctx context.Context, flavorId string) {
-
 }
 
 func (f *FlavorFetcher) generateCreateReq(flavor *models.Flavor) *CreateFlavorRequest {
@@ -143,5 +146,6 @@ func (f *FlavorFetcher) generateCreateReq(flavor *models.Flavor) *CreateFlavorRe
 			Ephemeral:  flavor.Ephemeral,
 		},
 	}
+
 	return req
 }

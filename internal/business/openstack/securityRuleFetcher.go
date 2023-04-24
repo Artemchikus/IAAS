@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -37,6 +36,10 @@ func (f *SecurityRuleFetcher) FetchByID(ctx context.Context, securityRuleId stri
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	securityRule := &models.SecurityRule{}
 
@@ -84,6 +87,10 @@ func (f *SecurityRuleFetcher) Create(ctx context.Context, securityRule *models.S
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createSecurityRuleRes := &CreateSecurityRuleResponse{
 		SecurityRule: securityRule,
 	}
@@ -122,14 +129,10 @@ func (f *SecurityRuleFetcher) Delete(ctx context.Context, securityRuleID string)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *SecurityRuleFetcher) Update(ctx context.Context, securityRuleId string) {
-
 }
 
 func (f *SecurityRuleFetcher) generateCreateReq(securityRule *models.SecurityRule) *CreateSecurityRuleRequest {
@@ -138,10 +141,11 @@ func (f *SecurityRuleFetcher) generateCreateReq(securityRule *models.SecurityRul
 			Protocol:        securityRule.Protocol,
 			PortRangeMax:    securityRule.PortRangeMax,
 			PortRangeMin:    securityRule.PortRangeMin,
-			RemoteIPPrefix:  securityRule.RemoteIpPrefix,
+			RemoteIpPrefix:  securityRule.RemoteIpPrefix,
 			Ethertype:       securityRule.Ethertype,
 			Direction:       securityRule.Direction,
 			SecurityGroupID: securityRule.SecurityGroupID,
+			Description:     securityRule.Description,
 		},
 	}
 

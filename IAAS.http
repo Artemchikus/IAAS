@@ -1,5 +1,6 @@
+// ApiServer/Databasa level
 GET http://localhost:3000/account
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIxODQxNDB9.bJEM2qTFJK8W0KkXiMb8TMyEmKal-z22MzEATuljsHc
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzMzA4NDZ9.lCvUR1ObR9dR6FfgQ67wrSFNrrNoGDNsx6FRlW7N8FE
 
 ###
 GET http://localhost:3000/account/2
@@ -72,3 +73,30 @@ x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QG
 ###
 GET  http://localhost:3000/cluster/
 x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIxODQxNDB9.bJEM2qTFJK8W0KkXiMb8TMyEmKal-z22MzEATuljsHc
+
+###
+
+// Openstack level
+POST http://localhost:3000/cluster/1/flavor
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMzMwODY2fQ.CWQ2tSu6tMJVkIhuenCZH_MQ7d4GtYKMLrwI4QZ7olY
+content-type: application/json
+
+{
+    "disk":        2,
+	"RAM":         300,
+	"vcpus":       1,
+	"name":        "m1.small",
+	"eehemeral":   0,
+	"is_public":    true,
+	"rxtx_factor":  1.0,
+	"swap":        0,
+	"description": "test flavor"
+}
+
+###
+DELETE http://localhost:3000/cluster/1/flavor/df338152-34bc-402b-aecc-8eabd57ac764
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzMzA4ODR9.IidCKZ9z3mjePQRmkPUHg4MKbLoybR8i-RBtRh8t-7g
+
+###
+GET http://localhost:3000/cluster/1/flavor/39f8a486-6d36-48e4-9bd7-e31860fb8919
+x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMzMxNjIyfQ.Fl5tiZgyLuxiDclkLcyGnPI65g2jjc4bPGD9ACmsLsQ

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"time"
 )
@@ -38,6 +37,10 @@ func (f *KeyPairFetcher) FetchByID(ctx context.Context, keyPairId string) (*mode
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	keyPairResp := map[string]interface{}{}
 
@@ -101,6 +104,10 @@ func (f *KeyPairFetcher) Create(ctx context.Context, keyPair *models.KeyPair) er
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return handleErrorResponse(resp)
+	}
+
 	createKeyPairRes := &CreateKeyPairResponse{
 		KeyPair: keyPair,
 	}
@@ -141,14 +148,10 @@ func (f *KeyPairFetcher) Delete(ctx context.Context, keyPairId string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 202 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *KeyPairFetcher) Update(ctx context.Context, keyPairId string) {
-
 }
 
 func (f *KeyPairFetcher) generateCreateReq(keyPair *models.KeyPair) *CreateKeyPairRequest {

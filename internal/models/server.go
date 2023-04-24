@@ -3,9 +3,6 @@ package models
 import "time"
 
 type Server struct {
-	DiskConfig         string    `json:"disk_config"`
-	AvailabilityZone   string    `json:"availability_zone"`
-	Host               string    `json:"host"`
 	HypervisorHostname string    `json:"hypervisor_hostname"`
 	InstanceName       string    `json:"instance_name"`
 	VMState            string    `json:"vm_state"`
@@ -17,14 +14,24 @@ type Server struct {
 	PublicIp           string    `json:"public_ip"`
 	ID                 string    `json:"id"`
 	ImageID            string    `json:"image_id"`
-	KeyID              string    `json:"key_id"`
+	KeyID              string    `json:"key_name"`
+	FlavorID           string    `json:"flavor"`
 	Name               string    `json:"name"`
 	ProjectID          string    `json:"project_id"`
-	Properties         []string  `json:"properties"`
-	SecurityGroups     []string  `json:"security_groups"`
+	SecurityGroupsID   []string  `json:"security_groups"`
 	Status             string    `json:"status"`
 	AccountID          string    `json:"user_id"`
-	VolumesAttached    []string  `json:"volumes_attached"`
+	VolumesAttachedID  []string  `json:"volumes_attached"`
+}
+
+func NewServer(ImageID, KeyID, Name string, SecurityGroupsID, VolumesAttachedID []string) *Server {
+	return &Server{
+		ImageID:           ImageID,
+		KeyID:             KeyID,
+		Name:              Name,
+		SecurityGroupsID:  SecurityGroupsID,
+		VolumesAttachedID: VolumesAttachedID,
+	}
 }
 
 // {

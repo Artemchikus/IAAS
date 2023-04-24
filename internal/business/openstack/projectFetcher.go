@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
@@ -37,6 +36,10 @@ func (f *ProjectFetcher) FetchByID(ctx context.Context, projectId string) (*mode
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
 
 	project := &models.Project{}
 
@@ -84,6 +87,10 @@ func (f *ProjectFetcher) Create(ctx context.Context, project *models.Project) er
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 201 {
+		return handleErrorResponse(resp)
+	}
+
 	createProjectRes := &CreateProjectResponse{
 		Project: project,
 	}
@@ -122,14 +129,10 @@ func (f *ProjectFetcher) Delete(ctx context.Context, projectID string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		return errors.New("internal server error")
+		return handleErrorResponse(resp)
 	}
 
 	return nil
-}
-
-func (f *ProjectFetcher) Update(ctx context.Context, projectId string) {
-
 }
 
 func (f *ProjectFetcher) generateCreateReq(project *models.Project) *CreateProjectRequest {
@@ -138,7 +141,6 @@ func (f *ProjectFetcher) generateCreateReq(project *models.Project) *CreateProje
 			DomainID:    project.DomainID,
 			Name:        project.Name,
 			Description: project.Description,
-			Enabled:     project.Enabled,
 		},
 	}
 
