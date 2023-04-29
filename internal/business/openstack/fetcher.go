@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -33,6 +32,7 @@ type Fetcher struct {
 	securityRuleFetcher  *SecurityRuleFetcher
 	keyPairFetcher       *KeyPairFetcher
 	volumeFetcher        *VolumeFetcher
+	portFetcher          *PortFetcher
 	clusters             map[int]*models.Cluster
 }
 
@@ -241,6 +241,18 @@ func (f *Fetcher) Volume() business.VolumeFetcher {
 	return f.volumeFetcher
 }
 
+func (f *Fetcher) Port() business.PortFetcher {
+	if f.portFetcher != nil {
+		return f.portFetcher
+	}
+
+	f.portFetcher = &PortFetcher{
+		fetcher: f,
+	}
+
+	return f.portFetcher
+}
+
 func getClusterIDFromContext(ctx context.Context) int {
 	return ctx.Value(models.CtxKeyClusterID).(int)
 }
@@ -276,8 +288,6 @@ func (f *Fetcher) UpdateClusterMap(ctx context.Context, store store.Storage) err
 	}
 
 	f.clusters = clusterMap
-
-	fmt.Printf("f.clusters: %v\n", f.clusters)
 
 	return nil
 }

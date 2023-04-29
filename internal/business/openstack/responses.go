@@ -105,6 +105,14 @@ type FetchVolumeResponse struct {
 	Volume *map[string]interface{} `json:"volume"`
 }
 
+type FetchPortsResponse struct {
+	Ports []*models.Port `json:"ports"`
+}
+
+type FetchPortResponse struct {
+	Port *models.Port `json:"port"`
+}
+
 type CreateServerResponse struct {
 	Server *models.Server `json:"server"`
 }
@@ -145,7 +153,6 @@ type SGNameResponse struct {
 type IDResponse struct {
 	ID string `json:"id"`
 }
-
 type ErrorResponse struct {
 	Error *Error `json:"error"`
 }

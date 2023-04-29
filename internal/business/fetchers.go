@@ -32,8 +32,8 @@ type NetworkFetcher interface {
 }
 type PortFetcher interface {
 	FetchByID(context.Context, string) (*models.Port, error)
-	Create(context.Context, *models.Port) error
-	Delete(context.Context, string) error
+	FetchByNetworkID(context.Context, string) ([]*models.Port, error)
+	FetchByRouterID(context.Context, string) ([]*models.Port, error)
 }
 type ProjectFetcher interface {
 	FetchByID(context.Context, string) (*models.Project, error)
