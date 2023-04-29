@@ -12,7 +12,7 @@ import (
 
 func TestImageFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -36,7 +36,7 @@ func TestImageFetcher_Create(t *testing.T) {
 
 func TestImageFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -59,7 +59,7 @@ func TestImageFetcher_Delete(t *testing.T) {
 
 func TestImageFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 

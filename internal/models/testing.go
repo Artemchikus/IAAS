@@ -40,11 +40,13 @@ func TestClusters(t *testing.T) []*Cluster {
 	return []*Cluster{cluster}
 }
 
-func TestClusterAdmin(t *testing.T) *Account {
-	return &Account{
-		Email:     "adm@example.com",
-		Name:      "admin",
-		Password:  "openstack",
-		ProjectID: "a0f8bb68921b4ddea63c52ef1b4e7e74",
+func TestClusterAdmin(t *testing.T) *ClusterUser {
+	return &ClusterUser{
+		Email:       "adm@example.com",
+		Name:        "admin",
+		Password:    "openstack",
+		ProjectID:   "a0f8bb68921b4ddea63c52ef1b4e7e74",
+		DomainID:    "default",
+		Description: "cluster admin",
 	}
 }

@@ -1,6 +1,9 @@
 package openstack
 
-import "IAAS/internal/models"
+import (
+	"IAAS/internal/models"
+	"time"
+)
 
 type GetTokenResponse struct {
 	Token *models.Token `json:"token"`
@@ -15,11 +18,11 @@ type FetchProjectResponse struct {
 }
 
 type CreateUserResponse struct {
-	User *map[string]interface{} `json:"user"`
+	User *models.ClusterUser `json:"user"`
 }
 
 type FetchUserResponse struct {
-	User *map[string]interface{} `json:"user"`
+	User *models.ClusterUser `json:"user"`
 }
 
 type FetchFlavorResponse struct {
@@ -100,6 +103,47 @@ type CreateVolumeResponse struct {
 
 type FetchVolumeResponse struct {
 	Volume *map[string]interface{} `json:"volume"`
+}
+
+type CreateServerResponse struct {
+	Server *models.Server `json:"server"`
+}
+
+type FetchServerResponse struct {
+	Server *FetchedServer `json:"server"`
+}
+
+type FetchedServer struct {
+	HypervisorHostname string                `json:"OS-EXT-SRV-ATTR:hypervisor_hostname"`
+	InstanceName       string                `json:"OS-EXT-SRV-ATTR:instance_name"`
+	VMState            string                `json:"OS-EXT-STS:vm_state"`
+	LaunchedAt         string                `json:"OS-SRV-USG:launched_at"`
+	Addresses          map[string][]*Address `json:"addresses"`
+	CreatedAt          time.Time             `json:"created"`
+	Flavor             *IDResponse           `json:"flavor"`
+	ID                 string                `json:"id"`
+	Image              *IDResponse           `json:"image"`
+	Key                string                `json:"key_name"`
+	Name               string                `json:"name"`
+	Volumes            []*IDResponse         `json:"os-extended-volumes:volumes_attached"`
+	SecurityGroups     []*SGNameResponse     `json:"security_groups"`
+	Status             string                `json:"status"`
+	TenantID           string                `json:"tenant_id"`
+	UpdatedAt          time.Time             `json:"updated"`
+	UserID             string                `json:"user_id"`
+}
+
+type Address struct {
+	Type    string `json:"OS-EXT-IPS:type"`
+	Address string `json:"addr"`
+}
+
+type SGNameResponse struct {
+	Name string `json:"name"`
+}
+
+type IDResponse struct {
+	ID string `json:"id"`
 }
 
 type ErrorResponse struct {

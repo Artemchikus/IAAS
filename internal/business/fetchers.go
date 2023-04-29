@@ -6,8 +6,8 @@ import (
 )
 
 type UserFetcher interface {
-	FetchByID(context.Context, string) (*models.Account, error)
-	Create(context.Context, *models.Account) error
+	FetchByID(context.Context, string) (*models.ClusterUser, error)
+	Create(context.Context, *models.ClusterUser) error
 	Delete(context.Context, string) error
 }
 type FlavorFetcher interface {
@@ -76,7 +76,8 @@ type SubnetFetcher interface {
 	Delete(context.Context, string) error
 }
 type TokenFetcher interface {
-	Get(context.Context, *models.Account) (*models.Token, error)
+	Get(context.Context, *models.ClusterUser) (*models.Token, error)
+	GetAdmin(context.Context) (*models.Token, error)
 }
 type VolumeFetcher interface {
 	FetchByID(context.Context, string) (*models.Volume, error)

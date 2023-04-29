@@ -12,4 +12,5 @@ var (
 	errTokenExpired             = errors.New("token expired")
 	errUnexpectedSigningMethod  = errors.New("unexpected signature method")
 	errNoAdmin                  = errors.New("admin rights required")
+	errLocationAlreadyExists    = errors.New("cluster location already exists")
 )

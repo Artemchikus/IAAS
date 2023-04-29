@@ -4,10 +4,12 @@ import (
 	"IAAS/internal/business"
 	"IAAS/internal/config"
 	"IAAS/internal/models"
+	"IAAS/internal/store"
 	"IAAS/internal/store/postgres"
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -259,4 +261,23 @@ func handleErrorResponse(resp *http.Response) error {
 	}
 
 	return errors.New(resp.Status + ": " + er.Message)
+}
+
+func (f *Fetcher) UpdateClusterMap(ctx context.Context, store store.Storage) error {
+	clusters, err := store.Cluster().GetAll(ctx)
+	if err != nil {
+		return err
+	}
+
+	clusterMap := make(map[int]*models.Cluster)
+
+	for _, cluster := range clusters {
+		clusterMap[cluster.ID] = cluster
+	}
+
+	f.clusters = clusterMap
+
+	fmt.Printf("f.clusters: %v\n", f.clusters)
+
+	return nil
 }

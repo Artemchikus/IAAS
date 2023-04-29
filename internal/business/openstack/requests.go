@@ -56,11 +56,12 @@ type CreateUserRequest struct {
 	User *CreateUser `json:"user"`
 }
 type CreateUser struct {
-	Name      string `json:"name"`
-	DomainID  string `json:"domain_id"`
-	ProjectID string `json:"default_project_id"`
-	Password  string `json:"password"`
-	Email     string `json:"email"`
+	Name        string `json:"name"`
+	DomainID    string `json:"domain_id"`
+	ProjectID   string `json:"default_project_id"`
+	Password    string `json:"password"`
+	Email       string `json:"email"`
+	Description string `json:"description"`
 }
 type CretaeImageRequest struct {
 	DiskFormat      string `json:"disk_format"`
@@ -185,4 +186,25 @@ type Volume struct {
 	Description string `json:"description"`
 	TypeID      string `json:"volume_type"`
 	Bootable    bool   `json:"bootable"`
+}
+
+type CreateServerRequest struct {
+	Server *Server `json:"server"`
+}
+
+type Server struct {
+	FlavorID       string                   `json:"flavorRef"`
+	ImageID        string                   `json:"imageRef"`
+	KeyID          string                   `json:"key_name"`
+	Name           string                   `json:"name"`
+	SecurityGroups []*ServerSecurityGroupID `json:"security_groups"`
+	Networks       []*ServerNetworkID       `json:"networks"`
+}
+
+type ServerSecurityGroupID struct {
+	ID string `json:"name"`
+}
+
+type ServerNetworkID struct {
+	ID string `json:"uuid"`
 }

@@ -12,7 +12,7 @@ import (
 
 func TestFloatingIpFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -24,7 +24,7 @@ func TestFloatingIpFetcher_Create(t *testing.T) {
 
 	ip := &models.FloatingIp{}
 	sub := openstack.TestSubnet(t)
-	n := openstack.TestNetwork(t)
+	n := openstack.TestPublicNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID
@@ -43,7 +43,7 @@ func TestFloatingIpFetcher_Create(t *testing.T) {
 
 func TestFloatingIpFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -55,7 +55,7 @@ func TestFloatingIpFetcher_Delete(t *testing.T) {
 
 	ip := &models.FloatingIp{}
 	sub := openstack.TestSubnet(t)
-	n := openstack.TestNetwork(t)
+	n := openstack.TestPublicNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID
@@ -75,7 +75,7 @@ func TestFloatingIpFetcher_Delete(t *testing.T) {
 
 func TestFloatingIpFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -87,7 +87,7 @@ func TestFloatingIpFetcher_FetchByID(t *testing.T) {
 
 	ip1 := &models.FloatingIp{}
 	sub := openstack.TestSubnet(t)
-	n := openstack.TestNetwork(t)
+	n := openstack.TestPublicNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID

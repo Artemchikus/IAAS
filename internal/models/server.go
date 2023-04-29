@@ -8,7 +8,6 @@ type Server struct {
 	VMState            string    `json:"vm_state"`
 	CreatedAt          time.Time `json:"created_at"`
 	LaunchedAt         time.Time `json:"launched_at"`
-	TerminatedAt       time.Time `json:"terminated_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
 	PrivateIp          string    `json:"private_ip"`
 	PublicIp           string    `json:"public_ip"`
@@ -18,19 +17,20 @@ type Server struct {
 	FlavorID           string    `json:"flavor"`
 	Name               string    `json:"name"`
 	ProjectID          string    `json:"project_id"`
-	SecurityGroupsID   []string  `json:"security_groups"`
+	SecurityGroupID    string    `json:"security_groups"`
 	Status             string    `json:"status"`
-	AccountID          string    `json:"user_id"`
-	VolumesAttachedID  []string  `json:"volumes_attached"`
+	UserID             string    `json:"user_id"`
+	VolumeAttachedID   string    `json:"volume_attached"`
+	PrivateNetworkID   string    `json:"private_network_id"`
 }
 
-func NewServer(ImageID, KeyID, Name string, SecurityGroupsID, VolumesAttachedID []string) *Server {
+func NewServer(ImageID, KeyID, Name, Description, SecurityGroupID, PrivateNetworkID string) *Server {
 	return &Server{
-		ImageID:           ImageID,
-		KeyID:             KeyID,
-		Name:              Name,
-		SecurityGroupsID:  SecurityGroupsID,
-		VolumesAttachedID: VolumesAttachedID,
+		ImageID:          ImageID,
+		KeyID:            KeyID,
+		Name:             Name,
+		SecurityGroupID:  SecurityGroupID,
+		PrivateNetworkID: PrivateNetworkID,
 	}
 }
 

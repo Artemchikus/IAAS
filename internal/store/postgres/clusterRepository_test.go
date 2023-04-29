@@ -11,7 +11,7 @@ import (
 
 func TestClusterRepository_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -24,7 +24,7 @@ func TestClusterRepository_Create(t *testing.T) {
 
 func TestClusterRepository_FindByLocation(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -42,7 +42,7 @@ func TestClusterRepository_FindByLocation(t *testing.T) {
 
 func TestClusterRepository_FindByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -59,7 +59,7 @@ func TestClusterRepository_FindByID(t *testing.T) {
 }
 func TestClusterRepository_Update(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -77,7 +77,7 @@ func TestClusterRepository_Update(t *testing.T) {
 
 func TestClusterRepository_GetAll(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 

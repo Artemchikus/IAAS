@@ -12,7 +12,7 @@ import (
 
 func TestFlavorFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -35,7 +35,7 @@ func TestFlavorFetcher_Create(t *testing.T) {
 
 func TestFlavorFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -58,7 +58,7 @@ func TestFlavorFetcher_Delete(t *testing.T) {
 
 func TestFlavorFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 

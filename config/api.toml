@@ -16,28 +16,33 @@ location = "America/Los_Angeles"
 url = "http://192.168.122.20"
 
 [clusters.cluster_admin]
+id = "f4307c670a2e4b7da149b0bad8e578e3"
 name = "admin"
 email = "admin@example.com"
 password = "openstack"
 project_id = "a0f8bb68921b4ddea63c52ef1b4e7e74"
+domain_id = "default"
 
 [[clusters]]
 location = "Europe/Paris"
 url = "http://192.168.122.21"
 
 [clusters.cluster_admin]
+id = "1111111111111111111111111111111"
 name = "admin"
 email = "admin@example.com"
 password = "openstack"
 project_id = "1111111111111111111111111111111"
-
+domain_id = "default"
 
 [[clusters]]
 location = "Asia/Hong_Kong"
 url = "http://192.168.122.22"
 
 [clusters.cluster_admin]
+id = "22222222222222222222222222222"
 name = "admin"
 email = "admin@example.com"
 password = "openstack"
 project_id = "22222222222222222222222222222"
+domain_id = "default"

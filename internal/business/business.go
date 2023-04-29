@@ -1,5 +1,10 @@
 package business
 
+import (
+	"IAAS/internal/store"
+	"context"
+)
+
 type Fetcher interface {
 	Server() ServerFetcher
 	Flavor() FlavorFetcher
@@ -17,4 +22,5 @@ type Fetcher interface {
 	// Port() PortFetcher
 	Project() ProjectFetcher
 	SecurityRule() SecurityRuleFetcher
+	UpdateClusterMap(context.Context, store.Storage) error
 }

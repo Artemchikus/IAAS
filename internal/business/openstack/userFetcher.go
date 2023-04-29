@@ -12,7 +12,7 @@ type UserFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *UserFetcher) FetchByID(ctx context.Context, userId string) (*models.Account, error) {
+func (f *UserFetcher) FetchByID(ctx context.Context, userId string) (*models.ClusterUser, error) {
 	clusterId := getClusterIDFromContext(ctx)
 
 	cluster := f.fetcher.clusters[clusterId]
@@ -41,28 +41,21 @@ func (f *UserFetcher) FetchByID(ctx context.Context, userId string) (*models.Acc
 		return nil, handleErrorResponse(resp)
 	}
 
-	userResp := map[string]interface{}{}
+	user := &models.ClusterUser{}
 
 	fetchUserResp := &FetchUserResponse{
-		User: &userResp,
+		User: user,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&fetchUserResp); err != nil {
 		return nil, err
 	}
 
-	user := &models.Account{
-		OpenstackID: userResp["id"].(string),
-		Name:        userResp["name"].(string),
-		Email:       userResp["email"].(string),
-		ProjectID:   userResp["default_project_id"].(string),
-	}
-
 	return user, nil
 }
 
-func (f *UserFetcher) Create(ctx context.Context, user *models.Account) error {
-	reqData := f.generateCreateReq(user, user.ProjectID)
+func (f *UserFetcher) Create(ctx context.Context, user *models.ClusterUser) error {
+	reqData := f.generateCreateReq(user)
 
 	json_data, err := json.Marshal(&reqData)
 	if err != nil {
@@ -98,17 +91,15 @@ func (f *UserFetcher) Create(ctx context.Context, user *models.Account) error {
 		return handleErrorResponse(resp)
 	}
 
-	userResp := map[string]interface{}{}
-
 	createUserResp := &CreateUserResponse{
-		User: &userResp,
+		User: user,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&createUserResp); err != nil {
 		return err
 	}
 
-	user.OpenstackID = userResp["id"].(string)
+	user.ClusterID = clusterId
 
 	return nil
 }
@@ -145,14 +136,15 @@ func (f *UserFetcher) Delete(ctx context.Context, userId string) error {
 	return nil
 }
 
-func (f *UserFetcher) generateCreateReq(user *models.Account, projectID string) *CreateUserRequest {
+func (f *UserFetcher) generateCreateReq(user *models.ClusterUser) *CreateUserRequest {
 	return &CreateUserRequest{
 		User: &CreateUser{
-			Name:      user.Name,
-			DomainID:  "default",
-			Password:  user.Password,
-			ProjectID: projectID,
-			Email:     user.Email,
+			Name:        user.Name,
+			DomainID:    user.DomainID,
+			Password:    user.Password,
+			ProjectID:   user.ProjectID,
+			Email:       user.Email,
+			Description: user.Description,
 		},
 	}
 }

@@ -4,9 +4,11 @@ import (
 	"IAAS/internal/models"
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func (s *server) setRequestID(next http.Handler) http.Handler {
@@ -53,6 +55,30 @@ func (s *server) authenticateAccount(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), models.CtxKeyAccount, acc)))
+	})
+}
+
+func (s *server) authenticateClusterUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		clusterId, err := strconv.Atoi(vars["cluster_id"])
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		acc := r.Context().Value(models.CtxKeyAccount).(*models.Account)
+
+		user, err := s.store.ClusterUser().FindByEmailAndClusterID(r.Context(), acc.Email, clusterId)
+		if err != nil && acc.Role != "admin" {
+			s.error(w, r, http.StatusUnauthorized, err)
+			return
+		}
+
+		r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
+
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), models.CtxClusterUser, user)))
 	})
 }
 

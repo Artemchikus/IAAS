@@ -124,7 +124,7 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 	account := models.NewAccount(req.Name, req.Email, req.Password, "user")
 
 	if _, err := s.store.Account().FindByEmail(r.Context(), account.Email); err == nil {
-		s.error(w, r, http.StatusConflict, err)
+		s.error(w, r, http.StatusConflict, errEmailAlreadyExists)
 		return
 	}
 
@@ -276,14 +276,27 @@ func (s *server) handleCreateCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cluster := models.NewCluster(req.Admin.Name, req.Admin.Email, req.Admin.Password, req.Url, req.Location)
+	cluster := models.NewCluster(req.Admin.Name, req.Admin.Email, req.Admin.Password, req.Admin.DomainID, req.Admin.ProjectID, req.Url, req.Location)
 
-	if err := cluster.Admin.Validate(); err != nil {
-		s.error(w, r, http.StatusUnprocessableEntity, err)
+	cluster.Admin.CluserRole = "admin"
+	cluster.Admin.ID = req.Admin.ID
+
+	if _, err := s.store.Cluster().FindByLocation(r.Context(), cluster.Location); err == nil {
+		s.error(w, r, http.StatusConflict, errLocationAlreadyExists)
 		return
 	}
 
 	if err := s.store.Cluster().Create(r.Context(), cluster); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := s.store.ClusterUser().Create(r.Context(), cluster.Admin); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := s.fetcher.UpdateClusterMap(r.Context(), s.store); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return
 	}
@@ -312,6 +325,24 @@ func (s *server) handleDeleteCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	users, err := s.store.ClusterUser().FindByClusterID(r.Context(), clusterId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	for _, user := range users {
+		if err := s.store.ClusterUser().Delete(r.Context(), user.ID); err != nil {
+			s.error(w, r, http.StatusNotFound, err)
+			return
+		}
+	}
+
+	if err := s.fetcher.UpdateClusterMap(r.Context(), s.store); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
 	resp := DeleteClusterResponse{
 		DeletedID: clusterId,
 	}
@@ -319,7 +350,7 @@ func (s *server) handleDeleteCluster(w http.ResponseWriter, r *http.Request) {
 	s.respond(w, r, http.StatusOK, resp)
 }
 
-func (s *server) handleGetFlavorByID(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleRegisterAccountInCluster(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	clusterId, err := strconv.Atoi(vars["cluster_id"])
@@ -330,9 +361,44 @@ func (s *server) handleGetFlavorByID(w http.ResponseWriter, r *http.Request) {
 
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
 
+	token, err := s.fetcher.Token().GetAdmin(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	acc := r.Context().Value(models.CtxKeyAccount).(*models.Account)
+
+	project := models.NewProject(acc.Email, "project for user "+acc.Email)
+
+	if err := s.fetcher.Project().Create(r.Context(), project); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	user := models.NewClusterUser(acc.Name, acc.Email, acc.Password, project.ID, project.DomainID, "common user")
+
+	if err := s.fetcher.User().Create(r.Context(), user); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := s.store.ClusterUser().Create(r.Context(), user); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, user)
+}
+
+func (s *server) handleGetFlavorByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
 	flavorId := vars["flavor_id"]
 
-	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxKeyAccount).(*models.Account))
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
 	if err != nil {
 		s.error(w, r, http.StatusUnauthorized, err)
 		return
@@ -350,23 +416,13 @@ func (s *server) handleGetFlavorByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleCreateFlavor(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	clusterId, err := strconv.Atoi(vars["cluster_id"])
-	if err != nil {
-		s.error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
-	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
-
 	req := new(CreateFlavorRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		s.error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
-	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxKeyAccount).(*models.Account))
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
 	if err != nil {
 		s.error(w, r, http.StatusUnauthorized, err)
 		return
@@ -387,17 +443,9 @@ func (s *server) handleCreateFlavor(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleDeleteFlavor(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	clusterId, err := strconv.Atoi(vars["cluster_id"])
-	if err != nil {
-		s.error(w, r, http.StatusBadRequest, err)
-		return
-	}
-
-	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
-
 	flavorId := vars["flavor_id"]
 
-	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxKeyAccount).(*models.Account))
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
 	if err != nil {
 		s.error(w, r, http.StatusUnauthorized, err)
 		return
@@ -412,6 +460,90 @@ func (s *server) handleDeleteFlavor(w http.ResponseWriter, r *http.Request) {
 
 	resp := DeleteOpenstackResurceResponse{
 		DeletedID: flavorId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetClusterUserByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	userId := vars["user_id"]
+
+	user, err := s.store.ClusterUser().FindByID(r.Context(), userId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, user)
+}
+
+func (s *server) handleGetAllClusterUsers(w http.ResponseWriter, r *http.Request) {
+	clusterUsers, err := s.store.ClusterUser().FindByClusterID(r.Context(), r.Context().Value(models.CtxKeyClusterID).(int))
+	if err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, clusterUsers)
+}
+
+func (s *server) handleCreateClusterUser(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateUserRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	user := models.NewClusterUser(req.Name, req.Email, req.Password, req.ProjectID, req.DomainID, req.Description)
+
+	if err := s.fetcher.User().Create(r.Context(), user); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := s.store.ClusterUser().Create(r.Context(), user); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, user)
+}
+
+func (s *server) handleDeleteClusterUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	userId := vars["user_id"]
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.User().Delete(r.Context(), userId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	if err := s.store.ClusterUser().Delete(r.Context(), userId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: userId,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)

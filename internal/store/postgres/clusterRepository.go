@@ -72,6 +72,7 @@ func (r *ClusterRepository) Create(ctx context.Context, cluster *models.Cluster)
 			return err
 		}
 		cluster.ID = clas.ID
+		cluster.Admin.ClusterID = cluster.ID
 	}
 
 	return nil
@@ -136,7 +137,7 @@ func (r *ClusterRepository) GetAll(ctx context.Context) ([]*models.Cluster, erro
 }
 
 func scanIntoCluster(rows *sql.Rows) (*models.Cluster, error) {
-	admin := new(models.Account)
+	admin := new(models.ClusterUser)
 	cluster := new(models.Cluster)
 	cluster.Admin = admin
 
@@ -179,27 +180,15 @@ func (r *ClusterRepository) addCluster(ctx context.Context, cluster *models.Clus
 		return errors.New("admin for cluster not set")
 	}
 
-	clusterAdmin := models.NewAccount(cluster.Admin.Name, cluster.Admin.Email, cluster.Admin.Password, "admin")
-
-	clusterAdmin.ProjectID = cluster.Admin.ProjectID
-
-	if _, err := r.store.Cluster().FindByLocation(ctx, cluster.Location); err == nil {
+	if c, err := r.store.Cluster().FindByLocation(ctx, cluster.Location); err == nil {
 		r.store.logger.With(
 			"table", "cluster",
 		).Infof("cluster for location: %v already exists", cluster.Location)
 
+		cluster.ID = c.ID
+
 		return nil
 	}
-
-	if err := clusterAdmin.Validate(); err != nil {
-		return err
-	}
-
-	if err := clusterAdmin.BeforeCreate(); err != nil {
-		return err
-	}
-
-	cluster.Admin = clusterAdmin
 
 	if err := r.store.Cluster().Create(ctx, cluster); err != nil {
 		return err

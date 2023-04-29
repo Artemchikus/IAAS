@@ -25,9 +25,9 @@ type LoginRequest struct {
 }
 
 type CreateClusterRequest struct {
-	Location string                `json:"location"`
-	Url      string                `json:"url"`
-	Admin    *CreateAccountRequest `json:"admin"`
+	Location string                     `json:"location"`
+	Url      string                     `json:"url"`
+	Admin    *CreateClusterAdminRequest `json:"admin"`
 }
 
 type CreateFlavorRequest struct {
@@ -109,11 +109,21 @@ type CreateSubnetRequest struct {
 }
 
 type CreateUserRequest struct {
+	Name        string `json:"name"`
+	ProjectID   string `json:"project_id"`
+	Password    string `json:"password"`
+	Email       string `json:"email"`
+	DomainID    string `json:"domain_id"`
+	Description string `json:"description"`
+}
+
+type CreateClusterAdminRequest struct {
+	ID        string `json:"id"`
 	Name      string `json:"name"`
-	DomainID  string `json:"domain_id"`
 	ProjectID string `json:"project_id"`
 	Password  string `json:"password"`
 	Email     string `json:"email"`
+	DomainID  string `json:"domain_id"`
 }
 
 type CreateVolumeRequest struct {

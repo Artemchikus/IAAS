@@ -47,11 +47,32 @@ func TestCluster(t *testing.T) *models.Cluster {
 	}
 }
 
-func TestClusterAdmin(t *testing.T) *models.Account {
-	return &models.Account{
-		Email:     "adm@example.com",
-		Name:      "admin",
-		Password:  "openstack",
-		ProjectID: "1111111111111111111111111111",
+func TestClusterAdmin(t *testing.T) *models.ClusterUser {
+	return &models.ClusterUser{
+		ID:          "1111111111111111111111111111",
+		Email:       "adm@example.com",
+		Name:        "admin",
+		Password:    "openstack",
+		ProjectID:   "1111111111111111111111111111",
+		DomainID:    "default",
+		Description: "cluster admin",
+		ClusterID:   1,
+		AccountID:   1,
+		CluserRole:  "admin",
+	}
+}
+
+func TestClusterUser(t *testing.T) *models.ClusterUser {
+	return &models.ClusterUser{
+		ID:          "2222222222222222222222222222",
+		Email:       "test@example.com",
+		Name:        "test",
+		Password:    "password",
+		ProjectID:   "2222222222222222222222222222",
+		DomainID:    "default",
+		Description: "test cluster user",
+		ClusterID:   1,
+		AccountID:   2,
+		CluserRole:  "member",
 	}
 }

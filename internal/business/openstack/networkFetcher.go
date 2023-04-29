@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -88,8 +87,6 @@ func (f *NetworkFetcher) Create(ctx context.Context, network *models.Network) er
 	}
 	defer resp.Body.Close()
 
-	fmt.Printf("resp: %v\n", resp)
-
 	if resp.StatusCode != 201 {
 		return handleErrorResponse(resp)
 	}
@@ -146,6 +143,7 @@ func (f *NetworkFetcher) generateCreateReq(network *models.Network) *CreateNetwo
 			External:        network.External,
 			PhysicalNetwork: network.PhysicalNetwork,
 			Description:     network.Description,
+			MTU:             network.MTU,
 		},
 	}
 

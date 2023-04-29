@@ -30,3 +30,15 @@ type ClusterRepository interface {
 	Init(context.Context, []*models.Cluster) error
 	GetAll(context.Context) ([]*models.Cluster, error)
 }
+
+type ClusterUserRepository interface {
+	Create(context.Context, *models.ClusterUser) error
+	Delete(context.Context, string) error
+	Update(context.Context, *models.ClusterUser) error
+	FindByID(context.Context, string) (*models.ClusterUser, error)
+	FindByEmailAndClusterID(context.Context, string, int) (*models.ClusterUser, error)
+	FindByClusterID(context.Context, int) ([]*models.ClusterUser, error)
+	FindByAccountID(context.Context, int) ([]*models.ClusterUser, error)
+	Init(context.Context, []*models.Cluster) error
+	GetAll(context.Context) ([]*models.ClusterUser, error)
+}

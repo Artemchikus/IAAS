@@ -12,7 +12,7 @@ import (
 
 func TestSubnetFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -23,7 +23,7 @@ func TestSubnetFetcher_Create(t *testing.T) {
 	clusterID := config.Clusters[0].ID
 
 	sub := openstack.TestSubnet(t)
-	n := openstack.TestNetwork(t)
+	n := openstack.TestPrivateNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID
@@ -39,7 +39,7 @@ func TestSubnetFetcher_Create(t *testing.T) {
 
 func TestSubnetFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -50,7 +50,7 @@ func TestSubnetFetcher_Delete(t *testing.T) {
 	clusterID := config.Clusters[0].ID
 
 	sub := openstack.TestSubnet(t)
-	n := openstack.TestNetwork(t)
+	n := openstack.TestPrivateNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub.NetworkID = n.ID
@@ -67,7 +67,7 @@ func TestSubnetFetcher_Delete(t *testing.T) {
 
 func TestSubnetFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -78,7 +78,7 @@ func TestSubnetFetcher_FetchByID(t *testing.T) {
 	clusterID := config.Clusters[0].ID
 
 	sub1 := openstack.TestSubnet(t)
-	n := openstack.TestNetwork(t)
+	n := openstack.TestPrivateNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
 	sub1.NetworkID = n.ID

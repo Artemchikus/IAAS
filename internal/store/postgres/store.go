@@ -13,11 +13,12 @@ import (
 )
 
 type Store struct {
-	db                *sql.DB
-	accountRepository *AccountRepository
-	secretRepository  *SecretRepository
-	clusterRepository *ClusterRepository
-	logger            *zap.SugaredLogger
+	db                    *sql.DB
+	accountRepository     *AccountRepository
+	secretRepository      *SecretRepository
+	clusterRepository     *ClusterRepository
+	clusterUserRepository *ClusterUserRepository
+	logger                *zap.SugaredLogger
 }
 
 func NewStore(ctx context.Context, db *sql.DB, config *config.ApiConfig) *Store {
@@ -75,6 +76,18 @@ func (s *Store) Cluster() store.ClusterRepository {
 	return s.clusterRepository
 }
 
+func (s *Store) ClusterUser() store.ClusterUserRepository {
+	if s.clusterUserRepository != nil {
+		return s.clusterUserRepository
+	}
+
+	s.clusterUserRepository = &ClusterUserRepository{
+		store: s,
+	}
+
+	return s.clusterUserRepository
+}
+
 func (s *Store) initialize(ctx context.Context, store *Store, config *config.ApiConfig) error {
 	if err := store.Account().Init(ctx, config.Admin); err != nil {
 		return err
@@ -100,6 +113,11 @@ func (s *Store) initialize(ctx context.Context, store *Store, config *config.Api
 		return err
 	}
 	s.logger.Infof("table cluster is initialized")
+
+	if err := store.ClusterUser().Init(ctx, config.Clusters); err != nil {
+		return err
+	}
+	s.logger.Infof("table clusterUser is initialized")
 
 	return nil
 }

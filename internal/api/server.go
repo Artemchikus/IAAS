@@ -77,8 +77,11 @@ func (s *server) configureRouter() {
 	private.HandleFunc("/account/{account_id}", s.handleDeleteAccount).Methods("DELETE")
 	private.HandleFunc("/cluster", s.handleGetAllClusters).Methods("GET")
 	private.HandleFunc("/cluster/{cluster_id}", s.handleGetClusterByID).Methods("GET")
+	private.HandleFunc("/cluster/{cluster_id}/register", s.handleRegisterAccountInCluster).Methods("HEAD")
 
 	cluster := private.PathPrefix("/cluster/{cluster_id}").Subrouter()
+
+	cluster.Use(s.authenticateClusterUser)
 
 	// cluster.HandleFunc("/flavor").Methods("GET")
 	cluster.HandleFunc("/flavor/{flavor_id}", s.handleGetFlavorByID).Methods("GET")
@@ -106,7 +109,7 @@ func (s *server) configureRouter() {
 	// cluster.HandleFunc("/server/{server_id}").Methods("DELETE")
 	// cluster.HandleFunc("/subnet").Methods("GET")
 	// cluster.HandleFunc("/subnet/{subnet_id}").Methods("GET")
-	// cluster.HandleFunc("/user/{user_id}").Methods("GET")
+	cluster.HandleFunc("/user/{user_id}", s.handleGetClusterUserByID).Methods("GET")
 	// cluster.HandleFunc("/volume").Methods("GET")
 	// cluster.HandleFunc("/volume/{volume_id}").Methods("GET")
 	// cluster.HandleFunc("/volume/{volume_id}").Methods("DELETE")
@@ -121,6 +124,9 @@ func (s *server) configureRouter() {
 	admin.HandleFunc("/cluster/{cluster_id}", s.handleDeleteCluster).Methods("DELETE")
 
 	clusterAdmin := admin.PathPrefix("/cluster/{cluster_id}").Subrouter()
+
+	clusterAdmin.Use(s.authenticateClusterUser)
+
 	clusterAdmin.HandleFunc("/flavor", s.handleCreateFlavor).Methods("POST")
 	clusterAdmin.HandleFunc("/flavor/{flavor_id}", s.handleDeleteFlavor).Methods("DELETE")
 	// clusterAdmin.HandleFunc("/floatingIp/{floatingIp_id}").Methods("POST")
@@ -142,8 +148,9 @@ func (s *server) configureRouter() {
 	// clusterAdmin.HandleFunc("/securityRule/{securityRule_id}").Methods("DELETE")
 	// clusterAdmin.HandleFunc("/subnet/{subnet_id}").Methods("POST")
 	// clusterAdmin.HandleFunc("/subnet/{subnet_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/user/{user_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/user/{user_id}").Methods("DELETE")
+	clusterAdmin.HandleFunc("/user", s.handleCreateClusterUser).Methods("POST")
+	clusterAdmin.HandleFunc("/user", s.handleGetAllClusterUsers).Methods("GET")
+	clusterAdmin.HandleFunc("/user/{user_id}", s.handleDeleteClusterUser).Methods("DELETE")
 
 }
 
@@ -164,7 +171,7 @@ func incapsulateError(code int, err error) error {
 		return err
 
 	case http.StatusConflict:
-		return errEmailAlreadyExists
+		return err
 
 	case http.StatusUnprocessableEntity:
 		return err

@@ -58,7 +58,7 @@ func TestFlavor(t *testing.T) *models.Flavor {
 	}
 }
 
-func TestNetwork(t *testing.T) *models.Network {
+func TestPublicNetwork(t *testing.T) *models.Network {
 	return &models.Network{
 		Name:            "test-public",
 		NetworkType:     "flat",
@@ -66,6 +66,16 @@ func TestNetwork(t *testing.T) *models.Network {
 		PhysicalNetwork: "external",
 		MTU:             1442,
 		Description:     "test network",
+	}
+}
+
+func TestPrivateNetwork(t *testing.T) *models.Network {
+	return &models.Network{
+		Name:        "test-private",
+		NetworkType: "geneve",
+		External:    false,
+		MTU:         1442,
+		Description: "test network",
 	}
 }
 
@@ -149,4 +159,21 @@ func TestRequestContext(t *testing.T, fetcher business.Fetcher, clusterId int) c
 	admin := models.TestClusters(t)[clusterId-1].Admin
 	token, _ := fetcher.Token().Get(ctx, admin)
 	return context.WithValue(ctx, models.CtxKeyToken, token)
+}
+
+func TestClusterUser(t *testing.T) *models.ClusterUser {
+	return &models.ClusterUser{
+		Email:       "test@example.com",
+		Name:        "test",
+		Password:    "password",
+		DomainID:    "default",
+		Description: "test user",
+	}
+}
+
+func TestServer(t *testing.T) *models.Server {
+	return &models.Server{
+		Name:             "test",
+		ImageID:          "a043cd1d-8a15-48ea-a531-43aa68c41a20",
+	}
 }

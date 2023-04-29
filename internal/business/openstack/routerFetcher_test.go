@@ -12,7 +12,7 @@ import (
 
 func TestRouterFetcher_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -22,7 +22,11 @@ func TestRouterFetcher_Create(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
+	pn := openstack.TestPublicNetwork(t)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
+
 	r := openstack.TestRouter(t)
+	r.ExternalGatewayInfo.NetworkID = pn.ID
 
 	err := fetcher.Router().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
 	assert.NoError(t, err)
@@ -31,11 +35,12 @@ func TestRouterFetcher_Create(t *testing.T) {
 	time.Sleep(1000)
 
 	fetcher.Router().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ExternalGatewayInfo.NetworkID)
 }
 
 func TestRouterFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -45,7 +50,11 @@ func TestRouterFetcher_Delete(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
+	pn := openstack.TestPublicNetwork(t)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
+
 	r := openstack.TestRouter(t)
+	r.ExternalGatewayInfo.NetworkID = pn.ID
 
 	fetcher.Router().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
 
@@ -54,11 +63,12 @@ func TestRouterFetcher_Delete(t *testing.T) {
 	err := fetcher.Router().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, r.ID, "")
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ExternalGatewayInfo.NetworkID)
 }
 
 func TestRouterFetcher_FetchByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 
@@ -68,7 +78,11 @@ func TestRouterFetcher_FetchByID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
+	pn := openstack.TestPublicNetwork(t)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
+
 	r1 := openstack.TestRouter(t)
+	r1.ExternalGatewayInfo.NetworkID = pn.ID
 
 	fetcher.Router().Create(openstack.TestRequestContext(t, fetcher, clusterID), r1)
 
@@ -79,4 +93,5 @@ func TestRouterFetcher_FetchByID(t *testing.T) {
 	assert.NotEqual(t, r2.ID, "")
 
 	fetcher.Router().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r2.ID)
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r2.ExternalGatewayInfo.NetworkID)
 }

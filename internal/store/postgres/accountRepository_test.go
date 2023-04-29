@@ -13,7 +13,7 @@ const databaseURL = "host=localhost port=5433 user=postgres password=iaas dbname
 
 func TestAccountRepository_Create(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -26,7 +26,7 @@ func TestAccountRepository_Create(t *testing.T) {
 
 func TestAccountRepository_FindByEmail(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -44,7 +44,7 @@ func TestAccountRepository_FindByEmail(t *testing.T) {
 
 func TestAccountRepository_FindByID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -61,7 +61,7 @@ func TestAccountRepository_FindByID(t *testing.T) {
 }
 func TestAccountRepository_Update(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
@@ -79,7 +79,7 @@ func TestAccountRepository_Update(t *testing.T) {
 
 func TestAccountRepository_GetAll(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 

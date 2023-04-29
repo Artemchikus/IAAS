@@ -13,7 +13,6 @@ import (
 
 type Account struct {
 	ID                int       `json:"id"`
-	OpenstackID       string    `json:"openstack_id"`
 	ProjectID         string    `json:"project_id" toml:"project_id"`
 	Name              string    `json:"name"`
 	CreatedAt         time.Time `json:"created_at"`

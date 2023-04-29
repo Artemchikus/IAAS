@@ -14,7 +14,7 @@ const databaseURL = "host=localhost port=5433 user=postgres password=iaas dbname
 
 func TestTokenFetcher_Get(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := openstack.TestConfig(t)
 

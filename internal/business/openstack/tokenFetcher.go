@@ -11,14 +11,50 @@ type TokenFetcher struct {
 	fetcher *Fetcher
 }
 
-func (f *TokenFetcher) Get(ctx context.Context, account *models.Account) (*models.Token, error) {
+func (f *TokenFetcher) Get(ctx context.Context, clusteUser *models.ClusterUser) (*models.Token, error) {
 	clusterId := getClusterIDFromContext(ctx)
 
-	if account.Role == "admin" {
-		account = f.fetcher.clusters[clusterId].Admin
+	req := f.generateGetReq(clusteUser)
+
+	json_data, err := json.Marshal(&req)
+	if err != nil {
+		return nil, err
 	}
 
-	req := f.generateGetReq(account)
+	cluster := f.fetcher.clusters[clusterId]
+
+	getTokenURL := cluster.URL + ":5000" + "/v3/auth/tokens"
+
+	resp, err := f.fetcher.client.Post(getTokenURL, "application/json", bytes.NewBuffer(json_data))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 201 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	token := &models.Token{}
+	tokenRes := &GetTokenResponse{
+		Token: token,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&tokenRes); err != nil {
+		return nil, err
+	}
+
+	token.Value = resp.Header.Get("X-Subject-Token")
+
+	return token, nil
+}
+
+func (f *TokenFetcher) GetAdmin(ctx context.Context) (*models.Token, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	clusteUser := f.fetcher.clusters[clusterId].Admin
+
+	req := f.generateGetReq(clusteUser)
 
 	json_data, err := json.Marshal(&req)
 	if err != nil {
@@ -107,7 +143,7 @@ func (f *TokenFetcher) generateRefreshReq(token *models.Token) *RefreshTokenRequ
 	return req
 }
 
-func (f *TokenFetcher) generateGetReq(account *models.Account) *GetTokenRequest {
+func (f *TokenFetcher) generateGetReq(clusteUser *models.ClusterUser) *GetTokenRequest {
 	methods := [1]string{"password"}
 
 	req := &GetTokenRequest{
@@ -116,19 +152,19 @@ func (f *TokenFetcher) generateGetReq(account *models.Account) *GetTokenRequest 
 				Methods: methods[:],
 				Password: &Password{
 					User: &User{
-						Name: account.Name,
+						Name: clusteUser.Name,
 						Domain: &Domain{
-							ID: "default",
+							ID: clusteUser.DomainID,
 						},
-						Password: account.Password,
+						Password: clusteUser.Password,
 					},
 				},
 			},
 			Scope: &Scope{
 				Project: &GetTokenProject{
-					ID: account.ProjectID,
+					ID: clusteUser.ProjectID,
 					Domain: &Domain{
-						ID: "default",
+						ID: clusteUser.DomainID,
 					},
 				},
 			},

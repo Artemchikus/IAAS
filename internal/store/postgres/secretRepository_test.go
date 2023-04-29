@@ -11,7 +11,7 @@ import (
 
 func TestSecretRepository_FindByType(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
-	defer teardown("account", "secret", "cluster")
+	defer teardown("account", "secret", "cluster", "clusterUser")
 
 	config := postgres.TestConfig(t)
 
