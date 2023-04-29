@@ -33,7 +33,7 @@ type NetworkFetcher interface {
 type PortFetcher interface {
 	FetchByID(context.Context, string) (*models.Port, error)
 	FetchByNetworkID(context.Context, string) ([]*models.Port, error)
-	FetchByRouterID(context.Context, string) ([]*models.Port, error)
+	FetchByDeviceID(context.Context, string) ([]*models.Port, error)
 }
 type ProjectFetcher interface {
 	FetchByID(context.Context, string) (*models.Project, error)
@@ -67,6 +67,10 @@ type ServerFetcher interface {
 	FetchByID(context.Context, string) (*models.Server, error)
 	Create(context.Context, *models.Server) error
 	Delete(context.Context, string) error
+	Start(context.Context, string) error
+	Stop(context.Context, string) error
+	AttachVolume(context.Context, string, string) error
+	AddFloatingIp(context.Context, string, string) error
 }
 type KeyPairFetcher interface {
 	FetchByID(context.Context, string) (*models.KeyPair, error)

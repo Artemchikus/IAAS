@@ -53,12 +53,12 @@ func (f *PortFetcher) FetchByID(ctx context.Context, portId string) (*models.Por
 	return fetchPortRes.Port, nil
 }
 
-func (f *PortFetcher) FetchByRouterID(ctx context.Context, routerId string) ([]*models.Port, error) {
+func (f *PortFetcher) FetchByNetworkID(ctx context.Context, networkId string) ([]*models.Port, error) {
 	clusterId := getClusterIDFromContext(ctx)
 
 	cluster := f.fetcher.clusters[clusterId]
 
-	fetchPortURL := cluster.URL + ":9696" + "/v2.0/ports?device_id=" + routerId
+	fetchPortURL := cluster.URL + ":9696" + "/v2.0/ports?network_id=" + networkId
 
 	req, err := http.NewRequest("GET", fetchPortURL, nil)
 	if err != nil {
@@ -95,12 +95,12 @@ func (f *PortFetcher) FetchByRouterID(ctx context.Context, routerId string) ([]*
 	return fetchPortsRes.Ports, nil
 }
 
-func (f *PortFetcher) FetchByNetworkID(ctx context.Context, networkId string) ([]*models.Port, error) {
+func (f *PortFetcher) FetchByDeviceID(ctx context.Context, deviceId string) ([]*models.Port, error) {
 	clusterId := getClusterIDFromContext(ctx)
 
 	cluster := f.fetcher.clusters[clusterId]
 
-	fetchPortURL := cluster.URL + ":9696" + "/v2.0/ports?network_id=" + networkId
+	fetchPortURL := cluster.URL + ":9696" + "/v2.0/ports?device_id=" + deviceId
 
 	req, err := http.NewRequest("GET", fetchPortURL, nil)
 	if err != nil {

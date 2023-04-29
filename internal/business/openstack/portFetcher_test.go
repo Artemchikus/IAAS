@@ -47,7 +47,7 @@ func TestPortFetcher_FetchByID(t *testing.T) {
 	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ExternalGatewayInfo.NetworkID)
 }
 
-func TestPortFetcher_FetchByRouterID(t *testing.T) {
+func TestPortFetcher_FetchByDeviceID(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster", "clusterUser")
 
@@ -73,7 +73,7 @@ func TestPortFetcher_FetchByRouterID(t *testing.T) {
 
 	time.Sleep(1000)
 
-	ps, err := fetcher.Port().FetchByRouterID(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
+	ps, err := fetcher.Port().FetchByDeviceID(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, ps)
 
