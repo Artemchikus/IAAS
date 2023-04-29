@@ -79,7 +79,7 @@ func TestPrivateNetwork(t *testing.T) *models.Network {
 	}
 }
 
-func TestSubnet(t *testing.T) *models.Subnet {
+func TestPublicSubnet(t *testing.T) *models.Subnet {
 	allocationPool := &models.AllocationPool{
 		Start: "192.168.122.100",
 		End:   "192.168.122.110",
@@ -94,7 +94,25 @@ func TestSubnet(t *testing.T) *models.Subnet {
 		AllocationPools: allocationPools,
 		IpVersion:       4,
 		GatewayIp:       "192.168.122.1",
-		Description:     "test subnet",
+		Description:     "test public subnet",
+	}
+}
+
+func TestPrivateSubnet(t *testing.T) *models.Subnet {
+	allocationPool := &models.AllocationPool{
+		Start: "192.168.100.2",
+		End:   "192.168.100.254",
+	}
+	allocationPools := []*models.AllocationPool{allocationPool}
+
+	return &models.Subnet{
+		CIDR:            "192.168.100.0/24",
+		Name:            "private-subnet",
+		EnableDHCP:      true,
+		AllocationPools: allocationPools,
+		IpVersion:       4,
+		GatewayIp:       "192.168.100.1",
+		Description:     "test private subnet",
 	}
 }
 
@@ -173,7 +191,7 @@ func TestClusterUser(t *testing.T) *models.ClusterUser {
 
 func TestServer(t *testing.T) *models.Server {
 	return &models.Server{
-		Name:             "test",
-		ImageID:          "a043cd1d-8a15-48ea-a531-43aa68c41a20",
+		Name:    "test",
+		ImageID: "a043cd1d-8a15-48ea-a531-43aa68c41a20",
 	}
 }

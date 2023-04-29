@@ -142,6 +142,21 @@ type Router struct {
 	ExternalGatewayInfo *models.ExternalGatewayInfo `json:"external_gateway_info"`
 }
 
+type RemoveRouterSubnetRequest struct {
+	SubnetId string `json:"subnet_id"`
+}
+
+type RemoveRouterExternalGatewayRequest struct {
+	Router *NullRouter `json:"router"`
+}
+
+type NullRouter struct {
+	ExternalGatewayInfo *NullExternalInfo `json:"external_gateway_info"`
+}
+
+type NullExternalInfo struct {
+}
+
 type CreateSecurityGroupRequest struct {
 	SecurityGroup *SecurityGroup `json:"security_group"`
 }

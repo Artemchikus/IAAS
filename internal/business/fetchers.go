@@ -49,6 +49,9 @@ type RouterFetcher interface {
 	FetchByID(context.Context, string) (*models.Router, error)
 	Create(context.Context, *models.Router) error
 	Delete(context.Context, string) error
+	AddSubnet(context.Context, string, string) error
+	RemoveSubnet(context.Context, string, string) error
+	RemoveExternalGateway(context.Context, string) error
 }
 type SecurityGroupFetcher interface {
 	FetchByID(context.Context, string) (*models.SecurityGroup, error)

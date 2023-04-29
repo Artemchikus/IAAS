@@ -104,6 +104,92 @@ func (f *RouterFetcher) Create(ctx context.Context, router *models.Router) error
 
 }
 
+func (f *RouterFetcher) RemoveExternalGateway(ctx context.Context, routerId string) error {
+	routerNull := &NullRouter{
+		ExternalGatewayInfo: &NullExternalInfo{},
+	}
+
+	reqData := &RemoveRouterExternalGatewayRequest{
+		Router: routerNull,
+	}
+
+	json_data, err := json.Marshal(&reqData)
+	if err != nil {
+		return err
+	}
+
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	delSubnetRouterURL := cluster.URL + ":9696" + "/v2.0/routers/" + routerId
+
+	req, err := http.NewRequest("PUT", delSubnetRouterURL, bytes.NewBuffer(json_data))
+	if err != nil {
+		return err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
+
+func (f *RouterFetcher) RemoveSubnet(ctx context.Context, routerId, subnetId string) error {
+	reqData := &RemoveRouterSubnetRequest{
+		SubnetId: subnetId,
+	}
+
+	json_data, err := json.Marshal(&reqData)
+	if err != nil {
+		return err
+	}
+
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	delSubnetRouterURL := cluster.URL + ":9696" + "/v2.0/routers/" + routerId + "/remove_router_interface"
+
+	req, err := http.NewRequest("PUT", delSubnetRouterURL, bytes.NewBuffer(json_data))
+	if err != nil {
+		return err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
+
 func (f *RouterFetcher) Delete(ctx context.Context, routerID string) error {
 	clusterId := getClusterIDFromContext(ctx)
 

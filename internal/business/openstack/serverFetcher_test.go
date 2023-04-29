@@ -25,7 +25,7 @@ func TestServerFetcher_Create(t *testing.T) {
 	pn := openstack.TestPrivateNetwork(t)
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
 
-	sub := openstack.TestSubnet(t)
+	sub := openstack.TestPrivateSubnet(t)
 	sub.NetworkID = pn.ID
 	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), sub)
 
@@ -72,7 +72,7 @@ func TestServerFetcher_Delete(t *testing.T) {
 	pn := openstack.TestPrivateNetwork(t)
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
 
-	sub := openstack.TestSubnet(t)
+	sub := openstack.TestPrivateSubnet(t)
 	sub.NetworkID = pn.ID
 	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), sub)
 

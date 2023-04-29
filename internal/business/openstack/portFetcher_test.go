@@ -22,22 +22,27 @@ func TestPortFetcher_FetchByID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	pn := openstack.TestPublicNetwork(t)
-	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
+	pubNet := openstack.TestPublicNetwork(t)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pubNet)
+
+	pubSub := openstack.TestPublicSubnet(t)
+	pubSub.NetworkID = pubNet.ID
+	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), pubSub)
 
 	r := openstack.TestRouter(t)
-	r.ExternalGatewayInfo.NetworkID = pn.ID
+	r.ExternalGatewayInfo.NetworkID = pubNet.ID
 
 	fetcher.Router().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
 
 	time.Sleep(1000)
 
-	ps, _ := fetcher.Port().FetchByNetworkID(openstack.TestRequestContext(t, fetcher, clusterID), pn.ID)
+	ps, _ := fetcher.Port().FetchByNetworkID(openstack.TestRequestContext(t, fetcher, clusterID), pubNet.ID)
 
 	p, err := fetcher.Port().FetchByID(openstack.TestRequestContext(t, fetcher, clusterID), ps[0].ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, p.ID, "")
 
+	fetcher.Router().RemoveExternalGateway(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	fetcher.Router().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ExternalGatewayInfo.NetworkID)
 }
@@ -54,11 +59,15 @@ func TestPortFetcher_FetchByRouterID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	pn := openstack.TestPublicNetwork(t)
-	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
+	pubNet := openstack.TestPublicNetwork(t)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pubNet)
+
+	pubSub := openstack.TestPublicSubnet(t)
+	pubSub.NetworkID = pubNet.ID
+	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), pubSub)
 
 	r := openstack.TestRouter(t)
-	r.ExternalGatewayInfo.NetworkID = pn.ID
+	r.ExternalGatewayInfo.NetworkID = pubNet.ID
 
 	fetcher.Router().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
 
@@ -68,6 +77,7 @@ func TestPortFetcher_FetchByRouterID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, ps)
 
+	fetcher.Router().RemoveExternalGateway(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	fetcher.Router().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ExternalGatewayInfo.NetworkID)
 }
@@ -84,20 +94,25 @@ func TestPortFetcher_FetchByNetworkID(t *testing.T) {
 
 	clusterID := config.Clusters[0].ID
 
-	pn := openstack.TestPublicNetwork(t)
-	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pn)
+	pubNet := openstack.TestPublicNetwork(t)
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), pubNet)
+
+	pubSub := openstack.TestPublicSubnet(t)
+	pubSub.NetworkID = pubNet.ID
+	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), pubSub)
 
 	r := openstack.TestRouter(t)
-	r.ExternalGatewayInfo.NetworkID = pn.ID
+	r.ExternalGatewayInfo.NetworkID = pubNet.ID
 
 	fetcher.Router().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
 
 	time.Sleep(1000)
 
-	ps, err := fetcher.Port().FetchByNetworkID(openstack.TestRequestContext(t, fetcher, clusterID), pn.ID)
+	ps, err := fetcher.Port().FetchByNetworkID(openstack.TestRequestContext(t, fetcher, clusterID), pubNet.ID)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, ps)
 
+	fetcher.Router().RemoveExternalGateway(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	fetcher.Router().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ID)
 	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), r.ExternalGatewayInfo.NetworkID)
 }

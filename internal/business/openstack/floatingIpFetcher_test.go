@@ -23,7 +23,7 @@ func TestFloatingIpFetcher_Create(t *testing.T) {
 	clusterID := config.Clusters[0].ID
 
 	ip := &models.FloatingIp{}
-	sub := openstack.TestSubnet(t)
+	sub := openstack.TestPublicSubnet(t)
 	n := openstack.TestPublicNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
@@ -54,7 +54,7 @@ func TestFloatingIpFetcher_Delete(t *testing.T) {
 	clusterID := config.Clusters[0].ID
 
 	ip := &models.FloatingIp{}
-	sub := openstack.TestSubnet(t)
+	sub := openstack.TestPublicSubnet(t)
 	n := openstack.TestPublicNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
@@ -86,7 +86,7 @@ func TestFloatingIpFetcher_FetchByID(t *testing.T) {
 	clusterID := config.Clusters[0].ID
 
 	ip1 := &models.FloatingIp{}
-	sub := openstack.TestSubnet(t)
+	sub := openstack.TestPublicSubnet(t)
 	n := openstack.TestPublicNetwork(t)
 
 	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
