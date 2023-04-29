@@ -19,7 +19,7 @@ type Fetcher interface {
 	Router() RouterFetcher
 	Role() RoleFetcher
 	FloatingIp() FloatingIPFetcher
-	// Port() PortFetcher
+	Port() PortFetcher
 	Project() ProjectFetcher
 	SecurityRule() SecurityRuleFetcher
 	UpdateClusterMap(context.Context, store.Storage) error

@@ -95,6 +95,14 @@ type FloatingIp struct {
 	Description string `json:"description"`
 }
 
+type AddIpToPortRequest struct {
+	FloatingIp *AddIpToPort `json:"floatingip"`
+}
+
+type AddIpToPort struct {
+	PortID string `json:"port_id"`
+}
+
 type CreateNetworkRequest struct {
 	Network *Network `json:"network"`
 }
@@ -205,6 +213,23 @@ type Volume struct {
 
 type CreateServerRequest struct {
 	Server *Server `json:"server"`
+}
+
+type StartServerRequest struct {
+	Start *string `json:"os-start"`
+}
+
+type StopServerRequest struct {
+	Stop *string `json:"os-stop"`
+}
+
+type AddVolumeToServerRequest struct {
+	VolumeAttachment *VolumeAttachment `json:"volumeAttachment"`
+}
+
+type VolumeAttachment struct {
+	VolumeId string  `json:"volumeId"`
+	Device   *string `json:"device"`
 }
 
 type Server struct {

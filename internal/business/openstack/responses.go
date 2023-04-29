@@ -114,7 +114,7 @@ type FetchPortResponse struct {
 }
 
 type CreateServerResponse struct {
-	Server *models.Server `json:"server"`
+	Server *map[string]interface{} `json:"server"`
 }
 
 type FetchServerResponse struct {

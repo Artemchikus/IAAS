@@ -19,6 +19,7 @@ type FloatingIPFetcher interface {
 	FetchByID(context.Context, string) (*models.FloatingIp, error)
 	Create(context.Context, *models.FloatingIp) error
 	Delete(context.Context, string) error
+	AddToPort(context.Context, string, string) error
 }
 type ImageFetcher interface {
 	FetchByID(context.Context, string) (*models.Image, error)
@@ -70,7 +71,6 @@ type ServerFetcher interface {
 	Start(context.Context, string) error
 	Stop(context.Context, string) error
 	AttachVolume(context.Context, string, string) error
-	AddFloatingIp(context.Context, string, string) error
 }
 type KeyPairFetcher interface {
 	FetchByID(context.Context, string) (*models.KeyPair, error)
