@@ -136,6 +136,48 @@ func (f *UserFetcher) Delete(ctx context.Context, userId string) error {
 	return nil
 }
 
+func (f *UserFetcher) FetchAll(ctx context.Context) ([]*models.ClusterUser, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchUserURL := cluster.URL + ":5000" + "/v3/users"
+
+	req, err := http.NewRequest("GET", fetchUserURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	users := []*models.ClusterUser{}
+
+	fetchUsersRes := &FetchUsersResponse{
+		Users: &users,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchUsersRes); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
 func (f *UserFetcher) generateCreateReq(user *models.ClusterUser) *CreateUserRequest {
 	return &CreateUserRequest{
 		User: &CreateUser{

@@ -135,6 +135,48 @@ func (f *SubnetFetcher) Delete(ctx context.Context, subnetID string) error {
 	return nil
 }
 
+func (f *SubnetFetcher) FetchAll(ctx context.Context) ([]*models.Subnet, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchSubnetURL := cluster.URL + ":9696" + "/v2.0/subnets"
+
+	req, err := http.NewRequest("GET", fetchSubnetURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	subnets := []*models.Subnet{}
+
+	fetchSubnetsRes := &FetchSubnetsResponse{
+		Subnets: &subnets,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchSubnetsRes); err != nil {
+		return nil, err
+	}
+
+	return subnets, nil
+}
+
 func (f *SubnetFetcher) generateCreateReq(subnet *models.Subnet) *CreateSubnetRequest {
 	allocationPools := []*models.AllocationPool{}
 

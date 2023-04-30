@@ -80,3 +80,28 @@ func TestNetworkFetcher_FetchByID(t *testing.T) {
 
 	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n2.ID)
 }
+
+func TestNetworkFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	n := openstack.TestPrivateNetwork(t)
+
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
+
+	time.Sleep(1000)
+
+	ns, err := fetcher.Network().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, ns)
+
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
+}

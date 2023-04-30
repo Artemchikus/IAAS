@@ -80,3 +80,28 @@ func TestVolumeFetcher_FetchByID(t *testing.T) {
 
 	fetcher.Volume().Delete(openstack.TestRequestContext(t, fetcher, clusterID), v2.ID)
 }
+
+func TestVolumeFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	v := openstack.TestVolume(t)
+
+	fetcher.Volume().Create(openstack.TestRequestContext(t, fetcher, clusterID), v)
+
+	time.Sleep(100000000)
+
+	vs, err := fetcher.Volume().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, vs)
+
+	fetcher.Volume().Delete(openstack.TestRequestContext(t, fetcher, clusterID), v.ID)
+}

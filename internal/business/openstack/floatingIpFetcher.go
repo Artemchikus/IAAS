@@ -183,6 +183,48 @@ func (f *FloatingIpFetcher) AddToPort(ctx context.Context, floatingIpID, portID 
 	return nil
 }
 
+func (f *FloatingIpFetcher) FetchAll(ctx context.Context) ([]*models.FloatingIp, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchFloatingIpURL := cluster.URL + ":9696" + "/v2.0/floatingips"
+
+	req, err := http.NewRequest("GET", fetchFloatingIpURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	floatingips := []*models.FloatingIp{}
+
+	fetchFloatingIpsRes := &FetchFloatingIpsResponse{
+		FloatingIps: &floatingips,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchFloatingIpsRes); err != nil {
+		return nil, err
+	}
+
+	return floatingips, nil
+}
+
 func (f *FloatingIpFetcher) generateCreateReq(folatingIp *models.FloatingIp) *CreateFloatingIpRequest {
 	req := &CreateFloatingIpRequest{
 		FloatingIp: &FloatingIp{

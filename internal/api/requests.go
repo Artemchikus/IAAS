@@ -9,14 +9,11 @@ type CreateAccountRequest struct {
 }
 
 type CreateServerRequest struct {
-	AvailabilityZone string   `json:"availability_zone"`
-	PrivateIp        string   `json:"private_ip"`
-	PublicIp         string   `json:"public_ip"`
-	ImageID          string   `json:"image_id"`
-	KeyID            string   `json:"key_id"`
-	Name             string   `json:"name"`
-	SecurityGroups   []string `json:"security_groups"`
-	VolumesAttached  []string `json:"volumes_attached"`
+	ImageID          string `json:"image_id"`
+	KeyID            string `json:"key_id"`
+	Name             string `json:"name"`
+	SecurityGroupID  string `json:"security_groups"`
+	PrivateNetworkID string `json:"private_network_id"`
 }
 
 type LoginRequest struct {
@@ -60,6 +57,10 @@ type CreateKeyPairRequest struct {
 	Type      string `json:"type"`
 }
 
+type CreateRoleRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
 type CreateNetworkRequest struct {
 	Name            string `json:"name"`
 	NetworkType     string `json:"network_type"`
@@ -132,4 +133,16 @@ type CreateVolumeRequest struct {
 	Description string `json:"description"`
 	TypeID      string `json:"volume_type"`
 	Bootable    bool   `json:"bootable"`
+}
+
+type AttachVolumeRequest struct {
+	VolumeID string `json:"volume_id"`
+}
+
+type RemoveOrAddSubnetRequest struct {
+	SubnetID string `json:"subnet_id"`
+}
+
+type AddFloatingIPRequest struct {
+	PortID string `json:"port_id"`
 }

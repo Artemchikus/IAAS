@@ -135,6 +135,48 @@ func (f *RoleFetcher) Delete(ctx context.Context, roleID string) error {
 	return nil
 }
 
+func (f *RoleFetcher) FetchAll(ctx context.Context) ([]*models.Role, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchRoleURL := cluster.URL + ":5000" + "/v3/roles"
+
+	req, err := http.NewRequest("GET", fetchRoleURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	roles := []*models.Role{}
+
+	fetchRolesRes := &FetchRolesResponse{
+		Roles: &roles,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchRolesRes); err != nil {
+		return nil, err
+	}
+
+	return roles, nil
+}
+
 func (f *RoleFetcher) generateCreateReq(role *models.Role) *CreateRoleRequest {
 	req := &CreateRoleRequest{
 		Role: &Role{

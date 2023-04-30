@@ -143,7 +143,7 @@ func (f *ServerFetcher) Create(ctx context.Context, server *models.Server) error
 	serverRes := map[string]interface{}{}
 
 	createServerRes := &CreateServerResponse{
-		Server: &serverRes,
+		Server: serverRes,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&createServerRes); err != nil {
@@ -315,6 +315,103 @@ func (f *ServerFetcher) AttachVolume(ctx context.Context, serverId, volumeId str
 	}
 
 	return nil
+}
+
+func (f *ServerFetcher) FetchAll(ctx context.Context) ([]*models.Server, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchServerURL := cluster.URL + ":8774" + "/v2.1/servers/detail"
+
+	req, err := http.NewRequest("GET", fetchServerURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	fetchedServers := []*FetchedServer{}
+
+	fetchServersRes := &FetchServersResponse{
+		Servers: &fetchedServers,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchServersRes); err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("fetchedServers: %v\n", fetchedServers[0])
+
+	servers := []*models.Server{}
+
+	var publicIp, privateIp, privateNetwork, volumeId string
+
+	for _, server := range fetchedServers {
+		for k, v := range server.Addresses {
+			net := v
+
+			privateNetwork = k
+
+			for _, addr := range net {
+				if addr.Type == "fixed" {
+					privateIp = addr.Address
+					continue
+				}
+				publicIp = addr.Address
+			}
+		}
+
+		launchedAt, err := time.Parse("2006-01-02T15:04:05.000000", server.LaunchedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(server.Volumes) > 0 {
+			volumeId = server.Volumes[0].ID
+		}
+
+		s := &models.Server{
+			HypervisorHostname: server.HypervisorHostname,
+			InstanceName:       server.InstanceName,
+			VMState:            server.VMState,
+			CreatedAt:          server.CreatedAt,
+			LaunchedAt:         launchedAt,
+			UpdatedAt:          server.UpdatedAt,
+			PrivateIp:          privateIp,
+			PublicIp:           publicIp,
+			ID:                 server.ID,
+			ImageID:            server.Image.ID,
+			KeyID:              server.Key,
+			FlavorID:           server.Flavor.ID,
+			Name:               server.Name,
+			ProjectID:          server.TenantID,
+			SecurityGroupID:    server.SecurityGroups[0].Name,
+			Status:             server.Status,
+			UserID:             server.UserID,
+			VolumeAttachedID:   volumeId,
+			PrivateNetworkID:   privateNetwork,
+		}
+
+		servers = append(servers, s)
+	}
+
+	return servers, nil
 }
 
 func (f *ServerFetcher) generateCreateReq(server *models.Server) *CreateServerRequest {

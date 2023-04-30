@@ -85,14 +85,14 @@ func (f *PortFetcher) FetchByNetworkID(ctx context.Context, networkId string) ([
 	ports := []*models.Port{}
 
 	fetchPortsRes := &FetchPortsResponse{
-		Ports: ports,
+		Ports: &ports,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&fetchPortsRes); err != nil {
 		return nil, err
 	}
 
-	return fetchPortsRes.Ports, nil
+	return ports, nil
 }
 
 func (f *PortFetcher) FetchByDeviceID(ctx context.Context, deviceId string) ([]*models.Port, error) {
@@ -127,12 +127,54 @@ func (f *PortFetcher) FetchByDeviceID(ctx context.Context, deviceId string) ([]*
 	ports := []*models.Port{}
 
 	fetchPortsRes := &FetchPortsResponse{
-		Ports: ports,
+		Ports: &ports,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&fetchPortsRes); err != nil {
 		return nil, err
 	}
 
-	return fetchPortsRes.Ports, nil
+	return ports, nil
+}
+
+func (f *PortFetcher) FetchAll(ctx context.Context) ([]*models.Port, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchPortURL := cluster.URL + ":9696" + "/v2.0/ports"
+
+	req, err := http.NewRequest("GET", fetchPortURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	ports := []*models.Port{}
+
+	fetchPortsRes := &FetchPortsResponse{
+		Ports: &ports,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchPortsRes); err != nil {
+		return nil, err
+	}
+
+	return ports, nil
 }

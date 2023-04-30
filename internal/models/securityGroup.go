@@ -12,7 +12,7 @@ type SecurityGroup struct {
 	UpdatedAt   time.Time       `json:"updated_at"`
 }
 
-func NewSecurityGroup(Description, Name string, Rules []*SecurityRule) *SecurityGroup {
+func NewSecurityGroup(Description, Name string) *SecurityGroup {
 	return &SecurityGroup{
 		Description: Description,
 		Name:        Name,

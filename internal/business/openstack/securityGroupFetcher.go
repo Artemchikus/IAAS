@@ -135,6 +135,48 @@ func (f *SecurityGroupFetcher) Delete(ctx context.Context, securityGroupID strin
 	return nil
 }
 
+func (f *SecurityGroupFetcher) FetchAll(ctx context.Context) ([]*models.SecurityGroup, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchSecurityGroupURL := cluster.URL + ":9696" + "/v2.0/security-groups"
+
+	req, err := http.NewRequest("GET", fetchSecurityGroupURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	secGroups := []*models.SecurityGroup{}
+
+	fetchSecurityGroupsRes := &FetchSecurityGroupsResponse{
+		SecurityGroups: &secGroups,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchSecurityGroupsRes); err != nil {
+		return nil, err
+	}
+
+	return secGroups, nil
+}
+
 func (f *SecurityGroupFetcher) generateCreateReq(securityGroup *models.SecurityGroup) *CreateSecurityGroupRequest {
 	req := &CreateSecurityGroupRequest{
 		SecurityGroup: &SecurityGroup{

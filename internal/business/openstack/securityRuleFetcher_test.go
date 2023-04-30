@@ -97,3 +97,33 @@ func TestSecurityRuleFetcher_FetchByID(t *testing.T) {
 
 	fetcher.SecurityGroup().Delete(openstack.TestRequestContext(t, fetcher, clusterID), sg.ID)
 }
+
+func TestSecurityRuleFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	sg := openstack.TestSecurityGroup(t)
+
+	fetcher.SecurityGroup().Create(openstack.TestRequestContext(t, fetcher, clusterID), sg)
+
+	sr := openstack.TestSecurityRule(t)
+	sr.SecurityGroupID = sg.ID
+
+	fetcher.SecurityRule().Create(openstack.TestRequestContext(t, fetcher, clusterID), sr)
+
+	time.Sleep(1000)
+
+	srs, err := fetcher.SecurityRule().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, srs)
+
+	fetcher.SecurityGroup().Delete(openstack.TestRequestContext(t, fetcher, clusterID), sg.ID)
+}

@@ -30,7 +30,7 @@ func TestKeyPairFetcher_Create(t *testing.T) {
 
 	time.Sleep(1000)
 
-	fetcher.KeyPair().Delete(openstack.TestRequestContext(t, fetcher, clusterID), kp.Name)
+	fetcher.KeyPair().Delete(openstack.TestRequestContext(t, fetcher, clusterID), kp.ID)
 }
 
 func TestKeyPairFetcher_Delete(t *testing.T) {
@@ -51,7 +51,7 @@ func TestKeyPairFetcher_Delete(t *testing.T) {
 
 	time.Sleep(1000)
 
-	err := fetcher.KeyPair().Delete(openstack.TestRequestContext(t, fetcher, clusterID), kp.Name)
+	err := fetcher.KeyPair().Delete(openstack.TestRequestContext(t, fetcher, clusterID), kp.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, kp.Name, "")
 }
@@ -78,5 +78,30 @@ func TestKeyPairFetcher_FetchByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEqual(t, kp2.Fingerprint, "")
 
-	fetcher.KeyPair().Delete(openstack.TestRequestContext(t, fetcher, clusterID), kp2.Name)
+	fetcher.KeyPair().Delete(openstack.TestRequestContext(t, fetcher, clusterID), kp2.ID)
+}
+
+func TestKeyPairFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	kp := openstack.TestKeyPair(t)
+
+	fetcher.KeyPair().Create(openstack.TestRequestContext(t, fetcher, clusterID), kp)
+
+	time.Sleep(1000)
+
+	kps, err := fetcher.KeyPair().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, kps)
+
+	fetcher.KeyPair().Delete(openstack.TestRequestContext(t, fetcher, clusterID), kp.ID)
 }

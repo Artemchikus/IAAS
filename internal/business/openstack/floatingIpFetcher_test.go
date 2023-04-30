@@ -106,6 +106,39 @@ func TestFloatingIpFetcher_FetchByID(t *testing.T) {
 	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
 }
 
+func TestFloatingIpFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	ip := &models.FloatingIp{}
+	sub := openstack.TestPublicSubnet(t)
+	n := openstack.TestPublicNetwork(t)
+
+	fetcher.Network().Create(openstack.TestRequestContext(t, fetcher, clusterID), n)
+	sub.NetworkID = n.ID
+	ip.NetworkID = n.ID
+
+	fetcher.Subnet().Create(openstack.TestRequestContext(t, fetcher, clusterID), sub)
+
+	fetcher.FloatingIp().Create(openstack.TestRequestContext(t, fetcher, clusterID), ip)
+
+	time.Sleep(1000)
+
+	ips, err := fetcher.FloatingIp().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, ips)
+
+	fetcher.Network().Delete(openstack.TestRequestContext(t, fetcher, clusterID), n.ID)
+}
+
 func TestFloatinIpFetcher_AddToPort(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster", "clusterUser")

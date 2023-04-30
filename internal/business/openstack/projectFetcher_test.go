@@ -80,3 +80,28 @@ func TestProjectFetcher_FetchByID(t *testing.T) {
 
 	fetcher.Project().Delete(openstack.TestRequestContext(t, fetcher, clusterID), p2.ID)
 }
+
+func TestProjectFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	p := openstack.TestProject(t)
+
+	fetcher.Project().Create(openstack.TestRequestContext(t, fetcher, clusterID), p)
+
+	time.Sleep(1000)
+
+	ps, err := fetcher.Project().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, ps)
+
+	fetcher.Project().Delete(openstack.TestRequestContext(t, fetcher, clusterID), p.ID)
+}

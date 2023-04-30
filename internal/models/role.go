@@ -6,6 +6,13 @@ type Role struct {
 	Name        string `json:"name"`
 }
 
+func NewRole(Description, Name string) *Role {
+	return &Role{
+		Description: Description,
+		Name:        Name,
+	}
+}
+
 // {
 // 	"description": null,
 // 	"domain_id": null,

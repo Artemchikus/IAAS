@@ -17,6 +17,10 @@ type FetchProjectResponse struct {
 	Project *models.Project `json:"project"`
 }
 
+type FetchProjectsResponse struct {
+	Projects *[]*models.Project `json:"projects"`
+}
+
 type CreateUserResponse struct {
 	User *models.ClusterUser `json:"user"`
 }
@@ -25,8 +29,16 @@ type FetchUserResponse struct {
 	User *models.ClusterUser `json:"user"`
 }
 
+type FetchUsersResponse struct {
+	Users *[]*models.ClusterUser `json:"users"`
+}
+
 type FetchFlavorResponse struct {
 	Flavor *models.Flavor `json:"flavor"`
+}
+
+type FetchFlavorsResponse struct {
+	Flavors *[]*models.Flavor `json:"flavors"`
 }
 
 type CreateFlavorResponse struct {
@@ -37,12 +49,20 @@ type FetchFloatingIpResponse struct {
 	FloatingIp *models.FloatingIp `json:"floatingip"`
 }
 
+type FetchFloatingIpsResponse struct {
+	FloatingIps *[]*models.FloatingIp `json:"floatingips"`
+}
+
 type CreateFloatingIpResponse struct {
 	FloatingIp *models.FloatingIp `json:"floatingip"`
 }
 
 type FetchNetworkResponse struct {
 	Network *models.Network `json:"network"`
+}
+
+type FetchNetworksResponse struct {
+	Networks *[]*models.Network `json:"networks"`
 }
 
 type CreateNetworkResponse struct {
@@ -57,12 +77,20 @@ type FetchSubnetResponse struct {
 	Subnet *models.Subnet `json:"subnet"`
 }
 
+type FetchSubnetsResponse struct {
+	Subnets *[]*models.Subnet `json:"subnets"`
+}
+
 type CreateRoleResponse struct {
 	Role *models.Role `json:"role"`
 }
 
 type FetchRoleResponse struct {
 	Role *models.Role `json:"role"`
+}
+
+type FetchRolesResponse struct {
+	Roles *[]*models.Role `json:"roles"`
 }
 
 type CreateRouterResponse struct {
@@ -73,6 +101,10 @@ type FetchRouterResponse struct {
 	Router *models.Router `json:"router"`
 }
 
+type FetchRoutersResponse struct {
+	Routers *[]*models.Router `json:"routers"`
+}
+
 type CreateSecurityGroupResponse struct {
 	SecurityGroup *models.SecurityGroup `json:"security_group"`
 }
@@ -81,8 +113,16 @@ type FetchSecurityGroupResponse struct {
 	SecurityGroup *models.SecurityGroup `json:"security_group"`
 }
 
+type FetchSecurityGroupsResponse struct {
+	SecurityGroups *[]*models.SecurityGroup `json:"security_groups"`
+}
+
 type FetchSecurityRuleResponse struct {
 	SecurityRule *models.SecurityRule `json:"security_group_rule"`
+}
+
+type FetchSecurityRulesResponse struct {
+	SecurityRules *[]*models.SecurityRule `json:"security_group_rules"`
 }
 
 type CreateSecurityRuleResponse struct {
@@ -90,7 +130,11 @@ type CreateSecurityRuleResponse struct {
 }
 
 type FetchKeyPairResponse struct {
-	KeyPair *map[string]interface{} `json:"keypair"`
+	KeyPair map[string]interface{} `json:"keypair"`
+}
+
+type FetchKeyPairsResponse struct {
+	KeyPairs *[]*FetchKeyPairResponse `json:"keypairs"`
 }
 
 type CreateKeyPairResponse struct {
@@ -98,15 +142,19 @@ type CreateKeyPairResponse struct {
 }
 
 type CreateVolumeResponse struct {
-	Volume *map[string]interface{} `json:"volume"`
+	Volume map[string]interface{} `json:"volume"`
 }
 
 type FetchVolumeResponse struct {
-	Volume *map[string]interface{} `json:"volume"`
+	Volume map[string]interface{} `json:"volume"`
+}
+
+type FetchVolumesResponse struct {
+	Volumes *[]map[string]interface{} `json:"volumes"`
 }
 
 type FetchPortsResponse struct {
-	Ports []*models.Port `json:"ports"`
+	Ports *[]*models.Port `json:"ports"`
 }
 
 type FetchPortResponse struct {
@@ -114,11 +162,15 @@ type FetchPortResponse struct {
 }
 
 type CreateServerResponse struct {
-	Server *map[string]interface{} `json:"server"`
+	Server map[string]interface{} `json:"server"`
 }
 
 type FetchServerResponse struct {
 	Server *FetchedServer `json:"server"`
+}
+
+type FetchServersResponse struct {
+	Servers *[]*FetchedServer `json:"servers"`
 }
 
 type FetchedServer struct {
@@ -152,6 +204,10 @@ type SGNameResponse struct {
 
 type IDResponse struct {
 	ID string `json:"id"`
+}
+
+type FetchImagesResponse struct {
+	Images *[]*models.Image `json:"images"`
 }
 type ErrorResponse struct {
 	Error *Error `json:"error"`

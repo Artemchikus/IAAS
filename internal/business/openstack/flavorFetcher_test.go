@@ -80,3 +80,28 @@ func TestFlavorFetcher_FetchByID(t *testing.T) {
 
 	fetcher.Flavor().Delete(openstack.TestRequestContext(t, fetcher, clusterID), f2.ID)
 }
+
+func TestFlavorFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	f := openstack.TestFlavor(t)
+
+	fetcher.Flavor().Create(openstack.TestRequestContext(t, fetcher, clusterID), f)
+
+	time.Sleep(1000)
+
+	fs, err := fetcher.Flavor().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, fs)
+
+	fetcher.Flavor().Delete(openstack.TestRequestContext(t, fetcher, clusterID), f.ID)
+}

@@ -4,7 +4,6 @@ import "time"
 
 type Image struct {
 	ID              string    `json:"id"`
-	FileData        []byte    `json:"file_data"`
 	Name            string    `json:"name"`
 	DiskFormat      string    `json:"disk_format"`
 	ContainerFormat string    `json:"container_format"`
@@ -14,7 +13,7 @@ type Image struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 }
 
-func NewImage(Name, DiskFormat, ContainerFormat, OwnerID, Visibility string) *Image {
+func NewImage(Name, DiskFormat, ContainerFormat, Visibility string) *Image {
 	return &Image{
 		Name:            Name,
 		DiskFormat:      DiskFormat,

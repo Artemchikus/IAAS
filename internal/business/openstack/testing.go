@@ -21,13 +21,22 @@ func TestConfig(t *testing.T) *config.ApiConfig {
 
 func TestProject(t *testing.T) *models.Project {
 	return &models.Project{
-		Name:        "demo1",
+		Name:        "test",
 		DomainID:    "default",
-		Description: "Demo project",
+		Description: "Test project",
 	}
 }
 
 func TestImage(t *testing.T) *models.Image {
+	return &models.Image{
+		Name:            "Cirros",
+		DiskFormat:      "qcow2",
+		ContainerFormat: "bare",
+		Visibility:      "public",
+	}
+}
+
+func TestData(t *testing.T) []byte {
 	file := "../../../test/cirros-0.6.1-x86_64-disk.img"
 
 	data, err := os.ReadFile(file)
@@ -35,13 +44,7 @@ func TestImage(t *testing.T) *models.Image {
 		log.Fatal(err)
 	}
 
-	return &models.Image{
-		FileData:        data,
-		Name:            "Cirros",
-		DiskFormat:      "qcow2",
-		ContainerFormat: "bare",
-		Visibility:      "public",
-	}
+	return data
 }
 
 func TestFlavor(t *testing.T) *models.Flavor {

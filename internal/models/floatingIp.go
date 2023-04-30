@@ -17,7 +17,7 @@ type FloatingIp struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-func NewFloatingIP(NetworkID, ProjectID, description string) *FloatingIp {
+func NewFloatingIP(NetworkID, description string) *FloatingIp {
 	return &FloatingIp{
 		NetworkID:   NetworkID,
 		Description: description,

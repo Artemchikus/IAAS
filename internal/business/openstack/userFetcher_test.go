@@ -71,6 +71,37 @@ func TestUserFetcher_FetchByID(t *testing.T) {
 	fetcher.Project().Delete(openstack.TestRequestContext(t, fetcher, clusterID), u2.ProjectID)
 }
 
+func TestUserFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	p := openstack.TestProject(t)
+
+	fetcher.Project().Create(openstack.TestRequestContext(t, fetcher, clusterID), p)
+
+	u := openstack.TestClusterUser(t)
+	u.ProjectID = p.ID
+
+	fetcher.User().Create(openstack.TestRequestContext(t, fetcher, clusterID), u)
+
+	time.Sleep(1000)
+
+	us, err := fetcher.User().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, us)
+
+	fetcher.User().Delete(openstack.TestRequestContext(t, fetcher, clusterID), u.ID)
+	fetcher.Project().Delete(openstack.TestRequestContext(t, fetcher, clusterID), u.ProjectID)
+}
+
 func TestUserFetcher_Delete(t *testing.T) {
 	db, teardown := postgres.TestDB(t, databaseURL)
 	defer teardown("account", "secret", "cluster", "clusterUser")

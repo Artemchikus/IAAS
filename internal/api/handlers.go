@@ -5,6 +5,7 @@ import (
 	"IAAS/internal/store"
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -393,10 +394,1624 @@ func (s *server) handleRegisterAccountInCluster(w http.ResponseWriter, r *http.R
 	s.respond(w, r, http.StatusOK, user)
 }
 
+func (s *server) handleGetFloatingIps(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	floatingIps, err := s.fetcher.FloatingIp().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, floatingIps)
+}
+
+func (s *server) handleGetFloatingIpByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	floatingId, ok := vars["flloatingIp_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	floatingIp, err := s.fetcher.FloatingIp().FetchByID(r.Context(), floatingId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, floatingIp)
+}
+
+func (s *server) handleCreateFloatingIp(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateFloatingIpRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	floatingIp := models.NewFloatingIP(req.NetworkID, req.Description)
+
+	if err := s.fetcher.FloatingIp().Create(r.Context(), floatingIp); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, floatingIp)
+}
+
+func (s *server) handleDeleteFloatingIp(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	flloatingId, ok := vars["floatingIp_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.FloatingIp().Delete(r.Context(), flloatingId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: flloatingId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleAddIPToPort(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	floatingId, ok := vars["floatingIp_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	req := new(AddFloatingIPRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.FloatingIp().AddToPort(r.Context(), floatingId, req.PortID); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := AddFloatingIPResponse{
+		FloatingIpID: floatingId,
+		PortID:       req.PortID,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetImages(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	images, err := s.fetcher.Image().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, images)
+}
+
+func (s *server) handleGetImageByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	imageId, ok := vars["image_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	image, err := s.fetcher.Image().FetchByID(r.Context(), imageId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, image)
+}
+
+func (s *server) handleCreateImage(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateImageRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	image := models.NewImage(req.Name, req.DiskFormat, req.ContainerFormat, req.Visibility)
+
+	if err := s.fetcher.Image().Create(r.Context(), image); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, image)
+}
+
+func (s *server) handleDeleteImage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	imageId, ok := vars["image_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Image().Delete(r.Context(), imageId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: imageId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleUploadImage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	imageId, ok := vars["image_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Image().Upload(r.Context(), data, imageId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := UploadImageResponse{
+		ImageID: imageId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetVolumes(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	volumes, err := s.fetcher.Volume().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, volumes)
+}
+
+func (s *server) handleGetVolumeByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	volumeId, ok := vars["volume_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	volume, err := s.fetcher.Volume().FetchByID(r.Context(), volumeId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, volume)
+}
+
+func (s *server) handleCreateVolume(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateVolumeRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	volume := models.NewVolume(req.Description, req.Name, req.TypeID, req.Bootable, req.Size)
+
+	if err := s.fetcher.Volume().Create(r.Context(), volume); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, volume)
+}
+
+func (s *server) handleDeleteVolume(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	volumeId, ok := vars["volume_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Volume().Delete(r.Context(), volumeId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: volumeId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetNetworks(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	networks, err := s.fetcher.Network().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, networks)
+}
+
+func (s *server) handleGetNetworkByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	networkId, ok := vars["network_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	network, err := s.fetcher.Network().FetchByID(r.Context(), networkId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, network)
+}
+
+func (s *server) handleCreatePublicNetwork(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateNetworkRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	network := models.NewNetwork(req.Description, req.Name, req.MTU, req.External)
+
+	if err := s.fetcher.Network().Create(r.Context(), network); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, network)
+}
+
+func (s *server) handleCreatePrivateNetwork(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateNetworkRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	network := models.NewNetwork(req.Description, req.Name, req.MTU, req.External)
+
+	if err := s.fetcher.Network().Create(r.Context(), network); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, network)
+}
+
+func (s *server) handleDeletePrivateNetwork(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	networkId, ok := vars["network_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Network().Delete(r.Context(), networkId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: networkId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleDeletePublicNetwork(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	networkId, ok := vars["network_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Network().Delete(r.Context(), networkId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: networkId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetServers(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	servers, err := s.fetcher.Server().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, servers)
+}
+
+func (s *server) handleGetServerByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	serverId, ok := vars["server_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	server, err := s.fetcher.Server().FetchByID(r.Context(), serverId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, server)
+}
+
+func (s *server) handleCreateServer(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateServerRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	server := models.NewServer(req.ImageID, req.KeyID, req.Name, req.SecurityGroupID, req.PrivateNetworkID)
+
+	if err := s.fetcher.Server().Create(r.Context(), server); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, server)
+}
+
+func (s *server) handleDeleteServer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	serverId, ok := vars["server_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Server().Delete(r.Context(), serverId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: serverId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleStopServer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	serverId, ok := vars["server_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Server().Stop(r.Context(), serverId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := StopServerResponse{
+		StopedID: serverId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleStartServer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	serverId, ok := vars["server_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Server().Start(r.Context(), serverId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := StartServerResponse{
+		StartedID: serverId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleAttachVolToServer(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	serverId, ok := vars["server_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	req := new(AttachVolumeRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Server().AttachVolume(r.Context(), serverId, req.VolumeID); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := AttachVolumeResponse{
+		ServerID: serverId,
+		VolumeID: req.VolumeID,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetRoles(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	roles, err := s.fetcher.Role().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, roles)
+}
+
+func (s *server) handleGetRoleByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	roleId, ok := vars["role_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	role, err := s.fetcher.Role().FetchByID(r.Context(), roleId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, role)
+}
+
+func (s *server) handleCreateRole(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateRoleRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	role := models.NewRole(req.Description, req.Name)
+
+	if err := s.fetcher.Role().Create(r.Context(), role); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, role)
+}
+
+func (s *server) handleDeleteRole(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	roleId, ok := vars["role_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Role().Delete(r.Context(), roleId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: roleId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetSecurityGroups(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	secGroups, err := s.fetcher.SecurityGroup().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, secGroups)
+}
+
+func (s *server) handleGetSecurityGroupByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	secGroupId, ok := vars["securityGroup_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	secGroup, err := s.fetcher.SecurityGroup().FetchByID(r.Context(), secGroupId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, secGroup)
+}
+
+func (s *server) handleCreateSecurityGroup(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateSecurityGroupRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	secGroup := models.NewSecurityGroup(req.Description, req.Name)
+
+	if err := s.fetcher.SecurityGroup().Create(r.Context(), secGroup); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, secGroup)
+}
+
+func (s *server) handleDeleteSecurityGroup(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	secGroupId, ok := vars["securityGroup_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.SecurityGroup().Delete(r.Context(), secGroupId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: secGroupId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetSubnets(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	subnets, err := s.fetcher.Subnet().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, subnets)
+}
+
+func (s *server) handleGetSubnetByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	subnetId, ok := vars["subnet_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	subnet, err := s.fetcher.Subnet().FetchByID(r.Context(), subnetId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, subnet)
+}
+
+func (s *server) handleCreateSubnet(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateSubnetRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	subnet := models.NewSubnet(req.CIDR, req.Description, req.Name, req.NetworkID, req.GatewayIp, req.EnableDHCP, req.AllocationPools)
+
+	if err := s.fetcher.Subnet().Create(r.Context(), subnet); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, subnet)
+}
+
+func (s *server) handleDeleteSubnet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	subnetId, ok := vars["subnet_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Subnet().Delete(r.Context(), subnetId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: subnetId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetSecurityRules(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	secRules, err := s.fetcher.SecurityRule().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, secRules)
+}
+
+func (s *server) handleGetSecurityRuleByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	secRuleId, ok := vars["securityRule_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	secRule, err := s.fetcher.SecurityRule().FetchByID(r.Context(), secRuleId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, secRule)
+}
+
+func (s *server) handleCreateSecurityRule(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateSecurityRuleRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	secRule := models.NewSecurityRule(req.Ethertype, req.Direction, req.Protocol, req.RemoteIpPrefix, req.Description, req.SecurityGroupID, req.PortRangeMax, req.PortRangeMin)
+
+	if err := s.fetcher.SecurityRule().Create(r.Context(), secRule); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, secRule)
+}
+
+func (s *server) handleDeleteSecurityRule(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	secRuleId, ok := vars["securityRule_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.SecurityRule().Delete(r.Context(), secRuleId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: secRuleId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetKeyPairs(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	keyPairs, err := s.fetcher.KeyPair().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, keyPairs)
+}
+
+func (s *server) handleGetKeyPairByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	keyPairId, ok := vars["keyPair_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	keyPair, err := s.fetcher.KeyPair().FetchByID(r.Context(), keyPairId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, keyPair)
+}
+
+func (s *server) handleCreateKeyPair(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateKeyPairRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	keyPair := models.NewKeyPair(req.PublicKey, req.Name, req.Type)
+
+	if err := s.fetcher.KeyPair().Create(r.Context(), keyPair); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, keyPair)
+}
+
+func (s *server) handleDeleteKeyPair(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	keyPairId, ok := vars["keyPair_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.KeyPair().Delete(r.Context(), keyPairId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: keyPairId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetProjects(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	projects, err := s.fetcher.Project().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, projects)
+}
+
+func (s *server) handleGetProjectByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	projectId, ok := vars["project_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	project, err := s.fetcher.Project().FetchByID(r.Context(), projectId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, project)
+}
+
+func (s *server) handleCreateProject(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateProjectRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	project := models.NewProject(req.Name, req.Description)
+
+	if err := s.fetcher.Project().Create(r.Context(), project); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, project)
+}
+
+func (s *server) handleDeleteProject(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	projectId, ok := vars["project_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Project().Delete(r.Context(), projectId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: projectId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetRouters(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	routers, err := s.fetcher.Router().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, routers)
+}
+
+func (s *server) handleGetRouterByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	routerId, ok := vars["router_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	router, err := s.fetcher.Router().FetchByID(r.Context(), routerId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, router)
+}
+
+func (s *server) handleCreateRouter(w http.ResponseWriter, r *http.Request) {
+	req := new(CreateRouterRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	router := models.NewRouter(req.Description, req.Name, req.ExternalGatewayInfo.NetworkID)
+
+	if err := s.fetcher.Router().Create(r.Context(), router); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, router)
+}
+
+func (s *server) handleDeleteRouter(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	routerId, ok := vars["router_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Router().Delete(r.Context(), routerId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := DeleteOpenstackResurceResponse{
+		DeletedID: routerId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleAddSubnetToRouter(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	routerId, ok := vars["router_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	req := new(RemoveOrAddSubnetRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Router().AddSubnet(r.Context(), routerId, req.SubnetID); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := RemoveOrAddSubnetResponse{
+		RouterID: routerId,
+		SubnetID: req.SubnetID,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleRemoveRouterSubnet(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	routerId, ok := vars["router_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	req := new(RemoveOrAddSubnetRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		s.error(w, r, http.StatusBadRequest, err)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Router().RemoveSubnet(r.Context(), routerId, req.SubnetID); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := RemoveOrAddSubnetResponse{
+		RouterID: routerId,
+		SubnetID: req.SubnetID,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleRemoveRouterGateway(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	routerId, ok := vars["router_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	if err := s.fetcher.Router().RemoveExternalGateway(r.Context(), routerId); err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	resp := RemoveRouterExternalGatewayResponse{
+		RouterID: routerId,
+	}
+
+	s.respond(w, r, http.StatusOK, resp)
+}
+
+func (s *server) handleGetPorts(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	ports, err := s.fetcher.Port().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, ports)
+}
+
+func (s *server) handleGetPortByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	portId, ok := vars["port_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	port, err := s.fetcher.Port().FetchByID(r.Context(), portId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, port)
+}
+
+func (s *server) handleGetPortsByNetwork(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	networkId, ok := vars["network_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	ports, err := s.fetcher.Port().FetchByNetworkID(r.Context(), networkId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, ports)
+}
+
+func (s *server) handleGetPortsByDevice(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	deviceId, ok := vars["device_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
+
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	ports, err := s.fetcher.Port().FetchByID(r.Context(), deviceId)
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, ports)
+}
+
+func (s *server) handleGetFlavors(w http.ResponseWriter, r *http.Request) {
+	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	if err != nil {
+		s.error(w, r, http.StatusUnauthorized, err)
+		return
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
+
+	flavors, err := s.fetcher.Flavor().FetchAll(r.Context())
+	if err != nil {
+		s.error(w, r, http.StatusNotFound, err)
+		return
+	}
+
+	s.respond(w, r, http.StatusOK, flavors)
+}
+
 func (s *server) handleGetFlavorByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	flavorId := vars["flavor_id"]
+	flavorId, ok := vars["flavor_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
 
 	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
 	if err != nil {
@@ -443,7 +2058,11 @@ func (s *server) handleCreateFlavor(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleDeleteFlavor(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	flavorId := vars["flavor_id"]
+	flavorId, ok := vars["flavor_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
 
 	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
 	if err != nil {
@@ -468,7 +2087,11 @@ func (s *server) handleDeleteFlavor(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleGetClusterUserByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	userId := vars["user_id"]
+	userId, ok := vars["user_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
 
 	user, err := s.store.ClusterUser().FindByID(r.Context(), userId)
 	if err != nil {
@@ -522,7 +2145,11 @@ func (s *server) handleCreateClusterUser(w http.ResponseWriter, r *http.Request)
 func (s *server) handleDeleteClusterUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	userId := vars["user_id"]
+	userId, ok := vars["user_id"]
+	if !ok {
+		s.error(w, r, http.StatusBadRequest, errBadRequest)
+		return
+	}
 
 	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
 	if err != nil {

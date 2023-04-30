@@ -92,12 +92,6 @@ func (f *ImageFetcher) Create(ctx context.Context, image *models.Image) error {
 		return err
 	}
 
-	if err := f.uploadImage(ctx, image.FileData, clusterId, image.ID); err != nil {
-		return err
-	}
-
-	image.FileData = nil
-
 	return nil
 
 }
@@ -134,7 +128,9 @@ func (f *ImageFetcher) Delete(ctx context.Context, imageId string) error {
 	return nil
 }
 
-func (f *ImageFetcher) uploadImage(ctx context.Context, fileData []byte, clusterId int, imageId string) error {
+func (f *ImageFetcher) Upload(ctx context.Context, fileData []byte, imageId string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
 	cluster := f.fetcher.clusters[clusterId]
 
 	putImageDataURL := cluster.URL + ":9292" + "/v2/images/" + imageId + "/file"
@@ -162,6 +158,48 @@ func (f *ImageFetcher) uploadImage(ctx context.Context, fileData []byte, cluster
 		return errors.New("internal server error")
 	}
 	return nil
+}
+
+func (f *ImageFetcher) FetchAll(ctx context.Context) ([]*models.Image, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchImageURL := cluster.URL + ":9292" + "/v2/images"
+
+	req, err := http.NewRequest("GET", fetchImageURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	images := []*models.Image{}
+
+	fetchImagesRes := &FetchImagesResponse{
+		Images: &images,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchImagesRes); err != nil {
+		return nil, err
+	}
+
+	return images, nil
 }
 
 func (f *ImageFetcher) generateCreateReq(image *models.Image) *CretaeImageRequest {

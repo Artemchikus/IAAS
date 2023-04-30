@@ -101,6 +101,7 @@ func (f *FlavorFetcher) Create(ctx context.Context, flavor *models.Flavor) error
 
 	return nil
 }
+
 func (f *FlavorFetcher) Delete(ctx context.Context, flavorId string) error {
 	clusterId := getClusterIDFromContext(ctx)
 
@@ -131,6 +132,48 @@ func (f *FlavorFetcher) Delete(ctx context.Context, flavorId string) error {
 	}
 
 	return nil
+}
+
+func (f *FlavorFetcher) FetchAll(ctx context.Context) ([]*models.Flavor, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchFlavorURL := cluster.URL + ":8774" + "/v2.1/flavors"
+
+	req, err := http.NewRequest("GET", fetchFlavorURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	flavors := []*models.Flavor{}
+
+	fetchFlavorsRes := &FetchFlavorsResponse{
+		Flavors: &flavors,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchFlavorsRes); err != nil {
+		return nil, err
+	}
+
+	return flavors, nil
 }
 
 func (f *FlavorFetcher) generateCreateReq(flavor *models.Flavor) *CreateFlavorRequest {

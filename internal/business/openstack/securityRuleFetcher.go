@@ -135,6 +135,48 @@ func (f *SecurityRuleFetcher) Delete(ctx context.Context, securityRuleID string)
 	return nil
 }
 
+func (f *SecurityRuleFetcher) FetchAll(ctx context.Context) ([]*models.SecurityRule, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchSecurityRuleURL := cluster.URL + ":9696" + "/v2.0/security-group-rules"
+
+	req, err := http.NewRequest("GET", fetchSecurityRuleURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	secRules := []*models.SecurityRule{}
+
+	fetchSecurityRulesRes := &FetchSecurityRulesResponse{
+		SecurityRules: &secRules,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchSecurityRulesRes); err != nil {
+		return nil, err
+	}
+
+	return secRules, nil
+}
+
 func (f *SecurityRuleFetcher) generateCreateReq(securityRule *models.SecurityRule) *CreateSecurityRuleRequest {
 	req := &CreateSecurityRuleRequest{
 		SecurityRule: &SecurityRule{

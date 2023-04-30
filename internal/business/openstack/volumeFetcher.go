@@ -46,7 +46,7 @@ func (f *VolumeFetcher) FetchByID(ctx context.Context, volumeId string) (*models
 	volumeResp := map[string]interface{}{}
 
 	fetchVolumeRes := &FetchVolumeResponse{
-		Volume: &volumeResp,
+		Volume: volumeResp,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&fetchVolumeRes); err != nil {
@@ -77,6 +77,7 @@ func (f *VolumeFetcher) FetchByID(ctx context.Context, volumeId string) (*models
 		TypeID:    volumeResp["volume_type"].(string),
 		AccountID: volumeResp["user_id"].(string),
 		Bootable:  volumeResp["bootable"].(bool),
+		Name:      volumeResp["name"].(string),
 	}
 
 	return volume, nil
@@ -122,7 +123,7 @@ func (f *VolumeFetcher) Create(ctx context.Context, volume *models.Volume) error
 	volumeResp := map[string]interface{}{}
 
 	createVolumeRes := &CreateVolumeResponse{
-		Volume: &volumeResp,
+		Volume: volumeResp,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&createVolumeRes); err != nil {
@@ -140,6 +141,7 @@ func (f *VolumeFetcher) Create(ctx context.Context, volume *models.Volume) error
 	}
 
 	volume.ID = volumeResp["id"].(string)
+	volume.Name = volumeResp["name"].(string)
 	volume.Status = volumeResp["status"].(string)
 	volume.Size = int(volumeResp["size"].(float64))
 	volume.CreatedAt = volumeResp["created_at"].(time.Time)
@@ -181,6 +183,59 @@ func (f *VolumeFetcher) Delete(ctx context.Context, volumeID string) error {
 	}
 
 	return nil
+}
+
+func (f *VolumeFetcher) FetchAll(ctx context.Context) ([]*models.Volume, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchVolumeURL := cluster.URL + ":8776" + "/v3/volumes"
+
+	req, err := http.NewRequest("GET", fetchVolumeURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	volumesResp := []map[string]interface{}{}
+
+	fetchVolumesRes := &FetchVolumesResponse{
+		Volumes: &volumesResp,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchVolumesRes); err != nil {
+		return nil, err
+	}
+
+	volumes := []*models.Volume{}
+
+	for _, v := range volumesResp {
+		volume := &models.Volume{
+			ID:   v["id"].(string),
+			Name: v["name"].(string),
+		}
+
+		volumes = append(volumes, volume)
+	}
+
+	return volumes, nil
 }
 
 func (f *VolumeFetcher) generateCreateReq(volume *models.Volume) *CreateVolumeRequest {

@@ -83,37 +83,60 @@ func (s *server) configureRouter() {
 
 	cluster.Use(s.authenticateClusterUser)
 
-	// cluster.HandleFunc("/flavor").Methods("GET")
+	cluster.HandleFunc("/flavor", s.handleGetFlavors).Methods("GET")
 	cluster.HandleFunc("/flavor/{flavor_id}", s.handleGetFlavorByID).Methods("GET")
-	// cluster.HandleFunc("/floatingIp").Methods("GET")
-	// cluster.HandleFunc("/floatingIp/{floatingIp_id}").Methods("GET")
-	// cluster.HandleFunc("/image").Methods("GET")
-	// cluster.HandleFunc("/image/{image_id}").Methods("GET")
-	// cluster.HandleFunc("/keyPair").Methods("GET")
-	// cluster.HandleFunc("/keyPair/{keyPair_id}").Methods("GET")
-	// cluster.HandleFunc("/keyPair/{keyPair_id}").Methods("DELETE")
-	// cluster.HandleFunc("/keyPair}").Methods("POST")
-	// cluster.HandleFunc("/network").Methods("GET")
-	// cluster.HandleFunc("/network/{network_id}").Methods("GET")
-	// cluster.HandleFunc("/project/{project_id}").Methods("GET")
-	// cluster.HandleFunc("/role/{role_id}").Methods("GET")
-	// cluster.HandleFunc("/router").Methods("GET")
-	// cluster.HandleFunc("/router/{router_id}").Methods("GET")
-	// cluster.HandleFunc("/securityGroup").Methods("GET")
-	// cluster.HandleFunc("/securityGroup/{securityGroup_id}").Methods("GET")
-	// cluster.HandleFunc("/securityRule").Methods("GET")
-	// cluster.HandleFunc("/securityRule/{securityRule_id}").Methods("GET")
-	// cluster.HandleFunc("/server").Methods("GET")
-	// cluster.HandleFunc("/server/{server_id}").Methods("GET")
-	// cluster.HandleFunc("/server/{server_id}").Methods("CREATE")
-	// cluster.HandleFunc("/server/{server_id}").Methods("DELETE")
-	// cluster.HandleFunc("/subnet").Methods("GET")
-	// cluster.HandleFunc("/subnet/{subnet_id}").Methods("GET")
+	cluster.HandleFunc("/floatingIp", s.handleGetFloatingIps).Methods("GET")
+	cluster.HandleFunc("/floatingIp/{floatingIp_id}", s.handleGetFloatingIpByID).Methods("GET")
+	cluster.HandleFunc("/floatingIp/{floatingIp_id}", s.handleAddIPToPort).Methods("PUT")
+	cluster.HandleFunc("/image", s.handleGetImages).Methods("GET")
+	cluster.HandleFunc("/image/{image_id}", s.handleGetImageByID).Methods("GET")
+	cluster.HandleFunc("/keyPair", s.handleGetKeyPairs).Methods("GET")
+	cluster.HandleFunc("/keyPair/{keyPair_id}", s.handleGetKeyPairByID).Methods("GET")
+	cluster.HandleFunc("/keyPair/{keyPair_id}", s.handleDeleteKeyPair).Methods("DELETE")
+	cluster.HandleFunc("/keyPair}", s.handleCreateKeyPair).Methods("POST")
+	cluster.HandleFunc("/network", s.handleGetNetworks).Methods("GET")
+	cluster.HandleFunc("/network/{network_id}", s.handleGetNetworkByID).Methods("GET")
+	cluster.HandleFunc("/network/private", s.handleCreatePrivateNetwork).Methods("POST")
+	cluster.HandleFunc("/network/private/{network_id}", s.handleDeletePrivateNetwork).Methods("DELETE")
+	cluster.HandleFunc("/project/{project_id}", s.handleGetProjectByID).Methods("GET")
+	cluster.HandleFunc("/role", s.handleGetRoles).Methods("GET")
+	cluster.HandleFunc("/role/{role_id}", s.handleGetRoleByID).Methods("GET")
+	cluster.HandleFunc("/router", s.handleGetRouters).Methods("GET")
+	cluster.HandleFunc("/router/{router_id}", s.handleGetRouterByID).Methods("GET")
+	cluster.HandleFunc("/router", s.handleCreateRouter).Methods("POST")
+	cluster.HandleFunc("/router/add_subnet", s.handleAddSubnetToRouter).Methods("PUT")
+	cluster.HandleFunc("/router/remove_subnet", s.handleRemoveRouterSubnet).Methods("PUT")
+	cluster.HandleFunc("/router/remove_external_gateway", s.handleRemoveRouterGateway).Methods("HEAD")
+	cluster.HandleFunc("/router/{router_id}", s.handleDeleteRouter).Methods("DELETE")
+	cluster.HandleFunc("/securityGroup", s.handleCreateSecurityGroup).Methods("POST")
+	cluster.HandleFunc("/securityGroup/{securityGroup_id}", s.handleDeleteSecurityGroup).Methods("DELETE")
+	cluster.HandleFunc("/securityGroup", s.handleGetSecurityGroups).Methods("GET")
+	cluster.HandleFunc("/securityGroup/{securityGroup_id}", s.handleGetSecurityGroupByID).Methods("GET")
+	cluster.HandleFunc("/securityRule", s.handleGetSecurityRules).Methods("GET")
+	cluster.HandleFunc("/securityRule/{securityRule_id}", s.handleGetSecurityRuleByID).Methods("GET")
+	cluster.HandleFunc("/securityRule", s.handleCreateSecurityRule).Methods("POST")
+	cluster.HandleFunc("/securityRule/{securityRule_id}", s.handleDeleteSecurityRule).Methods("DELETE")
+	cluster.HandleFunc("/server", s.handleGetServers).Methods("GET")
+	cluster.HandleFunc("/server/{server_id}", s.handleGetServerByID).Methods("GET")
+	cluster.HandleFunc("/server", s.handleCreateServer).Methods("POST")
+	cluster.HandleFunc("/server/{server_id}", s.handleDeleteServer).Methods("DELETE")
+	cluster.HandleFunc("/server/{server_id}/start", s.handleStartServer).Methods("HEAD")
+	cluster.HandleFunc("/server/{server_id}/stop", s.handleStopServer).Methods("HEAD")
+	cluster.HandleFunc("/server/{server_id}/attach_volume", s.handleAttachVolToServer).Methods("PUT")
+	cluster.HandleFunc("/subnet", s.handleGetSubnets).Methods("GET")
+	cluster.HandleFunc("/subnet/{subnet_id}", s.handleGetSubnetByID).Methods("GET")
+	cluster.HandleFunc("/subnet", s.handleCreateSubnet).Methods("POST")
+	cluster.HandleFunc("/subnet/{subnet_id}", s.handleDeleteSubnet).Methods("DELETE")
 	cluster.HandleFunc("/user/{user_id}", s.handleGetClusterUserByID).Methods("GET")
-	// cluster.HandleFunc("/volume").Methods("GET")
-	// cluster.HandleFunc("/volume/{volume_id}").Methods("GET")
-	// cluster.HandleFunc("/volume/{volume_id}").Methods("DELETE")
-	// cluster.HandleFunc("/volume/{volume_id}").Methods("POST")
+	cluster.HandleFunc("/volume", s.handleGetVolumes).Methods("GET")
+	cluster.HandleFunc("/volume/{volume_id}", s.handleGetVolumeByID).Methods("GET")
+	cluster.HandleFunc("/volume/{volume_id}", s.handleDeleteVolume).Methods("DELETE")
+	cluster.HandleFunc("/volume", s.handleCreateVolume).Methods("POST")
+	cluster.HandleFunc("/port", s.handleGetPorts).Methods("GET")
+	cluster.HandleFunc("/port/{port_id}", s.handleGetPortByID).Methods("GET")
+	cluster.HandleFunc("/network/{network_id}/port", s.handleGetPortsByNetwork).Methods("GET")
+	cluster.HandleFunc("/router/{device_id}/port", s.handleGetPortsByDevice).Methods("GET")
+	cluster.HandleFunc("/server/{device_id}/port", s.handleGetPortsByDevice).Methods("GET")
 
 	admin := private.PathPrefix("").Subrouter()
 
@@ -129,25 +152,18 @@ func (s *server) configureRouter() {
 
 	clusterAdmin.HandleFunc("/flavor", s.handleCreateFlavor).Methods("POST")
 	clusterAdmin.HandleFunc("/flavor/{flavor_id}", s.handleDeleteFlavor).Methods("DELETE")
-	// clusterAdmin.HandleFunc("/floatingIp/{floatingIp_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/floatingIp/{floatingIp_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/image/{image_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/image/{image_id}/file").Methods("POST")
-	// clusterAdmin.HandleFunc("/image/{image_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/network/{network_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/network/{network_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/project/{project_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/project/{project_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/role/{role_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/role/{role_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/router/{router_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/router/{router_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/securityGroup/{securityGroup_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/securityGroup/{securityGroup_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/securityRule/{securityRule_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/securityRule/{securityRule_id}").Methods("DELETE")
-	// clusterAdmin.HandleFunc("/subnet/{subnet_id}").Methods("POST")
-	// clusterAdmin.HandleFunc("/subnet/{subnet_id}").Methods("DELETE")
+	clusterAdmin.HandleFunc("/floatingIp", s.handleCreateFloatingIp).Methods("POST")
+	clusterAdmin.HandleFunc("/floatingIp/{floatingIp_id}", s.handleDeleteFloatingIp).Methods("DELETE")
+	clusterAdmin.HandleFunc("/image", s.handleCreateImage).Methods("POST")
+	clusterAdmin.HandleFunc("/image/{image_id}/file", s.handleUploadImage).Methods("POST")
+	clusterAdmin.HandleFunc("/image/{image_id}", s.handleDeleteImage).Methods("DELETE")
+	clusterAdmin.HandleFunc("/network/public", s.handleCreatePublicNetwork).Methods("POST")
+	clusterAdmin.HandleFunc("/network/public/{network_id}", s.handleDeletePublicNetwork).Methods("DELETE")
+	clusterAdmin.HandleFunc("/project", s.handleGetProjects).Methods("GET")
+	clusterAdmin.HandleFunc("/project", s.handleCreateProject).Methods("POST")
+	clusterAdmin.HandleFunc("/project/{project_id}", s.handleDeleteProject).Methods("DELETE")
+	clusterAdmin.HandleFunc("/role", s.handleCreateRole).Methods("POST")
+	clusterAdmin.HandleFunc("/role/{role_id}", s.handleDeleteRole).Methods("DELETE")
 	clusterAdmin.HandleFunc("/user", s.handleCreateClusterUser).Methods("POST")
 	clusterAdmin.HandleFunc("/user", s.handleGetAllClusterUsers).Methods("GET")
 	clusterAdmin.HandleFunc("/user/{user_id}", s.handleDeleteClusterUser).Methods("DELETE")
@@ -179,50 +195,3 @@ func incapsulateError(code int, err error) error {
 	}
 	return err
 }
-
-// wget https://download.cirros-cloud.net/0.6.1/cirros-0.6.1-x86_64-disk.img
-// openstack image create "Cirros" --file cirros-0.6.1-x86_64-disk.img --disk-format qcow2 --container-format bare --public
-
-// openstack project create --domain default --description "Demo Project" demo
-
-// openstack user create --domain default --project demo --password demo demo
-
-// openstack role create CloudUser
-
-// openstack role add --project demo --user demo CloudUser
-
-// openstack flavor create --id 0 --vcpus 1 --ram 300 --disk 2 m1.small
-
-// openstack router create router01
-
-// openstack network create private --provider-network-type geneve
-
-// openstack subnet create private-subnet --network private --subnet-range 192.168.100.0/24 --gateway 192.168.100.1
-
-// openstack router add subnet router01 private-subnet
-
-// openstack network create --provider-physical-network external --provider-network-type flat --external public
-
-// openstack subnet create public-subnet --network public --subnet-range 192.168.122.0/24 --allocation-pool start=192.168.122.200,end=192.168.122.254 --gateway 192.168.122.1 --no-dhcp
-
-// openstack router set router01 --external-gateway public
-
-// openstack security group create secgroup01
-
-// openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey
-
-// openstack server create --flavor m1.small --image Cirros --security-group secgroup01 --nic net-id=private --key-name mykey Cirros
-
-// openstack floating ip create public
-
-// openstack server add floating ip Cirros 192.168.122.204
-
-// openstack security group rule create --protocol icmp --ingress secgroup01
-// openstack security group rule create --protocol tcp --dst-port 22:22 secgroup01
-
-// openstack console url show Cirros
-// ssh cirros@192.168.122.204
-
-// openstack volume create --size 2 disk01
-
-// openstack server add volume Cirros disk01

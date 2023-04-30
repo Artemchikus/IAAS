@@ -56,3 +56,33 @@ type GetAllClustersResponse []*GetClusterResponse
 type DeleteOpenstackResurceResponse struct {
 	DeletedID string `json:"deleted_id"`
 }
+
+type StartServerResponse struct {
+	StartedID string `json:"started_id"`
+}
+
+type StopServerResponse struct {
+	StopedID string `json:"stoped_id"`
+}
+
+type AttachVolumeResponse struct {
+	VolumeID string `json:"volume_id"`
+	ServerID string `json:"server_id"`
+}
+
+type RemoveOrAddSubnetResponse struct {
+	SubnetID string `json:"subnet_id"`
+	RouterID string `json:"router_id"`
+}
+
+type RemoveRouterExternalGatewayResponse struct {
+	RouterID string `json:"router_id"`
+}
+
+type AddFloatingIPResponse struct {
+	FloatingIpID string `json:"floatingIp_id"`
+	PortID       string `json:"port_id"`
+}
+type UploadImageResponse struct {
+	ImageID string `json:"image_id"`
+}

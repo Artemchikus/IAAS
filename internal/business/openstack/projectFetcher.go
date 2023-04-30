@@ -135,6 +135,48 @@ func (f *ProjectFetcher) Delete(ctx context.Context, projectID string) error {
 	return nil
 }
 
+func (f *ProjectFetcher) FetchAll(ctx context.Context) ([]*models.Project, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchProjectURL := cluster.URL + ":5000" + "/v3/projects"
+
+	req, err := http.NewRequest("GET", fetchProjectURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	projects := []*models.Project{}
+
+	fetchProjectsRes := &FetchProjectsResponse{
+		Projects: &projects,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchProjectsRes); err != nil {
+		return nil, err
+	}
+
+	return projects, nil
+}
+
 func (f *ProjectFetcher) generateCreateReq(project *models.Project) *CreateProjectRequest {
 	req := &CreateProjectRequest{
 		Project: &CreateProject{

@@ -82,3 +82,28 @@ func TestImageFetcher_FetchByID(t *testing.T) {
 
 	fetcher.Image().Delete(openstack.TestRequestContext(t, fetcher, clusterID), i2.ID)
 }
+
+func TestImageFetcher_FetchAll(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	i := openstack.TestImage(t)
+
+	fetcher.Image().Create(openstack.TestRequestContext(t, fetcher, clusterID), i)
+
+	time.Sleep(1000)
+
+	is, err := fetcher.Image().FetchAll(openstack.TestRequestContext(t, fetcher, clusterID))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, is)
+
+	fetcher.Image().Delete(openstack.TestRequestContext(t, fetcher, clusterID), i.ID)
+}

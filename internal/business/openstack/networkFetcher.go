@@ -135,6 +135,48 @@ func (f *NetworkFetcher) Delete(ctx context.Context, networkID string) error {
 	return nil
 }
 
+func (f *NetworkFetcher) FetchAll(ctx context.Context) ([]*models.Network, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchNetworkURL := cluster.URL + ":9696" + "/v2.0/networks"
+
+	req, err := http.NewRequest("GET", fetchNetworkURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	networks := []*models.Network{}
+
+	fetchNetworksRes := &FetchNetworksResponse{
+		Networks: &networks,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchNetworksRes); err != nil {
+		return nil, err
+	}
+
+	return networks, nil
+}
+
 func (f *NetworkFetcher) generateCreateReq(network *models.Network) *CreateNetworkRequest {
 	req := &CreateNetworkRequest{
 		Network: &Network{

@@ -42,30 +42,30 @@ func (f *KeyPairFetcher) FetchByID(ctx context.Context, keyPairId string) (*mode
 		return nil, handleErrorResponse(resp)
 	}
 
-	keyPairResp := map[string]interface{}{}
+	kp := map[string]interface{}{}
 
 	fetchKeyPairRes := &FetchKeyPairResponse{
-		KeyPair: &keyPairResp,
+		KeyPair: kp,
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&fetchKeyPairRes); err != nil {
 		return nil, err
 	}
 
-	keyPairResp["created_at"], err = time.Parse("2006-01-02T15:04:05.000000", keyPairResp["created_at"].(string))
+	kp["created_at"], err = time.Parse("2006-01-02T15:04:05.000000", kp["created_at"].(string))
 	if err != nil {
 		return nil, err
 	}
 
 	keyPair := &models.KeyPair{
-		IsDeleted:   keyPairResp["deleted"].(bool),
-		Fingerprint: keyPairResp["fingerprint"].(string),
-		PublicKey:   keyPairResp["public_key"].(string),
-		AccountID:   keyPairResp["user_id"].(string),
-		ID:          keyPairResp["name"].(string),
+		IsDeleted:   kp["deleted"].(bool),
+		Fingerprint: kp["fingerprint"].(string),
+		PublicKey:   kp["public_key"].(string),
+		AccountID:   kp["user_id"].(string),
+		ID:          kp["name"].(string),
 		Type:        "ssh", // TODO add x509 support
-		Name:        keyPairResp["name"].(string),
-		CreatedAt:   keyPairResp["created_at"].(time.Time),
+		Name:        kp["name"].(string),
+		CreatedAt:   kp["created_at"].(time.Time),
 	}
 
 	return keyPair, nil
@@ -152,6 +152,61 @@ func (f *KeyPairFetcher) Delete(ctx context.Context, keyPairId string) error {
 	}
 
 	return nil
+}
+
+func (f *KeyPairFetcher) FetchAll(ctx context.Context) ([]*models.KeyPair, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchKeyPairURL := cluster.URL + ":8774" + "/v2.1/os-keypairs"
+
+	req, err := http.NewRequest("GET", fetchKeyPairURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	keyPairsResp := []*FetchKeyPairResponse{}
+
+	fetchKeyPairsRes := &FetchKeyPairsResponse{
+		KeyPairs: &keyPairsResp,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchKeyPairsRes); err != nil {
+		return nil, err
+	}
+
+	keyPairs := []*models.KeyPair{}
+
+	for _, kp := range keyPairsResp {
+		keyPair := &models.KeyPair{
+			Fingerprint: kp.KeyPair["fingerprint"].(string),
+			PublicKey:   kp.KeyPair["public_key"].(string),
+			ID:          kp.KeyPair["name"].(string),
+			Type:        "ssh", // TODO add x509 support
+			Name:        kp.KeyPair["name"].(string),
+		}
+		keyPairs = append(keyPairs, keyPair)
+	}
+
+	return keyPairs, nil
 }
 
 func (f *KeyPairFetcher) generateCreateReq(keyPair *models.KeyPair) *CreateKeyPairRequest {
