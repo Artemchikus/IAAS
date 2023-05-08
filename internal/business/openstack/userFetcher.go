@@ -178,6 +178,38 @@ func (f *UserFetcher) FetchAll(ctx context.Context) ([]*models.ClusterUser, erro
 	return users, nil
 }
 
+func (f *UserFetcher) AssignRoleToProject(ctx context.Context, projetcId, roleId, userId string) error {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchUserURL := cluster.URL + ":5000" + "/v3/projects/" + projetcId + "/users/" + userId + "/roles/" + roleId
+
+	req, err := http.NewRequest("PUT", fetchUserURL, nil)
+	if err != nil {
+		return err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 204 {
+		return handleErrorResponse(resp)
+	}
+
+	return nil
+}
+
 func (f *UserFetcher) generateCreateReq(user *models.ClusterUser) *CreateUserRequest {
 	return &CreateUserRequest{
 		User: &CreateUser{

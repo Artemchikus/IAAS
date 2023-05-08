@@ -10,6 +10,7 @@ type UserFetcher interface {
 	Create(context.Context, *models.ClusterUser) error
 	Delete(context.Context, string) error
 	FetchAll(context.Context) ([]*models.ClusterUser, error)
+	AssignRoleToProject(context.Context, string, string, string) error
 }
 type FlavorFetcher interface {
 	FetchByID(context.Context, string) (*models.Flavor, error)
@@ -54,6 +55,7 @@ type RoleFetcher interface {
 	Create(context.Context, *models.Role) error
 	Delete(context.Context, string) error
 	FetchAll(context.Context) ([]*models.Role, error)
+	FetchByName(context.Context, string) (*models.Role, error)
 }
 type RouterFetcher interface {
 	FetchByID(context.Context, string) (*models.Router, error)

@@ -167,7 +167,6 @@ func (s *server) configureRouter() {
 	clusterAdmin.HandleFunc("/user", s.handleCreateClusterUser).Methods("POST")
 	clusterAdmin.HandleFunc("/user", s.handleGetAllClusterUsers).Methods("GET")
 	clusterAdmin.HandleFunc("/user/{user_id}", s.handleDeleteClusterUser).Methods("DELETE")
-
 }
 
 func incapsulateError(code int, err error) error {

@@ -121,11 +121,43 @@ func TestUserFetcher_Delete(t *testing.T) {
 	u := openstack.TestClusterUser(t)
 	u.ProjectID = p.ID
 
-	err := fetcher.User().Create(openstack.TestRequestContext(t, fetcher, clusterID), u)
+	fetcher.User().Create(openstack.TestRequestContext(t, fetcher, clusterID), u)
 
 	time.Sleep(1000)
 
-	fetcher.User().Delete(openstack.TestRequestContext(t, fetcher, clusterID), u.ID)
+	err := fetcher.User().Delete(openstack.TestRequestContext(t, fetcher, clusterID), u.ID)
+	assert.NoError(t, err)
+	assert.NotEqual(t, u.ID, "")
+	fetcher.Project().Delete(openstack.TestRequestContext(t, fetcher, clusterID), u.ProjectID)
+}
+
+func TestUserFetcher_AssignRoleToProject(t *testing.T) {
+	db, teardown := postgres.TestDB(t, databaseURL)
+	defer teardown("account", "secret", "cluster", "clusterUser")
+
+	config := openstack.TestConfig(t)
+
+	s := postgres.NewStore(models.TestInitContext(t), db, config)
+
+	fetcher := openstack.NewFetcher(models.TestInitContext(t), config, s)
+
+	clusterID := config.Clusters[0].ID
+
+	p := openstack.TestProject(t)
+
+	fetcher.Project().Create(openstack.TestRequestContext(t, fetcher, clusterID), p)
+
+	u := openstack.TestClusterUser(t)
+	u.ProjectID = p.ID
+
+	r := openstack.TestRole(t)
+
+	fetcher.User().Create(openstack.TestRequestContext(t, fetcher, clusterID), u)
+	fetcher.Role().Create(openstack.TestRequestContext(t, fetcher, clusterID), r)
+
+	time.Sleep(1000)
+
+	err := fetcher.User().AssignRoleToProject(openstack.TestRequestContext(t, fetcher, clusterID), u.ProjectID, u.ID, r.ID)
 	assert.NoError(t, err)
 	assert.NotEqual(t, u.ID, "")
 	fetcher.Project().Delete(openstack.TestRequestContext(t, fetcher, clusterID), u.ProjectID)

@@ -54,6 +54,50 @@ func (f *RoleFetcher) FetchByID(ctx context.Context, roleId string) (*models.Rol
 	return fetchRoleRes.Role, nil
 }
 
+func (f *RoleFetcher) FetchByName(ctx context.Context, roleName string) (*models.Role, error) {
+	clusterId := getClusterIDFromContext(ctx)
+
+	cluster := f.fetcher.clusters[clusterId]
+
+	fetchRoleURL := cluster.URL + ":5000" + "/v3/roles/" + "?name=" + roleName
+
+	req, err := http.NewRequest("GET", fetchRoleURL, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	token := getTokenFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("X-Auth-Token", token.Value)
+
+	resp, err := f.fetcher.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, handleErrorResponse(resp)
+	}
+
+	roles := []*models.Role{}
+
+	fetchRoleRes := &FetchRolesResponse{
+		Roles: &roles,
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&fetchRoleRes); err != nil {
+		return nil, err
+	}
+
+	role := roles[0]
+
+	return role, nil
+}
+
 func (f *RoleFetcher) Create(ctx context.Context, role *models.Role) error {
 	reqData := f.generateCreateReq(role)
 

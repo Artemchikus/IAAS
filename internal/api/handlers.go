@@ -386,6 +386,17 @@ func (s *server) handleRegisterAccountInCluster(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	role, err := s.fetcher.Role().FetchByName(r.Context(), acc.Role)
+	if err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
+	if err := s.fetcher.User().AssignRoleToProject(r.Context(), user.ProjectID, role.ID, user.ID); err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
 	if err := s.store.ClusterUser().Create(r.Context(), user); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
 		return
