@@ -7,7 +7,6 @@ type Router struct {
 	Description         string               `json:"description"`
 	FlavorID            string               `json:"flavor_id"`
 	ID                  string               `json:"id"`
-	Interfaces          []string             `json:"interfaces_info"`
 	ExternalGatewayInfo *ExternalGatewayInfo `json:"external_gateway_info"`
 	Name                string               `json:"name"`
 	ProjectID           string               `json:"project_id"`

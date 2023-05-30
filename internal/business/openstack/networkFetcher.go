@@ -180,6 +180,7 @@ func (f *NetworkFetcher) FetchAll(ctx context.Context) ([]*models.Network, error
 func (f *NetworkFetcher) generateCreateReq(network *models.Network) *CreateNetworkRequest {
 	req := &CreateNetworkRequest{
 		Network: &Network{
+			ProjectID:       network.ProjectID,
 			Name:            network.Name,
 			NetworkType:     network.NetworkType,
 			External:        network.External,

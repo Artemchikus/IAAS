@@ -24,13 +24,14 @@ type Server struct {
 	PrivateNetworkID   string    `json:"private_network_id"`
 }
 
-func NewServer(ImageID, KeyID, Name, SecurityGroupID, PrivateNetworkID string) *Server {
+func NewServer(ImageID, KeyID, Name, SecurityGroupID, PrivateNetworkID, FlavorID string) *Server {
 	return &Server{
 		ImageID:          ImageID,
 		KeyID:            KeyID,
 		Name:             Name,
 		SecurityGroupID:  SecurityGroupID,
 		PrivateNetworkID: PrivateNetworkID,
+		FlavorID:         FlavorID,
 	}
 }
 

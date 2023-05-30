@@ -244,7 +244,6 @@ func (f *VolumeFetcher) generateCreateReq(volume *models.Volume) *CreateVolumeRe
 			Name:        volume.Name,
 			Size:        volume.Size,
 			Description: volume.Description,
-			TypeID:      volume.TypeID,
 			Bootable:    volume.Bootable,
 		},
 	}

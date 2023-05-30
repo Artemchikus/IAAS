@@ -197,6 +197,7 @@ func (f *SubnetFetcher) generateCreateReq(subnet *models.Subnet) *CreateSubnetRe
 			AllocationPools: allocationPools,
 			IpVersion:       subnet.IpVersion,
 			GatewayIp:       subnet.GatewayIp,
+			Description:     subnet.Description,
 		},
 	}
 

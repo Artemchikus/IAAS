@@ -139,7 +139,7 @@ func (f *FlavorFetcher) FetchAll(ctx context.Context) ([]*models.Flavor, error) 
 
 	cluster := f.fetcher.clusters[clusterId]
 
-	fetchFlavorURL := cluster.URL + ":8774" + "/v2.1/flavors"
+	fetchFlavorURL := cluster.URL + ":8774" + "/v2.1/flavors/detail"
 
 	req, err := http.NewRequest("GET", fetchFlavorURL, nil)
 	if err != nil {

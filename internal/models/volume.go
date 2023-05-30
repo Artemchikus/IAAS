@@ -17,11 +17,10 @@ type Volume struct {
 	AccountID   string              `json:"user_id"`
 }
 
-func NewVolume(Description, Name, TypeID string, Bootable bool, Size int) *Volume {
+func NewVolume(Description, Name string, Bootable bool, Size int) *Volume {
 	return &Volume{
 		Description: Description,
 		Name:        Name,
-		TypeID:      TypeID,
 		Bootable:    Bootable,
 		Size:        Size,
 	}

@@ -13,4 +13,5 @@ var (
 	errUnexpectedSigningMethod  = errors.New("unexpected signature method")
 	errNoAdmin                  = errors.New("admin rights required")
 	errLocationAlreadyExists    = errors.New("cluster location already exists")
+	errAlreadyInCluster         = errors.New("already registered in cluster")
 )

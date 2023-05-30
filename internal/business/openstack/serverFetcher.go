@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -220,8 +219,6 @@ func (f *ServerFetcher) Start(ctx context.Context, serverId string) error {
 	}
 	defer resp.Body.Close()
 
-	fmt.Printf("resp: %v\n", resp)
-
 	if resp.StatusCode != 202 {
 		return handleErrorResponse(resp)
 	}
@@ -355,8 +352,6 @@ func (f *ServerFetcher) FetchAll(ctx context.Context) ([]*models.Server, error) 
 	if err := json.NewDecoder(resp.Body).Decode(&fetchServersRes); err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("fetchedServers: %v\n", fetchedServers[0])
 
 	servers := []*models.Server{}
 

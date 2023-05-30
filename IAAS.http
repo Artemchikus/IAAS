@@ -1,17 +1,31 @@
-// ApiServer/Databasa level
-GET http://localhost:3000/account
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTE1MTZ9.H7VUNV300zF2Ly3NV-TNE5xtQVSO6VtAVcrB9qt1fz8
+@user-token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJtZW1iZXIiLCJFeHBpcmVzQXQiOjE2ODM2NTI1NDh9.L5u7oB-StlpaHfJu0PFFAPFyPkNmosluU1XjcgUQt_0
+@admin-token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODM2NTI1Nzd9.cmUEaP2Bw8WjpDZMkqNPu942hWFf5puUkWgBu9z9WRw
+@url = http://localhost:3000
+@account-id = 2
+@cluster-id = 1
+@flavor-id = 39f8a486-6d36-48e4-9bd7-e31860fb8919
+@port-id = 42f83faf-8f2e-4062-ba61-bba22655792c
+@floatingip-id = d2b494e8-68d1-425e-9171-7ae78aecf41f
+@image-id = a043cd1d-8a15-48ea-a531-43aa68c41a20
+@keypair-id = test
+@project-id = 4620bca0b271422eb736ad137cc912ea
+@network-id = 3de94bdd-d6fc-40ab-af5e-0ee7424b1739
+@subnet-id = 2354b670-5ca3-4248-92b3-81997cb783a3
+@securityrule-id = sadasfasdfads
+@securitygroup-id = 7b48077b-4ae5-401b-b3fc-fe647c827ab9
+@role-id = dsaasfsafds
+@router-id = 4942620e-8c17-4fd7-b1e5-993c2893d4cf
+@volume-id = cc3514401f484fe18428949d20
+@server-id = 0e599b3c-9617-49eb-b8f3-5fd643bd757e
+@user-id = cc3514401f484fe18428949d20291e9c
 
-###
-GET http://localhost:3000/account/2
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTE1MTZ9.H7VUNV300zF2Ly3NV-TNE5xtQVSO6VtAVcrB9qt1fz8
 
-###
-DELETE http://localhost:3000/account/2
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTE1MTZ9.H7VUNV300zF2Ly3NV-TNE5xtQVSO6VtAVcrB9qt1fz8
 
+// ApiServer/Database level
+
+//Public
 ###
-POST http://localhost:3000/account
+POST {{url}}/account
 content-type: application/json
 
 {
@@ -19,37 +33,38 @@ content-type: application/json
     "email": "test@example.com",
     "password": "password"
 }
-
 ###
-POST http://localhost:3000/login
+POST {{url}}/login
 content-type: application/json
 
 {
     "email": "test@example.com",
     "password": "password"
 }
-
 ###
-
-GET http://localhost:3000/refreshToken
-x-refresh-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkV4cGlyZXNBdCI6MTY4MTQ3MTQ2OH0.H8i2tamNTjpZyBbPVZF6iR7VMyYKH7-OCIv1aGHArfA
-
-###
-POST http://localhost:3000/login
+POST {{url}}/login
 content-type: application/json
 
 {
     "email": "admin@example.com",
     "password": "administrator"
 }
-
 ###
-GET http://localhost:3000/cluster
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODI3NjA5NTd9.UK6i6jielLBW2wnUlHRrD9r2wM1QA1YAj6fo6cS782M
-
+GET {{url}}/refreshToken
+x-refresh-token: {{user-token}}
 ###
-POST http://localhost:3000/cluster
-x-jwt-token:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTkxNzh9.elUsych-Z-zx1sH7ktH7KCOEHPmgEOlxoUWX_ChFr3U
+
+//Private
+
+//Admin
+GET {{url}}/account
+x-jwt-token: {{admin-token}}
+###
+GET {{url}}/account/{{account-id}}
+x-jwt-token: {{admin-token}}
+###
+POST {{url}}/cluster
+x-jwt-token: {{admin-token}}
 content-type: application/json
 
 {
@@ -64,20 +79,304 @@ content-type: application/json
         "domain_id": "default"
     }
 }
-
 ###
-DELETE  http://localhost:3000/cluster/6
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTkxNzh9.elUsych-Z-zx1sH7ktH7KCOEHPmgEOlxoUWX_ChFr3U
-
+DELETE {{url}}/cluster/{{cluster-id}}
+x-jwt-token: {{admin-token}}
 ###
-GET  http://localhost:3000/cluster/7
-x-jwt-token:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODI3NjA5NTd9.UK6i6jielLBW2wnUlHRrD9r2wM1QA1YAj6fo6cS782M
 
+//Member
+GET {{url}}/account/{{account-id}}
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/account/{{account-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}
+x-jwt-token: {{user-token}}
+###
+PUT {{url}}/cluster/{{cluster-id}}/register
+x-jwt-token: {{user-token}}
 ###
 
 // Openstack level
-POST http://localhost:3000/cluster/1/flavor
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTE1MTZ9.H7VUNV300zF2Ly3NV-TNE5xtQVSO6VtAVcrB9qt1fz8
+
+//Member
+GET {{url}}/cluster/{{cluster-id}}/flavor
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/flavor/{{flavor-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/floatingip
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/floatingip/{{floatingip-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/floatingip
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "floating_network_id": "{{network-id}}",
+    "description": "test floating ip"
+}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/floatingip/{{floatingip-id}}
+x-jwt-token: {{user-token}}
+###
+PUT {{url}}/cluster/{{cluster-id}}/floatingip/{{floatingip-id}}/addToPort
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "port_id": "{{port-id}}"
+}
+###
+GET {{url}}/cluster/{{cluster-id}}/image
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/image/{{image-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/keypair
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/keypair/{{keypair-id}}
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/keypair/{{keypair-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/keypair
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "public_key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDZjh2NAkpTS2QVB57w5p9vAU8WbmgjdrYwAklFEErMui+ZaBSWZUFHrgDS7NyTbLFF7VLXZHeKFrkF1YKYognlxvkCWyAqOPXFlR4Ajm8XF54RGBACpL+iWr8IodhguHC01Ygj23L9k5mNQ3ZLWHYh8zXACh5kCjc7Tu1yLPWnd4AvntmPv0ZfbE4xRpTQZI579EFZxmBVZdwJgql6lH/bFgktlYMJnXMyi+oAgaVSyLUwWCT9UHnKv6A/JvcrSIdI8enZwtKJPyNP4+LyDVkBhDPMJ7O4iR5iMK49bcCzT0W2ycuI1q5ZYMD4RN1CGcKaHO36bZJ4etfEchC+F98XUe2CNfXn61kRrL0N7qahvKa62ln9tHZuLGTwxTvxoHZ9ZNVVqsbsrOkgsJZfbRh7paD5FBAotaUv1TFtVyyeRLMRvlNVPeIclbRK5hur7ptryd25iS9IGbqnJ6VvSMs6hGCcfopEP28J5eN0gmx8pCsl2v0GkAqEILjWpl66cVc= root@controller.test.local\n",
+    "name": "test",
+    "type": "ssh"
+}
+###
+GET {{url}}/cluster/{{cluster-id}}/network
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/network/{{network-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/network/private
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "name": "test private",
+	"is_external": false,
+	"mtu": 1400,
+	"description": "test private network"
+}
+###
+DELETE  {{url}}/cluster/{{cluster-id}}/network/private/{{network-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/network/{{network-id}}/port
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/project/{{project-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/role
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/role/{{role-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/router
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/router/{{router-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/router/{{router-id}}/port
+x-jwt-token: {{user-token}}
+###
+POST  {{url}}/cluster/{{cluster-id}}/router
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "name": "test router",
+	"description": "test router",
+    "external_gateway_info": {
+        "network_id": "{{network-id}}"
+    }
+}
+###
+PUT {{url}}/cluster/{{cluster-id}}/router/{{router-id}}/add_subnet
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "subnet_id": "{{subnet-id}}"
+}
+###
+PUT {{url}}/cluster/{{cluster-id}}/router/{{router-id}}/remove_subnet
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "subnet_id": "{{subnet-id}}"
+}
+### 
+PUT {{url}}/cluster/{{cluster-id}}/router/{{router-id}}/remove_external_gateway
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/router/{{router-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/securitygroup/{{securitygroup-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/securitygroup
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/securitygroup/{{securitygroup-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/securitygroup
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "name": "test sec group",
+	"description": "test sec group"
+}
+###
+GET {{url}}/cluster/{{cluster-id}}/securityrule/{{securityrule-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/securityrule
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/securityrule/{{securityrule-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/securityrule
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "protocol": "tcp",
+    "port_range_max": 22,
+    "remote_ip_prefix": "0.0.0.0/0",
+    "ethertype": "IPv4",
+    "security_group_id": "{{securitygroup-id}}",
+    "direction": "ingress",
+    "port_range_min": 22,
+    "description": "test sec rule"
+}
+###
+GET {{url}}/cluster/{{cluster-id}}/subnet/{{subnet-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/subnet
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/subnet/{{subnet-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/subnet
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "cidr": "192.168.100.0/24",
+    "name": "test private subnet",
+    "enable_dhcp": true,
+    "network_id": "{{network-id}}",
+    "allocation_pools":[{
+            "start": "192.168.100.2",
+            "end": "192.168.100.254"
+    }],
+    "ip_version": 4,
+    "gateway_ip": "192.168.100.1",
+    "description": "test private subnet"
+}
+###
+GET {{url}}/cluster/{{cluster-id}}/user/{{user-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/volume/{{volume-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/volume
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/volume/{{volume-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/volume
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "size": 1,
+    "name": "test volume",
+    "description": "test volume",
+    "bootable": false
+}
+###
+GET {{url}}/cluster/{{cluster-id}}/port/{{port-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/port
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/server/{{server-id}}
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/server
+x-jwt-token: {{user-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/server/{{server-id}}/port
+x-jwt-token: {{user-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/server/{{server-id}}
+x-jwt-token: {{user-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/server
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "image_id": "{{image-id}}",
+    "key_id": "{{keypair-id}}",
+    "name": "test server",
+    "security_groups": "{{securitygroup-id}}",
+    "private_network_id": "{{network-id}}",
+    "flavor_id": "{{flavor-id}}"
+}
+###
+PUT {{url}}/cluster/{{cluster-id}}/server/{{server-id}}/start
+x-jwt-token: {{user-token}}
+###
+PUT {{url}}/cluster/{{cluster-id}}/server/{{server-id}}/stop
+x-jwt-token: {{user-token}}
+###
+PUT {{url}}/cluster/{{cluster-id}}/server/{{server-id}}/attach_volume
+x-jwt-token: {{user-token}}
+content-type: application/json
+
+{
+    "volume_id": "{{volume-id}}"
+}
+###
+
+//Admin
+POST {{url}}/cluster/{{cluster-id}}/flavor
+x-jwt-token: {{admin-token}}
 content-type: application/json
 
 {
@@ -91,42 +390,104 @@ content-type: application/json
 	"swap":        0,
 	"description": "test flavor"
 }
-
 ###
-DELETE http://localhost:3000/cluster/1/flavor/42f83faf-8f2e-4062-ba61-bba22655792c
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTE1MTZ9.H7VUNV300zF2Ly3NV-TNE5xtQVSO6VtAVcrB9qt1fz8
-
+DELETE {{url}}/cluster/{{cluster-id}}/flavor/{{flavor-id}}
+x-jwt-token: {{admin-token}}
 ###
-GET http://localhost:3000/cluster/1/flavor/42f83faf-8f2e-4062-ba61-bba22655792c
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTE1MTZ9.H7VUNV300zF2Ly3NV-TNE5xtQVSO6VtAVcrB9qt1fz8
+POST {{url}}/cluster/{{cluster-id}}/image
+x-jwt-token: {{admin-token}}
+content-type: application/json
 
+{
+    "disk_format": "qcow2",
+    "container_format": "bare",
+    "name": "cirros",
+    "visibility": "public"
+}
 ###
+POST {{url}}/cluster/{{cluster-id}}/image/{{image-id}}/file
+x-jwt-token: {{admin-token}}
+content-type: application/octet-stream
+###
+DELETE {{url}}/cluster/{{cluster-id}}/image/{{image-id}}
+x-jwt-token: {{admin-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/network/public
+x-jwt-token: {{admin-token}}
+content-type: application/json
 
-POST http://localhost:3000/cluster/1/user
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTAxNDl9.GmV1FUBJU7l9rSUXxjnUTbS28uY7qDJcCY_ooIg7_8Y
+{
+    "name": "test public",
+	"is_external": true,
+	"mtu": 1400,
+	"description": "test public network"
+}
+###
+POST {{url}}/cluster/{{cluster-id}}/subnet
+x-jwt-token: {{admin-token}}
+content-type: application/json
+
+{
+    "cidr": "192.168.122.0/24",
+    "name": "test public subnet",
+    "enable_dhcp": false,
+    "network_id": "{{network-id}}",
+    "allocation_pools":[{
+            "start": "192.168.122.200",
+            "end": "192.168.122.254"
+    }],
+    "ip_version": 4,
+    "gateway_ip": "192.168.122.1",
+    "description": "test public subnet"
+}
+###
+DELETE  {{url}}/cluster/{{cluster-id}}/network/public/{{network-id}}
+x-jwt-token: {{admin-token}}
+###
+GET {{url}}/cluster/{{cluster-id}}/project
+x-jwt-token: {{admin-token}}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/project/{{project-id}}
+x-jwt-token: {{admin-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/project
+x-jwt-token: {{admin-token}}
 content-type: application/json
 
 {
     "name": "demo-test",
-	"project_id": "ff6e0cca7f5348df8f23fb2039b8fc87",
+	"domain_id": "default",
+	"description": "demo-test project"
+}
+###
+POST {{url}}/cluster/{{cluster-id}}/role
+x-jwt-token: {{admin-token}}
+content-type: application/json
+
+{
+    "name": "test role",
+	"description": "test role"
+}
+###
+DELETE {{url}}/cluster/{{cluster-id}}/role/{{role-id}}
+x-jwt-token: {{admin-token}}
+###
+POST {{url}}/cluster/{{cluster-id}}/user
+x-jwt-token: {{admin-token}}
+content-type: application/json
+
+{
+    "name": "demo-test",
+	"project_id": "{{project-id}}",
 	"password": "demo-test",
 	"email": "demo-test@gmail.com",
 	"domain_id": "default",
 	"description": "demo-test user"
 }
-
 ###
-DELETE http://localhost:3000/cluster/1/user/0d29281ca3b04b729ed74ff57ab706be
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTAxNDl9.GmV1FUBJU7l9rSUXxjnUTbS28uY7qDJcCY_ooIg7_8Y
-
+DELETE {{url}}/cluster/{{cluster-id}}/user/{{user-id}}
+x-jwt-token: {{admin-token}}
 ###
-GET http://localhost:3000/cluster/1/user/dd4481c546fc4b81863bef72f590479b
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODIzNTAxNDl9.GmV1FUBJU7l9rSUXxjnUTbS28uY7qDJcCY_ooIg7_8Y
-
+GET {{url}}/cluster/{{cluster-id}}/user
+x-jwt-token: {{admin-token}}
 ###
-GET http://localhost:3000/cluster/7/user
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJhZG1pbkBleGFtcGxlLmNvbSIsIkFjY291bnRSb2xlIjoiYWRtaW4iLCJFeHBpcmVzQXQiOjE2ODI3NjA5NTd9.UK6i6jielLBW2wnUlHRrD9r2wM1QA1YAj6fo6cS782M
-
-###
-HEAD http://localhost:3000/cluster/1/register
-x-jwt-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJBY2NvdW50RW1haWwiOiJ0ZXN0QGV4YW1wbGUuY29tIiwiQWNjb3VudFJvbGUiOiJ1c2VyIiwiRXhwaXJlc0F0IjoxNjgyMzUyOTg2fQ.cGW7YPZyN6fgBrfD_105ihKTRHDOWGU36fCvQS-xcq0

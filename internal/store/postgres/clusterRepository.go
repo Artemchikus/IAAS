@@ -50,8 +50,8 @@ func (r *ClusterRepository) Create(ctx context.Context, cluster *models.Cluster)
 
 	query := `
 	INSERT INTO cluster 
-	(location, url, admin_name, admin_email, admin_password, admin_project_id)  
-	values ($1, $2, $3, $4, $5, $6) RETURNING *`
+	(location, url, admin_name, admin_email, admin_password, admin_project_id, admin_domain_id)  
+	values ($1, $2, $3, $4, $5, $6, $7) RETURNING *`
 
 	row, err := r.store.db.Query(
 		query,
@@ -60,7 +60,8 @@ func (r *ClusterRepository) Create(ctx context.Context, cluster *models.Cluster)
 		cluster.Admin.Name,
 		cluster.Admin.Email,
 		cluster.Admin.Password,
-		cluster.Admin.ProjectID)
+		cluster.Admin.ProjectID,
+		cluster.Admin.DomainID)
 	if err != nil {
 		return err
 	}
@@ -148,7 +149,8 @@ func scanIntoCluster(rows *sql.Rows) (*models.Cluster, error) {
 		&cluster.Admin.Name,
 		&cluster.Admin.Email,
 		&cluster.Admin.Password,
-		&cluster.Admin.ProjectID); err != nil {
+		&cluster.Admin.ProjectID,
+		&cluster.Admin.DomainID); err != nil {
 		return nil, err
 	}
 
@@ -165,7 +167,8 @@ func (r *ClusterRepository) createClusterTable(ctx context.Context) error {
 		admin_name VARCHAR(50) NOT NULL,
 		admin_email VARCHAR(50) NOT NULL,
 		admin_password VARCHAR(100) NOT NULL,
-		admin_project_id VARCHAR(50) NOT NULL UNIQUE
+		admin_project_id VARCHAR(50) NOT NULL UNIQUE,
+		admin_domain_id VARCHAR(50) NOT NULL
 	)`
 
 	_, err := r.store.db.Exec(query)

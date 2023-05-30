@@ -226,7 +226,7 @@ func (r *ClusterUserRepository) createClusterUserTable(ctx context.Context) erro
 		id VARCHAR(50) NOT NULL PRIMARY KEY,
 		name VARCHAR(50) NOT NULL,
 		email VARCHAR(50) NOT NULL,
-		password VARCHAR(50) NOT NULL,
+		password VARCHAR(100) NOT NULL,
 		role VARCHAR(50) NOT NULL,
 		domain_id VARCHAR(50) NOT NULL,
 		account_id INTEGER,

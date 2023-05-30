@@ -315,6 +315,7 @@ func (f *RouterFetcher) generateCreateReq(router *models.Router) *CreateRouterRe
 		Router: &Router{
 			Name:                router.Name,
 			ExternalGatewayInfo: router.ExternalGatewayInfo,
+			Description:         router.Description,
 		},
 	}
 

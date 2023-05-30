@@ -5,7 +5,6 @@ import (
 	"IAAS/internal/store"
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -122,7 +121,7 @@ func (s *server) handleCreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	account := models.NewAccount(req.Name, req.Email, req.Password, "user")
+	account := models.NewAccount(req.Name, req.Email, req.Password, "member")
 
 	if _, err := s.store.Account().FindByEmail(r.Context(), account.Email); err == nil {
 		s.error(w, r, http.StatusConflict, errEmailAlreadyExists)
@@ -360,6 +359,13 @@ func (s *server) handleRegisterAccountInCluster(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	acc := r.Context().Value(models.CtxKeyAccount).(*models.Account)
+
+	if _, err := s.store.ClusterUser().FindByEmailAndClusterID(r.Context(), acc.Email, clusterId); err == nil {
+		s.error(w, r, http.StatusUnprocessableEntity, errAlreadyInCluster)
+		return
+	}
+
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyClusterID, clusterId))
 
 	token, err := s.fetcher.Token().GetAdmin(r.Context())
@@ -370,8 +376,6 @@ func (s *server) handleRegisterAccountInCluster(w http.ResponseWriter, r *http.R
 
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
 
-	acc := r.Context().Value(models.CtxKeyAccount).(*models.Account)
-
 	project := models.NewProject(acc.Email, "project for user "+acc.Email)
 
 	if err := s.fetcher.Project().Create(r.Context(), project); err != nil {
@@ -379,7 +383,9 @@ func (s *server) handleRegisterAccountInCluster(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	user := models.NewClusterUser(acc.Name, acc.Email, acc.Password, project.ID, project.DomainID, "common user")
+	user := models.NewClusterUser(acc.Name, acc.Email, acc.EncryptedPassword, project.ID, project.DomainID, "common user")
+	user.AccountID = acc.ID
+	user.CluserRole = acc.Role
 
 	if err := s.fetcher.User().Create(r.Context(), user); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
@@ -426,7 +432,7 @@ func (s *server) handleGetFloatingIps(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleGetFloatingIpByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	floatingId, ok := vars["flloatingIp_id"]
+	floatingId, ok := vars["floatingip_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -477,7 +483,7 @@ func (s *server) handleCreateFloatingIp(w http.ResponseWriter, r *http.Request) 
 func (s *server) handleDeleteFloatingIp(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	flloatingId, ok := vars["floatingIp_id"]
+	floatingId, ok := vars["floatingip_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -491,13 +497,13 @@ func (s *server) handleDeleteFloatingIp(w http.ResponseWriter, r *http.Request) 
 
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
 
-	if err := s.fetcher.FloatingIp().Delete(r.Context(), flloatingId); err != nil {
+	if err := s.fetcher.FloatingIp().Delete(r.Context(), floatingId); err != nil {
 		s.error(w, r, http.StatusNotFound, err)
 		return
 	}
 
 	resp := DeleteOpenstackResurceResponse{
-		DeletedID: flloatingId,
+		DeletedID: floatingId,
 	}
 
 	s.respond(w, r, http.StatusOK, resp)
@@ -506,7 +512,7 @@ func (s *server) handleDeleteFloatingIp(w http.ResponseWriter, r *http.Request) 
 func (s *server) handleAddIPToPort(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	floatingId, ok := vars["floatingIp_id"]
+	floatingId, ok := vars["floatingip_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -646,8 +652,10 @@ func (s *server) handleUploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
+	var data []byte
+
+	n, err := r.Body.Read(data)
+	if err != nil || n == 0 {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
 	}
@@ -731,7 +739,7 @@ func (s *server) handleCreateVolume(w http.ResponseWriter, r *http.Request) {
 
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
 
-	volume := models.NewVolume(req.Description, req.Name, req.TypeID, req.Bootable, req.Size)
+	volume := models.NewVolume(req.Description, req.Name, req.Bootable, req.Size)
 
 	if err := s.fetcher.Volume().Create(r.Context(), volume); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
@@ -829,7 +837,7 @@ func (s *server) handleCreatePublicNetwork(w http.ResponseWriter, r *http.Reques
 
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
 
-	network := models.NewNetwork(req.Description, req.Name, req.MTU, req.External)
+	network := models.NewNetwork(req.Description, req.Name, req.ProjectID, req.MTU, req.External)
 
 	if err := s.fetcher.Network().Create(r.Context(), network); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
@@ -846,15 +854,24 @@ func (s *server) handleCreatePrivateNetwork(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
+	token, err := s.fetcher.Token().GetAdmin(r.Context())
 	if err != nil {
 		s.error(w, r, http.StatusUnauthorized, err)
 		return
 	}
 
+	acc := r.Context().Value(models.CtxKeyAccount).(*models.Account)
+	clusterId := r.Context().Value(models.CtxKeyClusterID).(int)
+
+	user, err := s.store.ClusterUser().FindByEmailAndClusterID(r.Context(), acc.Email, clusterId)
+	if err != nil {
+		s.error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
 
-	network := models.NewNetwork(req.Description, req.Name, req.MTU, req.External)
+	network := models.NewNetwork(req.Description, req.Name, user.ProjectID, req.MTU, req.External)
 
 	if err := s.fetcher.Network().Create(r.Context(), network); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
@@ -981,7 +998,7 @@ func (s *server) handleCreateServer(w http.ResponseWriter, r *http.Request) {
 
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
 
-	server := models.NewServer(req.ImageID, req.KeyID, req.Name, req.SecurityGroupID, req.PrivateNetworkID)
+	server := models.NewServer(req.ImageID, req.KeyID, req.Name, req.SecurityGroupID, req.PrivateNetworkID, req.FlavorID)
 
 	if err := s.fetcher.Server().Create(r.Context(), server); err != nil {
 		s.error(w, r, http.StatusInternalServerError, err)
@@ -1233,7 +1250,7 @@ func (s *server) handleGetSecurityGroups(w http.ResponseWriter, r *http.Request)
 func (s *server) handleGetSecurityGroupByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	secGroupId, ok := vars["securityGroup_id"]
+	secGroupId, ok := vars["securitygroup_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -1284,7 +1301,7 @@ func (s *server) handleCreateSecurityGroup(w http.ResponseWriter, r *http.Reques
 func (s *server) handleDeleteSecurityGroup(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	secGroupId, ok := vars["securityGroup_id"]
+	secGroupId, ok := vars["securitygroup_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -1429,7 +1446,7 @@ func (s *server) handleGetSecurityRules(w http.ResponseWriter, r *http.Request) 
 func (s *server) handleGetSecurityRuleByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	secRuleId, ok := vars["securityRule_id"]
+	secRuleId, ok := vars["securityrule_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -1480,7 +1497,7 @@ func (s *server) handleCreateSecurityRule(w http.ResponseWriter, r *http.Request
 func (s *server) handleDeleteSecurityRule(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	secRuleId, ok := vars["securityRule_id"]
+	secRuleId, ok := vars["securityrule_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -1527,7 +1544,7 @@ func (s *server) handleGetKeyPairs(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleGetKeyPairByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	keyPairId, ok := vars["keyPair_id"]
+	keyPairId, ok := vars["keypair_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -1578,7 +1595,7 @@ func (s *server) handleCreateKeyPair(w http.ResponseWriter, r *http.Request) {
 func (s *server) handleDeleteKeyPair(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	keyPairId, ok := vars["keyPair_id"]
+	keyPairId, ok := vars["keypair_id"]
 	if !ok {
 		s.error(w, r, http.StatusBadRequest, errBadRequest)
 		return
@@ -1872,35 +1889,6 @@ func (s *server) handleRemoveRouterSubnet(w http.ResponseWriter, r *http.Request
 	s.respond(w, r, http.StatusOK, resp)
 }
 
-func (s *server) handleRemoveRouterGateway(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	routerId, ok := vars["router_id"]
-	if !ok {
-		s.error(w, r, http.StatusBadRequest, errBadRequest)
-		return
-	}
-
-	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
-	if err != nil {
-		s.error(w, r, http.StatusUnauthorized, err)
-		return
-	}
-
-	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
-
-	if err := s.fetcher.Router().RemoveExternalGateway(r.Context(), routerId); err != nil {
-		s.error(w, r, http.StatusNotFound, err)
-		return
-	}
-
-	resp := RemoveRouterExternalGatewayResponse{
-		RouterID: routerId,
-	}
-
-	s.respond(w, r, http.StatusOK, resp)
-}
-
 func (s *server) handleGetPorts(w http.ResponseWriter, r *http.Request) {
 	token, err := s.fetcher.Token().Get(r.Context(), r.Context().Value(models.CtxClusterUser).(*models.ClusterUser))
 	if err != nil {
@@ -1988,7 +1976,7 @@ func (s *server) handleGetPortsByDevice(w http.ResponseWriter, r *http.Request) 
 
 	r = r.WithContext(context.WithValue(r.Context(), models.CtxKeyToken, token))
 
-	ports, err := s.fetcher.Port().FetchByID(r.Context(), deviceId)
+	ports, err := s.fetcher.Port().FetchByDeviceID(r.Context(), deviceId)
 	if err != nil {
 		s.error(w, r, http.StatusNotFound, err)
 		return

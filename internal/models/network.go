@@ -17,7 +17,7 @@ type Network struct {
 	PhysicalNetwork string    `json:"provider:physical_network"`
 }
 
-func NewNetwork(Description, Name string, MTU int, External bool) *Network {
+func NewNetwork(Description, Name, projectId string, MTU int, External bool) *Network {
 	if External {
 		return &Network{
 			Description:     Description,
@@ -25,12 +25,13 @@ func NewNetwork(Description, Name string, MTU int, External bool) *Network {
 			Name:            Name,
 			External:        External,
 			NetworkType:     "flat",
-			PhysicalNetwork: "extrnal",
+			PhysicalNetwork: "external",
 		}
 	}
 
 	return &Network{
 		Description: Description,
+		ProjectID:   projectId,
 		MTU:         MTU,
 		Name:        Name,
 		External:    External,

@@ -225,10 +225,11 @@ func (f *FloatingIpFetcher) FetchAll(ctx context.Context) ([]*models.FloatingIp,
 	return floatingips, nil
 }
 
-func (f *FloatingIpFetcher) generateCreateReq(folatingIp *models.FloatingIp) *CreateFloatingIpRequest {
+func (f *FloatingIpFetcher) generateCreateReq(floatingIp *models.FloatingIp) *CreateFloatingIpRequest {
 	req := &CreateFloatingIpRequest{
 		FloatingIp: &FloatingIp{
-			NetworkID: folatingIp.NetworkID,
+			NetworkID:   floatingIp.NetworkID,
+			Description: floatingIp.Description,
 		},
 	}
 

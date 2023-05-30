@@ -14,6 +14,7 @@ type CreateServerRequest struct {
 	Name             string `json:"name"`
 	SecurityGroupID  string `json:"security_groups"`
 	PrivateNetworkID string `json:"private_network_id"`
+	FlavorID         string `json:"flavor_id"`
 }
 
 type LoginRequest struct {
@@ -62,12 +63,11 @@ type CreateRoleRequest struct {
 	Description string `json:"description"`
 }
 type CreateNetworkRequest struct {
-	Name            string `json:"name"`
-	NetworkType     string `json:"network_type"`
-	External        bool   `json:"is_external"`
-	PhysicalNetwork string `json:"physical_network"`
-	MTU             int    `json:"mtu"`
-	Description     string `json:"description"`
+	ProjectID   string `json:"project_id"`
+	Name        string `json:"name"`
+	External    bool   `json:"is_external"`
+	MTU         int    `json:"mtu"`
+	Description string `json:"description"`
 }
 
 type CreateProjectRequest struct {
@@ -131,7 +131,6 @@ type CreateVolumeRequest struct {
 	Size        int    `json:"size"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	TypeID      string `json:"volume_type"`
 	Bootable    bool   `json:"bootable"`
 }
 

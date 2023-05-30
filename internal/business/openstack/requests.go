@@ -114,6 +114,7 @@ type Network struct {
 	PhysicalNetwork string `json:"provider:physical_network"`
 	MTU             int    `json:"mtu"`
 	Description     string `json:"description"`
+	ProjectID       string `json:"project_id"`
 }
 
 type CreateSubnetRequest struct {
@@ -207,7 +208,6 @@ type Volume struct {
 	Size        int    `json:"size"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	TypeID      string `json:"volume_type"`
 	Bootable    bool   `json:"bootable"`
 }
 
